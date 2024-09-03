@@ -1,4 +1,4 @@
-package com.gmat.ui.components
+package com.gmat.ui.components.login
 
 
 import androidx.compose.foundation.border
@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun OtpTextField(
@@ -24,13 +25,6 @@ fun OtpTextField(
     otpCount: Int = 6,
     onOtpTextChange: (String, Boolean) -> Unit
 ) {
-
-
-    LaunchedEffect(Unit) {
-        if (otpText.length > otpCount) {
-            throw IllegalArgumentException("Otp text value must not have more than otpCount: $otpCount characters")
-        }
-    }
 
     BasicTextField(
         modifier = modifier,
@@ -60,7 +54,6 @@ private fun CharView(
     index: Int,
     text: String
 ) {
-    val isFocused = text.length == index
     val char = when {
         index == text.length -> ""
         index > text.length -> ""
@@ -68,15 +61,15 @@ private fun CharView(
     }
     Text(
         modifier = Modifier
-            .width(40.dp)
+            .width(50.dp)
             .border(
-                1.dp, MaterialTheme.colorScheme.onSurface
+                2.dp, MaterialTheme.colorScheme.onSurface
                 , RoundedCornerShape(8.dp)
             )
-            .padding(8.dp),
+            .padding(16.dp),
         text = char,
-        style = MaterialTheme.typography.bodyMedium,
-
+        style = MaterialTheme.typography.bodyLarge,
+        fontSize = 18.sp,
         textAlign = TextAlign.Center
     )
 }

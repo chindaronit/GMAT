@@ -1,65 +1,56 @@
 package com.gmat.ui.screen.profile
 
-import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
+import androidx.navigation.NavController
 import com.gmat.R
+import com.gmat.ui.components.CenterBar
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Languages(
-    modifier: Modifier=Modifier
-){
+    modifier: Modifier = Modifier,
+    navController: NavController
+) {
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
+            CenterBar(
+                navController = navController,
                 title = {
                     Text(
-                        "Languages",
+                        text = stringResource(id = R.string.language),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null
-                        )
-                    }
-                },
-            )
+                })
         },
     ) { innerPadding ->
         Column(
@@ -76,27 +67,61 @@ private fun ListLanguages() {
     val context = LocalContext.current
     val languages = getSupportedLanguages(context)
 
+    // State to track the selected language
+    var selectedLanguage by remember { mutableStateOf(getCurrentLanguage(context)) }
+
     LazyColumn {
         items(languages.entries.toList()) { entry ->
-            LanguageItem(languageName = entry.key) {
-                changeAppLanguage(context, entry.value)
-            }
+            LanguageItem(
+                languageName = entry.key,
+                isSelected = entry.value == selectedLanguage,
+                onClick = {
+                    selectedLanguage = entry.value
+                    changeAppLanguage(context, entry.value)
+                }
+            )
         }
     }
+}
+
+fun getCurrentLanguage(context: Context): String {
+    val currentLocale = AppCompatDelegate.getApplicationLocales()[0]
+    return currentLocale?.toLanguageTag() ?: Locale.getDefault().toLanguageTag()
 }
 
 @Composable
 fun LanguageItem(
     languageName: String,
-    onClick: () -> Unit) {
-    Text(
-        text = languageName,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp)
-    )
+            .padding(horizontal = 10.dp, vertical = 0.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = languageName,
+                modifier = Modifier.weight(1f)
+            )
+            RadioButton(
+                selected = isSelected,
+                onClick = null // null because the parent Row is clickable
+            )
+        }
+    }
 }
+
 
 fun changeAppLanguage(context: Context, languageCode: String) {
     AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageCode))

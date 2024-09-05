@@ -1,6 +1,6 @@
 package com.gmat.ui.components.login
 
-
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,5 +14,6 @@ fun Top() {
         contentDescription = null,
         modifier = Modifier
             .fillMaxWidth()
+            .aspectRatio(16f / 9f)
     )
 }

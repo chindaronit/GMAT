@@ -1,50 +1,39 @@
 package com.gmat.ui.screen.rewards
 
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.gmat.R
+import com.gmat.ui.components.CenterBar
+import com.gmat.ui.components.RenderPainterIcon
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Rewards() {
+fun Rewards(
+    navController: NavController
+) {
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                ),
+            CenterBar(
+                navController = navController,
                 title = {
                     Text(
-                        "Rewards",
+                        text = stringResource(id = R.string.rewards),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = {  }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-            )
+                })
         },
     ) { innerPadding ->
         Column(
@@ -68,21 +57,17 @@ fun Rewards() {
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.reward_icon),
-                        contentDescription = "",
-                        modifier = Modifier.size(100.dp)
-                    )
+                    RenderPainterIcon(id = R.drawable.reward_icon, modifier = Modifier.size(100.dp))
                     Column(
                         modifier = Modifier.padding(horizontal = 30.dp)
                     ) {
                         Text(
-                            text = "Your Rank: ",
+                            text = stringResource(id = R.string.your_rank)+":",
                             fontSize = 20.sp
                         )
                         Spacer(modifier = Modifier.height(5.dp))
                         Text(
-                            text = "Points: ",
+                            text = stringResource(id = R.string.your_points)+":",
                             fontWeight = FontWeight.ExtraLight,
                             fontSize = 18.sp
                         )
@@ -105,7 +90,7 @@ fun Rewards() {
                     )
                 ) {
                     Text(
-                        text = "Leaderboard",
+                        text = stringResource(id = R.string.leaderboard),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(start = 15.dp, top = 20.dp, bottom = 10.dp)
@@ -143,19 +128,16 @@ fun LeaderboardEntry(name: String, points: String, modifier: Modifier = Modifier
                 .fillMaxWidth()
                 .padding(15.dp),
         ) {
-            Icon(
-                painter = painterResource(R.drawable.reward_icon),
-                contentDescription = "",
-                modifier = Modifier
-                    .size(45.dp)
-                    .clip(CircleShape)
-//                    .background(MaterialTheme.colorScheme.primary)
-                    .border(
-                        BorderStroke(3.dp, MaterialTheme.colorScheme.onSurface),
-                        CircleShape
-                    )
-                    .padding(10.dp)
-            )
+
+            RenderPainterIcon(id = R.drawable.reward_icon, modifier = Modifier
+                .size(45.dp)
+                .clip(CircleShape)
+                .border(
+                    BorderStroke(3.dp, MaterialTheme.colorScheme.onSurface),
+                    CircleShape
+                )
+                .padding(10.dp))
+
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -179,3 +161,4 @@ fun LeaderboardEntry(name: String, points: String, modifier: Modifier = Modifier
         }
     }
 }
+

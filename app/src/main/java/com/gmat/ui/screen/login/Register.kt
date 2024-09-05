@@ -1,6 +1,5 @@
 package com.gmat.ui.screen.login
 
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,12 +35,17 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.Top
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Register() {
+fun Register(
+    modifier: Modifier = Modifier,
+    navController: NavController
+) {
 
     var name by remember {
         mutableStateOf("")
@@ -69,18 +73,18 @@ fun Register() {
     )
     { innerPadding ->
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .align(Alignment.TopCenter)
             ) {
                 Top()
             }
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .align(Alignment.Center)
                     .padding(horizontal = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -90,7 +94,7 @@ fun Register() {
                     fontSize = 25.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = modifier.height(20.dp))
                 OutlinedTextField(
                     value = name,
                     onValueChange = {
@@ -98,7 +102,12 @@ fun Register() {
                             name = it
                         }
                     },
-                    placeholder = { Text(text = "Enter your Name", fontFamily = FontFamily.Monospace) },
+                    placeholder = {
+                        Text(
+                            text = "Enter your Name",
+                            fontFamily = FontFamily.Monospace
+                        )
+                    },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
@@ -110,7 +119,7 @@ fun Register() {
                         focusedIndicatorColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = modifier.height(20.dp))
                 ExposedDropdownMenuBox(
                     expanded = isExpanded,
                     onExpandedChange = { isExpanded = it }
@@ -123,7 +132,7 @@ fun Register() {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
                         },
 
-                        modifier = Modifier
+                        modifier = modifier
                             .menuAnchor()
                     )
 
@@ -140,18 +149,30 @@ fun Register() {
                                     currentVal = label
                                     isExpanded = false
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = modifier.fillMaxWidth()
                             )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
-                Button(onClick = { }) {
-                    Text("Get Started", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)
+                Spacer(modifier = modifier.height(20.dp))
+                Button(onClick = {
+                    navController.navigate(NavRoutes.Home.route) {
+                        popUpTo(NavRoutes.Register.route) {
+                            inclusive = true
+                        } // Clears the back stack
+                        launchSingleTop = true  // Avoids multiple instances of the OTP screen
+                    }
+                }) {
+                    Text(
+                        "Get Started",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Monospace
+                    )
                 }
             }
             Row(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter),
                 horizontalArrangement = Arrangement.Center

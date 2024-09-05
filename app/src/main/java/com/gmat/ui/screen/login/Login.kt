@@ -34,75 +34,92 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
+import androidx.navigation.NavController
+import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.Top
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Login() {
+fun Login(
+    modifier: Modifier = Modifier,
+    navController: NavController
+) {
     var number by remember {
         mutableStateOf("")
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("GMAT",fontFamily = FontFamily.Monospace) })
+            TopAppBar(title = { Text("GMAT", fontFamily = FontFamily.Monospace) })
         }
     )
 
     { innerPadding ->
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .align(Alignment.TopCenter)
             ) {
                 Top()
             }
 
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .padding(40.dp)
                     .align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
-            ){
+            ) {
                 Text(
                     text = "Continue with Mobile",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = modifier.height(20.dp))
                 OutlinedTextField(
                     value = number,
                     onValueChange = {
-                        if (it.length<=10 && it.isDigitsOnly()) {
+                        if (it.length <= 10 && it.isDigitsOnly()) {
                             number = it
                         }
                     },
-                    placeholder = { Text(text = "Enter your number here",fontFamily = FontFamily.Monospace) },
+                    placeholder = {
+                        Text(
+                            text = "Enter your number here",
+                            fontFamily = FontFamily.Monospace
+                        )
+                    },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.Call,
                             contentDescription = "",
                         )
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
                 )
 
                 Button(
-                    onClick = {  },
-                    modifier = Modifier
+                    onClick = {
+                        navController.navigate(NavRoutes.OTP.route) {
+                            popUpTo(NavRoutes.Login.route){
+                                inclusive=true
+                            }
+                            launchSingleTop = true  // Avoids multiple instances of the OTP screen
+                        }
+                    },
+                    modifier = modifier
                         .fillMaxWidth()
                         .padding(vertical = 25.dp),
                 ) {
                     Row(
-                        modifier = Modifier.padding(10.dp),
+                        modifier = modifier.padding(10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
@@ -122,7 +139,7 @@ fun Login() {
             }
 
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .align(Alignment.BottomCenter)
             ) {
                 Bottom()

@@ -1,5 +1,18 @@
 <resources>
     <string name="app_name">GMAT</string>
     <string name="language">Language</string>
-    <string name="system_language">System Language</string>
+    <string name="about_us">About Us</string>
+    <string name="profile">Profile</string>
+    <string name="faq">FAQ</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="rewards">Rewards</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="languages">Languages</string>
+    <string name="about_us_data">Welcome to our platform, where innovation meets responsibility. Our application is designed to revolutionize the way you conduct transactions, bringing the power of UPI technology to your fingertips with an added layer of purpose.\n\nIn partnership with the Government of India, our platform ensures that every merchant transaction you make is seamlessly recorded for GST compliance. By doing so, we are helping to create a transparent and accountable system where no one can evade their tax obligations. This initiative is part of our commitment to support the nation\'s economic growth by ensuring that every transaction contributes to the greater good.\n\nBut our mission doesn\'t stop there. We believe in rewarding those who contribute to this cause. Through the government\'s \"Mera Bill Mera Adhikaar\" scheme, customers who report their transactions are eligible for special rewards. It\'s our way of saying thank you for helping build a stronger and more prosperous India.\n\nJoin us in making a difference. Together, we can create a future where every transaction counts, for both you and the nation.</string>
+    <string name="upload_photo">Upload Photo</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="your_rank">Your Rank</string>
+    <string name="your_points">Points</string>
+    <string name="upgraded_qr">Upgraded QR</string>
+    <string name="upgrade_qr">Upgrade QR</string>
 </resources>

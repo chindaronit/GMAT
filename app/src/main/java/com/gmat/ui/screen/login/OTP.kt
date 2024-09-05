@@ -25,13 +25,18 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.OtpTextField
 import com.gmat.ui.components.login.Top
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OTP() {
+fun OTP(
+    modifier: Modifier = Modifier,
+    navController: NavController
+) {
 
     var otpValue by remember {
         mutableStateOf("")
@@ -52,19 +57,19 @@ fun OTP() {
 
         ) { innerPadding ->
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .align(Alignment.TopCenter)
             ) {
                 Top()
             }
 
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -75,23 +80,35 @@ fun OTP() {
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.Monospace
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = modifier.height(20.dp))
                 OtpTextField(
                     otpText = otpValue,
                     onOtpTextChange = { value, _ ->
                         otpValue = value
                     }
                 )
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = modifier.height(30.dp))
                 Button(
-                    onClick = { },
+                    onClick = {
+                        navController.navigate(NavRoutes.Register.route) {
+                            popUpTo(NavRoutes.OTP.route) {
+                                inclusive = true
+                            } // Clears the back stack
+                            launchSingleTop = true  // Avoids multiple instances of the OTP screen
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Verify", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)
+                    Text(
+                        "Verify",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Monospace
+                    )
                 }
             }
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .align(Alignment.BottomCenter)
             ) {
                 Bottom()

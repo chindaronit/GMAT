@@ -10,88 +10,96 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.gmat.R
+import com.gmat.navigation.NavRoutes
+import com.gmat.ui.components.CenterBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Profile() {
+fun Profile(
+    navController: NavController
+) {
+
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                ),
+            CenterBar(
+                navController = navController,
                 title = {
                     Text(
-                        "Profile",
+                        text = stringResource(id = R.string.profile),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Localized description"
-                        )
-                    }
-                },
-            )
-        },
+                })
+        }
     )
     { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState()),
         ) {
-
             ProfileCard(uName = "Ronit Chinda", uMobile = "7988224882", uUpiId = "7988224882@sbi")
-
             Column(
                 modifier = Modifier.padding(20.dp),
             ) {
-                SettingsBox(title = "Edit Details", iconResId = R.drawable.edit_icon)
-                SettingsBox(title = "Rewards", iconResId = R.drawable.reward_icon)
+                SettingsBox(
+                    title = stringResource(id = R.string.edit_profile),
+                    iconResId = R.drawable.edit_icon,
+                    onClick = { navController.navigate(NavRoutes.EditDetails.route) })
+                SettingsBox(
+                    title = stringResource(id = R.string.rewards),
+                    iconResId = R.drawable.reward_icon,
+                    onClick = { navController.navigate(NavRoutes.Rewards.route) })
             }
 
             Column(
                 modifier = Modifier.padding(20.dp),
             ) {
-                SettingsBox(title = "Languages", iconResId = R.drawable.internet_icon)
-                SettingsBox(title = "About Us", iconResId = R.drawable.information_icon)
-                SettingsBox(title = "FAQ", iconResId = R.drawable.question_icon)
+                SettingsBox(
+                    title = stringResource(id = R.string.languages),
+                    iconResId = R.drawable.globe_icon,
+                    onClick = { navController.navigate(NavRoutes.Language.route) })
+                SettingsBox(
+                    title = stringResource(id = R.string.about_us),
+                    iconResId = R.drawable.information_icon,
+                    onClick = { navController.navigate(NavRoutes.AboutUs.route) })
+                SettingsBox(
+                    title = stringResource(id = R.string.faq),
+                    iconResId = R.drawable.question_icon,
+                    onClick = { navController.navigate(NavRoutes.FAQ.route) })
             }
 
             Column(
                 modifier = Modifier.padding(20.dp),
             ) {
-                SettingsBox(title = "Sign Out", iconResId = R.drawable.sign_out_icon)
+                SettingsBox(
+                    title = stringResource(id = R.string.sign_out),
+                    iconResId = R.drawable.power_icon,
+                    onClick = {})
             }
         }
     }
@@ -99,9 +107,9 @@ fun Profile() {
 
 @Composable
 fun ProfileCard(
-    uName: String="",
-    uUpiId: String="",
-    uMobile: String="",
+    uName: String = "",
+    uUpiId: String = "",
+    uMobile: String = "",
 ) {
     ElevatedCard(
         onClick = {},
@@ -151,7 +159,7 @@ fun ProfileCard(
 fun SettingsBox(
     title: String,
     iconResId: Int,
-    onClick: () -> Unit = {},
+    onClick: () -> Unit,
     cornerRadius: RoundedCornerShape = RoundedCornerShape(32.dp),
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
     elevation: Dp = 6.dp

@@ -12,9 +12,10 @@ import com.gmat.ui.screen.profile.Profile
 import com.gmat.ui.screen.rewards.Rewards
 import com.gmat.ui.screen.transaction.TransactionChat
 import com.gmat.ui.screen.transaction.TransactionHistory
+import com.gmat.ui.viewModel.ScannerViewModel
 
 @Composable
-fun AppNavHost(navController: NavHostController = rememberNavController()) {
+fun AppNavHost(navController: NavHostController = rememberNavController(),scannerViewModel: ScannerViewModel) {
 
     NavHost(navController, startDestination = NavRoutes.Home.route) {
         animatedComposable(NavRoutes.Profile.route) {
@@ -46,7 +47,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         animatedComposable(NavRoutes.ScanQR.route) {
-            ScanQR(navController = navController)
+            ScanQR(navController = navController,scannerViewModel)
         }
 
 

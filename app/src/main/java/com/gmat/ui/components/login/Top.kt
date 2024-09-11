@@ -8,7 +8,9 @@ import coil.compose.AsyncImage
 import com.gmat.R
 
 @Composable
-fun Top() {
+fun Top(
+    modifier: Modifier=Modifier
+) {
     AsyncImage(
         model = R.drawable.logo,
         contentDescription = null,

@@ -15,4 +15,11 @@
     <string name="your_points">Points</string>
     <string name="upgraded_qr">Upgraded QR</string>
     <string name="upgrade_qr">Upgrade QR</string>
+    <string name="receipt">Receipt</string>
+    <string name="business">Business</string>
+    <string name="morning">Good Morning</string>
+    <string name="evening">Good Evening</string>
+    <string name="noon">Good Noon</string>
+    <string name="scan">Scan and Pay</string>
+    <string name="history">Transaction History</string>
 </resources>

@@ -61,6 +61,7 @@ android {
 dependencies {
     implementation(libs.coil.compose)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.play.services.code.scanner)
     ksp(libs.hilt.android.compiler)
     ksp(libs.hilt.compile)
     implementation(libs.hilt.android)
@@ -71,5 +72,4 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.play.services.vision)
 }

@@ -14,18 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,16 +32,14 @@ import com.gmat.ui.components.Bar
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.Top
 import java.time.LocalTime
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun HomeScreen(
     navController: NavController
 ) {
-    var user = "Ronit Chinda"
-    var isBusiness by remember { mutableStateOf(false) }
+    val user = "Ronit Chinda"
+    val isBusiness by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -67,7 +57,7 @@ fun HomeScreen(
                             fontFamily = FontFamily.Monospace
                         )
                         Text(
-                            user ?: "",
+                            user,
                             maxLines = 1,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.ExtraLight,
@@ -100,6 +90,17 @@ fun HomeScreen(
         ) {
             Top()
 
+            HorizontalDivider(
+                Modifier
+                    .width(150.dp)
+                    .padding(bottom = 20.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
+                color = MaterialTheme.colorScheme.primary
+            )
+
+
+            Spacer(modifier = Modifier.height(20.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -113,7 +114,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(30.dp))
             Text(
-                text = "Business",
+                text = stringResource(id = R.string.business),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -140,70 +141,49 @@ fun HomeScreen(
                     .height(300.dp),
                 content = {
                     items(userNames.size) { index ->
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Card(
+                            onClick = { navController.navigate(NavRoutes.TransactionChat.route) },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
                         ) {
-                            AsyncImage(
-                                model = R.drawable.user_icon,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = userNames[index],
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.Center,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                AsyncImage(
+                                    model = R.drawable.user_icon,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(48.dp),
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = userNames[index],
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
                 }
             )
-            Row (
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
-            ){
+            ) {
                 Bottom()
             }
-        }
 
+        }
     }
 }
 
-class BottomDrawerShape : Shape {
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        val path = Path().apply {
-            val radius = size.height / 2 // Radius of the curve
-            val width = size.width
-
-            // Draw the semicircular ends
-            addRoundRect(
-                RoundRect(
-                    rect = Rect(Offset(0f, 0f), Size(radius * 2, size.height)),
-                    cornerRadius = CornerRadius(radius, radius)
-                )
-            )
-            addRoundRect(
-                RoundRect(
-                    rect = Rect(Offset(width - radius * 2, 0f), Size(radius * 2, size.height)),
-                    cornerRadius = CornerRadius(radius, radius)
-                )
-            )
-            // Draw the straight lines in between
-            moveTo(radius, size.height / 2)
-            lineTo(width - radius, size.height / 2)
-            close()
-        }
-        return Outline.Generic(path)
-    }
-}
 
 @Composable
 fun MerchantFeatures(
@@ -211,19 +191,19 @@ fun MerchantFeatures(
 ) {
     IconWithText(
         iconRes = R.drawable.scanner,
-        label = "Upgrade Your QR",
+        label = stringResource(id = R.string.upgrade_qr),
         onClick = { navController.navigate(NavRoutes.UpgradeQR.route) }
     )
     Spacer(modifier = Modifier.width(30.dp))
     IconWithText(
         iconRes = R.drawable.qr,
-        label = "Upgraded QR",
+        label = stringResource(id = R.string.upgraded_qr),
         onClick = { navController.navigate(NavRoutes.UpgradedQR.route) }
     )
     Spacer(modifier = Modifier.width(30.dp))
     IconWithText(
         iconRes = R.drawable.history,
-        label = "Transaction History",
+        label = stringResource(id = R.string.history),
         onClick = { navController.navigate(NavRoutes.TransactionHistory.route) }
     )
 }
@@ -234,19 +214,19 @@ fun PersonalFeatures(
 ) {
     IconWithText(
         iconRes = R.drawable.scanner,
-        label = "Scan & Pay",
+        label = stringResource(id = R.string.scan),
         onClick = { navController.navigate(NavRoutes.ScanQR.route) }
     )
     Spacer(modifier = Modifier.width(30.dp))
     IconWithText(
         iconRes = R.drawable.history,
-        label = "Transaction History",
+        label = stringResource(id = R.string.history),
         onClick = { navController.navigate(NavRoutes.TransactionHistory.route) }
     )
     Spacer(modifier = Modifier.width(30.dp))
     IconWithText(
         iconRes = R.drawable.reward_icon,
-        label = "Rewards",
+        label = stringResource(id = R.string.rewards),
         onClick = { navController.navigate(NavRoutes.Rewards.route) }
     )
 }
@@ -259,21 +239,12 @@ fun greet(): String {
     val eveningStart = LocalTime.of(18, 0)
 
     return when {
-        currentTime.isAfter(morningStart) && currentTime.isBefore(noonStart) -> "Good Morning,"
-        currentTime.isAfter(noonStart) && currentTime.isBefore(eveningStart) -> "Good Noon,"
-        else -> "Good Evening,"
+        currentTime.isAfter(morningStart) && currentTime.isBefore(noonStart) -> stringResource(id = R.string.morning)
+        currentTime.isAfter(noonStart) && currentTime.isBefore(eveningStart) -> stringResource(id = R.string.noon)
+        else -> stringResource(id = R.string.evening)
     }
 }
 
-@Composable
-fun UserIcon() {
-    AsyncImage(
-        model = R.drawable.user_icon,
-        contentDescription = null,
-        modifier = Modifier.fillMaxWidth(),
-        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-    )
-}
 
 @Composable
 fun IconWithText(iconRes: Int, label: String, onClick: () -> Unit) {

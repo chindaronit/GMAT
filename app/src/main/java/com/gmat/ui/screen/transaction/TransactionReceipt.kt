@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,7 +51,7 @@ fun TransactionReceipt(
                 navController = navController,
                 title = {
                     Text(
-                        text = stringResource(id = R.string.faq),
+                            text = stringResource(id = R.string.receipt),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -66,11 +67,10 @@ fun TransactionReceipt(
                     uName = "Ronit Chinda",
                     uUpiId = "chinda@ybl",
                 )
-
+                Spacer(modifier = Modifier.height(50.dp))
                 Row(
                     modifier = modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 25.dp),
+                        .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                 ) {
@@ -92,7 +92,7 @@ fun TransactionReceipt(
                         modifier = modifier.size(36.dp)
                     )
                 }
-
+                Spacer(modifier = Modifier.height(50.dp))
                 ReceiptCard(
                     modifier = modifier,
                     date = formatDate(Date()),
@@ -122,7 +122,7 @@ fun ReceiptCard(
             .padding(horizontal = 20.dp, vertical = 10.dp)
             .clip(RoundedCornerShape(8.dp))
             .border(
-                width = 1.dp, // Border width
+                width = 1.5.dp, // Border width
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), // Border color
                 shape = RoundedCornerShape(8.dp) // Border shape matching the card shape
             ),
@@ -140,49 +140,49 @@ fun ReceiptCard(
             Column(
                 modifier = modifier
                     .padding(horizontal = 4.dp)
-                    .alpha(0.8f)
+                    .alpha(0.9f)
             ) {
                 Text(
                     text = "Date: $date",
                     fontSize = 16.sp,
                     modifier = Modifier
                         .padding(vertical = 4.dp)
-                        .alpha(0.8f)
+                        .alpha(0.9f)
                 )
                 Text(
-                    text = "Payment Type: $type",
+                    text = "Type: $type",
                     fontSize = 16.sp,
                     modifier = Modifier
                         .padding(vertical = 4.dp)
-                        .alpha(0.8f)
+                        .alpha(0.9f)
                 )
                 Text(
                     text = "GSTIN: $gstin",
                     fontSize = 16.sp,
                     modifier = Modifier
                         .padding(vertical = 4.dp)
-                        .alpha(0.8f)
+                        .alpha(0.9f)
                 )
                 Text(
                     text = "PayerID: $payer",
                     fontSize = 16.sp,
                     modifier = Modifier
                         .padding(vertical = 4.dp)
-                        .alpha(0.8f)
+                        .alpha(0.9f)
                 )
                 Text(
                     text = "PayeeID: $payee",
                     fontSize = 16.sp,
                     modifier = Modifier
                         .padding(vertical = 4.dp)
-                        .alpha(0.8f)
+                        .alpha(0.9f)
                 )
                 Text(
                     text = "TransactionID: $txnId",
                     fontSize = 16.sp,
                     modifier = Modifier
                         .padding(vertical = 4.dp)
-                        .alpha(0.8f)
+                        .alpha(0.9f)
                 )
             }
         }

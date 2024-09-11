@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gmat.R
 import com.gmat.env.formatDateWithDay
+import com.gmat.navigation.NavRoutes
 import com.gmat.ui.theme.DarkGreen
 import com.gmat.ui.theme.DarkRed
 import java.util.*
@@ -89,6 +90,7 @@ fun TransactionChat(
                 ) {
                     Spacer(modifier = Modifier.weight(1f)) // Pushes the card to the right
                     TransactionCard(
+                        navController=navController,
                         transaction = transaction,
                         modifier = Modifier.weight(1f) // Ensures the card is on the right side and takes appropriate space
                     )
@@ -100,9 +102,9 @@ fun TransactionChat(
 }
 
 @Composable
-fun TransactionCard(transaction: Transaction, modifier: Modifier = Modifier) {
+fun TransactionCard(transaction: Transaction, modifier: Modifier = Modifier, navController: NavController) {
     Card(
-        onClick = {},
+        onClick = {navController.navigate(NavRoutes.TransactionReceipt.route)},
         modifier = modifier
             .padding(8.dp), // Card-specific padding
         elevation = CardDefaults.cardElevation(4.dp),

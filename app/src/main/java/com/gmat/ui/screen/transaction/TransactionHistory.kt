@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -26,22 +27,34 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.SecureFlagPolicy
 import androidx.navigation.NavController
 import com.gmat.R
 import com.gmat.env.formatDate
+import com.gmat.navigation.NavRoutes
 import com.gmat.ui.theme.DarkGreen
+import kotlinx.coroutines.launch
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,6 +63,11 @@ fun TransactionHistory(
     modifier: Modifier = Modifier,
     navController: NavController
 ) {
+
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showDateSheet by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -59,7 +77,7 @@ fun TransactionHistory(
                 ),
                 title = {
                     Text(
-                        "History",
+                        stringResource(id = R.string.history),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -75,39 +93,12 @@ fun TransactionHistory(
             )
         }
     ) { innerPadding ->
+
         Column(
             modifier = modifier.padding(innerPadding)
         ) {
-            LazyRow(
-                modifier = modifier.padding(12.dp)
-            ) {
-                item {
-                    AssistChip(
-                        onClick = { },
-                        label = { Text("Date") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowDropDown,
-                                contentDescription = null
-                            )
-                        })
-                }
+            Filters(onDateClick = {showDateSheet=true}, onTypeClick = {showDateSheet=true})
 
-                item {
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-
-                item {
-                    AssistChip(
-                        onClick = { },
-                        label = { Text("Transaction Type") }, leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowDropDown,
-                                contentDescription = null
-                            )
-                        })
-                }
-            }
             Card(
                 modifier = modifier
                     .padding(8.dp)
@@ -126,12 +117,12 @@ fun TransactionHistory(
                 )
             }
             LazyColumn {
-                items(4) {
+                items(10) {
                     Card(
                         modifier = Modifier
                             .padding(5.dp)
                             .clickable {
-
+                                navController.navigate(NavRoutes.TransactionChat.route)
                             },
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface,
@@ -180,7 +171,7 @@ fun TransactionHistory(
 
                             Icon(imageVector = Icons.Filled.CurrencyRupee, contentDescription = null, tint = DarkGreen)
                             Text(
-                                text = "100000",
+                                text = "-100000",
                                 modifier = Modifier
                                     .padding(end = 10.dp)
                                     .widthIn(max = 100.dp),
@@ -195,6 +186,66 @@ fun TransactionHistory(
                 }
             }
 
+            if (showDateSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showDateSheet = false
+                    },
+                    sheetState = sheetState,
+                    properties = ModalBottomSheetProperties(
+                        isFocusable = true,
+                        securePolicy = SecureFlagPolicy.SecureOn,
+                        shouldDismissOnBackPress = false
+                    )
+                ) {
+                    // Sheet content
+                    Button(onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                showDateSheet = false
+                            }
+                        }
+                    }) {
+                        Text("Hide bottom sheet")
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun Filters(modifier: Modifier=Modifier,onDateClick:()->Unit, onTypeClick: ()->Unit){
+    LazyRow(
+        modifier = modifier.padding(12.dp)
+    ) {
+        item {
+            AssistChip(
+                onClick = { onDateClick() },
+                label = { Text("Date") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = null
+                    )
+                })
+        }
+
+        item {
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        item {
+            AssistChip(
+                onClick = { onTypeClick() },
+                label = { Text("Type") }, leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = null
+                    )
+                })
         }
     }
 }

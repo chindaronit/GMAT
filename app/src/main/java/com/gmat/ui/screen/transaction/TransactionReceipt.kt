@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gmat.R
 import com.gmat.env.formatDate
+import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.components.transaction.ProfileTransactionCard
 import com.gmat.ui.theme.DarkGreen
@@ -48,10 +49,17 @@ fun TransactionReceipt(
     Scaffold(
         topBar = {
             CenterBar(
-                navController = navController,
+                onClick = {
+                    navController.navigate(NavRoutes.Home.route) {
+                        popUpTo(NavRoutes.TransactionReceipt.route) {
+                            inclusive = true
+                        } // Clears the back stack
+                        launchSingleTop = true  // Avoids multiple instances of the screen
+                    }
+                },
                 title = {
                     Text(
-                            text = stringResource(id = R.string.receipt),
+                        text = stringResource(id = R.string.receipt),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

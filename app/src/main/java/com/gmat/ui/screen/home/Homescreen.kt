@@ -1,5 +1,9 @@
 package com.gmat.ui.screen.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,13 +15,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,22 +37,61 @@ import coil.compose.AsyncImage
 import com.gmat.R
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.Bar
-import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.Top
 import java.time.LocalTime
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
+import com.gmat.ui.events.QRScannerEvents
+import com.gmat.ui.state.QRScannerState
 
 @Composable
 fun HomeScreen(
-    navController: NavController
+    navController: NavController,
+    scannerState: QRScannerState,
+    onScannerEvent: (QRScannerEvents)->Unit
 ) {
     val user = "Ronit Chinda"
     val isBusiness by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val launcher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { granted ->
+                hasCameraPermission = granted
+            }
+        )
+
+    // Only request permission if it hasn’t been granted yet
+    if (!hasCameraPermission) {
+        LaunchedEffect(key1 = true) {
+            launcher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    LaunchedEffect(key1 = scannerState.details) {
+        if(scannerState.details.isNotBlank()){
+            if(isBusiness){
+                navController.navigate(NavRoutes.UpgradeQR.route)
+            }
+            else{
+                navController.navigate(NavRoutes.AddTransactionDetails.route)
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             Bar(
-                navController = navController,
                 title = {
                     Column(
                         horizontalAlignment = Alignment.Start,
@@ -99,16 +146,19 @@ fun HomeScreen(
                 color = MaterialTheme.colorScheme.primary
             )
 
-
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
                 if (isBusiness) {
-                    MerchantFeatures(navController)
+                    MerchantFeatures(navController, onScanClick = {
+                        onScannerEvent(QRScannerEvents.StartScanning)
+                    })
                 } else {
-                    PersonalFeatures(navController)
+                    PersonalFeatures(navController, onScanClick = {
+                        onScannerEvent(QRScannerEvents.StartScanning)
+                    })
                 }
             }
 
@@ -128,7 +178,6 @@ fun HomeScreen(
                 "Eve Wilson", "Frank Moore", "Grace Lee", "Hank White",
                 "Ivy Harris", "Jack Martin", "Ivy Harris", "Jack Martin"
             )
-
 
             LazyVerticalGrid(
                 state = rememberLazyGridState(),
@@ -173,11 +222,17 @@ fun HomeScreen(
                     }
                 }
             )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Bottom()
+                AsyncImage(
+                    model = R.drawable.gmatlogo,
+                    contentDescription = null,
+                    modifier = Modifier.alpha(0.8f),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                )
             }
 
         }
@@ -187,12 +242,13 @@ fun HomeScreen(
 
 @Composable
 fun MerchantFeatures(
-    navController: NavController
+    navController: NavController,
+    onScanClick: () -> Unit
 ) {
     IconWithText(
         iconRes = R.drawable.scanner,
         label = stringResource(id = R.string.upgrade_qr),
-        onClick = { navController.navigate(NavRoutes.UpgradeQR.route) }
+        onClick = { onScanClick() }
     )
     Spacer(modifier = Modifier.width(30.dp))
     IconWithText(
@@ -210,12 +266,13 @@ fun MerchantFeatures(
 
 @Composable
 fun PersonalFeatures(
-    navController: NavController
+    navController: NavController,
+    onScanClick: () -> Unit
 ) {
     IconWithText(
         iconRes = R.drawable.scanner,
         label = stringResource(id = R.string.scan),
-        onClick = { navController.navigate(NavRoutes.ScanQR.route) }
+        onClick = { onScanClick() }
     )
     Spacer(modifier = Modifier.width(30.dp))
     IconWithText(

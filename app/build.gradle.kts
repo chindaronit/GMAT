@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -72,4 +73,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.navigation.compose)
+    implementation (libs.core)
+    implementation(libs.play.services.base)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 }

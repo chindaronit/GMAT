@@ -26,7 +26,7 @@ fun Rewards(
     Scaffold(
         topBar = {
             CenterBar(
-                navController = navController,
+                onClick = {navController.navigateUp()},
                 title = {
                     Text(
                         text = stringResource(id = R.string.rewards),

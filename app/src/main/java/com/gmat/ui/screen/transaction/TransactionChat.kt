@@ -46,7 +46,7 @@ fun TransactionChat(
     Scaffold(
         topBar = {
             CenterBar(
-                navController = navController,
+                onClick = {navController.navigateUp()},
                 title = {
                     Column(
                         verticalArrangement = Arrangement.Center,
@@ -70,7 +70,7 @@ fun TransactionChat(
 
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = {},
+                onClick = {navController.navigate(NavRoutes.AddTransactionDetails.route)},
             ) {
                 Text("Pay")
             }

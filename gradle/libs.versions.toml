@@ -1,5 +1,7 @@
 [versions]
 agp = "8.5.2"
+core = "3.5.0"
+firebaseBom = "33.3.0"
 hilt = "2.52"
 ksp = "2.0.0-1.0.24"
 hiltCompiler = "1.2.0"
@@ -7,14 +9,16 @@ hiltAndroidCompiler = "2.52"
 coilCompose = "2.7.0"
 hiltNavigationCompose = "1.2.0"
 kotlin = "2.0.0"
-activityCompose = "1.9.2"
+activityCompose = "1.9.1"
 coreKtx = "1.13.1"
 coreSplashscreen = "1.0.1"
-compose = "1.7.0"
-material3 = "1.3.0"
+compose = "1.6.8"
+material3 = "1.2.1"
 navigationCompose = "2.8.0"
 appcompat = "1.7.0"
+playServicesBase = "18.5.0"
 playServicesCodeScanner = "16.1.0"
+gmsPlayService="4.4.2"
 
 [libraries]
 
@@ -30,6 +34,9 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
 #Hilt
+core = { module = "com.google.zxing:core", version.ref = "core" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroidCompiler" }
 hilt-compile = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompiler"}
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
@@ -37,6 +44,7 @@ hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", ve
 
 # Coil
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
 play-services-code-scanner = { group = "com.google.android.gms", name = "play-services-code-scanner", version.ref = "playServicesCodeScanner" }
 
 
@@ -46,3 +54,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+google-services= {id="com.google.gms.google-services",version.ref="gmsPlayService"}

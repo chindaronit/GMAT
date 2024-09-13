@@ -18,7 +18,7 @@ import androidx.navigation.NavController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CenterBar(
-    navController: NavController,
+    onClick: ()->Unit,
     actions: @Composable() (RowScope.() -> Unit) = {},
     title: @Composable () -> Unit,
 ) {
@@ -29,7 +29,7 @@ fun CenterBar(
         ),
         title = title,
         navigationIcon = {
-            IconButton(onClick = { navController.navigateUp() }) {
+            IconButton(onClick = { onClick() }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back"
@@ -43,7 +43,6 @@ fun CenterBar(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun Bar(
-    navController: NavController,
     actions: @Composable() (RowScope.() -> Unit) = {},
     title: @Composable () -> Unit,
 ){

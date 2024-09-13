@@ -30,13 +30,8 @@ sealed class NavRoutes(val route: String) {
     data object UpgradedQR: NavRoutes("upgradedQr")
     data object TransactionChat: NavRoutes("transactionChat")
     data object Home: NavRoutes("home")
-    data object ScanQR: NavRoutes("scanQr")
 }
 
-val transferScreens=mapOf<String,@Composable (navController: NavController) -> Unit>(
-    NavRoutes.AddTransactionDetails.route to { navController -> AddTransactionDetails(navController=navController) },
-    NavRoutes.TransactionReceipt.route to { navController -> TransactionReceipt(navController = navController) }
-)
 
 val authScreens=mapOf<String,@Composable (navController: NavController) -> Unit>(
     NavRoutes.Login.route to { navController -> Login(navController=navController) },

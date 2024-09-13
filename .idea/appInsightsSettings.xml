@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.gmat" />
+                  <option name="mobileSdkAppId" value="1:101765898925:android:eb4b23b7a7081adb209c24" />
+                  <option name="projectId" value="gmat-53a9a" />
+                  <option name="projectNumber" value="101765898925" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

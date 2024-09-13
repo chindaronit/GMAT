@@ -27,7 +27,7 @@ fun AboutUs(
     Scaffold(
         topBar = {
             CenterBar(
-                navController = navController,
+                onClick = {navController.navigateUp()},
                 title = {
                     Text(
                         text = stringResource(id = R.string.about_us),

@@ -46,7 +46,7 @@ fun Profile(
     Scaffold(
         topBar = {
             CenterBar(
-                navController = navController,
+                onClick = {navController.navigateUp()},
                 title = {
                     Text(
                         text = stringResource(id = R.string.profile),
@@ -161,17 +161,16 @@ fun SettingsBox(
     iconResId: Int,
     onClick: () -> Unit,
     cornerRadius: RoundedCornerShape = RoundedCornerShape(32.dp),
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    elevation: Dp = 6.dp
+    elevation: Dp = 12.dp
 ) {
     ElevatedCard(
         onClick = onClick,
         shape = cornerRadius,
-        colors = CardDefaults.elevatedCardColors(containerColor = backgroundColor),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = elevation),
         modifier = Modifier
             .padding(bottom = 4.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors()
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "101765898925",
+    "project_id": "gmat-53a9a",
+    "storage_bucket": "gmat-53a9a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101765898925:android:eb4b23b7a7081adb209c24",
+        "android_client_info": {
+          "package_name": "com.gmat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7KS8UsUxf-s2qPEJVIkyOEbX9CCS7k9k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

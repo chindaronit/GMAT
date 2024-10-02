@@ -75,9 +75,51 @@ export const updateUserTransactionRewards = async (req, res) => {
   }
 };
 
-// Function to get reward points for a specific user by phone number
-export const getUserRewardsPoints = async (req, res) => {
-  const { phNo } = req.body; // Get the phone number from the request body
+// // Function to get reward points for a specific user by phone number
+// export const getUserRewardsPoints = async (req, res) => {
+//   const { phNo, month, year } = req.body; // Get the phone number from the request body
+
+//   try {
+//     // Step 1: Retrieve user ID using phone number from the 'users' collection
+//     const usersCollection = collection(db, "users");
+//     const userQuery = query(usersCollection, where("phNo", "==", phNo));
+//     const querySnapshot = await getDocs(userQuery);
+
+//     if (querySnapshot.empty) {
+//       return res.status(404).send({ message: "User not found" });
+//     }
+
+//     // Assuming there's only one user with the specified phone number
+//     const userDoc = querySnapshot.docs[0];
+//     const userId = userDoc.id;
+
+//     // Step 2: Retrieve the rewards document from the 'rewards' collection using the user ID
+//     const rewardsCollectionRef = collection(db, "rewards");
+//     const userRewardsDocRef = doc(rewardsCollectionRef, userId);
+//     const userRewardsDoc = await getDoc(userRewardsDocRef);
+
+//     if (!userRewardsDoc.exists()) {
+//       return res
+//         .status(404)
+//         .send({ message: "Rewards data not found for the user" });
+//     }
+
+//     // Step 3: Get the rewards data and send it in the response
+//     const rewardsData = userRewardsDoc.data().monthlyRewards || {};
+//     res.status(200).send({
+//       message: "Rewards data retrieved successfully",
+//       rewards: rewardsData,
+//     });
+//   } catch (error) {
+//     console.error("Error retrieving user rewards points:", error);
+//     res.status(500).send({ message: "Internal server error" });
+//   }
+// };
+
+
+// Function to get reward points for a specific user by phone number and a particular month (format: YYYY-MM)
+export const getUserRewardsPointsForMonth = async (req, res) => {
+  const { phNo, month,year } = req.body; // Get the phone number and month from the request body
 
   try {
     // Step 1: Retrieve user ID using phone number from the 'users' collection
@@ -88,10 +130,10 @@ export const getUserRewardsPoints = async (req, res) => {
     if (querySnapshot.empty) {
       return res.status(404).send({ message: "User not found" });
     }
-
     // Assuming there's only one user with the specified phone number
     const userDoc = querySnapshot.docs[0];
     const userId = userDoc.id;
+    const monthKey = `${year}-${month}`;
 
     // Step 2: Retrieve the rewards document from the 'rewards' collection using the user ID
     const rewardsCollectionRef = collection(db, "rewards");
@@ -99,16 +141,27 @@ export const getUserRewardsPoints = async (req, res) => {
     const userRewardsDoc = await getDoc(userRewardsDocRef);
 
     if (!userRewardsDoc.exists()) {
-      return res
+      return res  
         .status(404)
         .send({ message: "Rewards data not found for the user" });
     }
 
-    // Step 3: Get the rewards data and send it in the response
+    // Step 3: Check if the rewards data contains points for the specified month
     const rewardsData = userRewardsDoc.data().monthlyRewards || {};
+    const rewardsForMonth = rewardsData[monthKey]; // Access rewards for the specified month (e.g., "2024-09")
+
+    if (!rewardsForMonth) {
+      return res.status(404).send({ message: `No rewards data found for the month: ${month}` });
+    }
+
+    // Step 4: Send the rewards data for the specified month in the response
     res.status(200).send({
-      message: "Rewards data retrieved successfully",
-      rewards: rewardsData,
+      message: `Rewards data retrieved successfully for the month: ${month}`,
+      rewards: {
+        monthKey,
+        points: rewardsForMonth.points,
+        lastUpdated: rewardsForMonth.lastUpdated,
+      },
     });
   } catch (error) {
     console.error("Error retrieving user rewards points:", error);

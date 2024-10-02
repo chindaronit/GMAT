@@ -23,8 +23,6 @@ export const updateUserTransactionRewards = async (req, res) => {
       .status(400)
       .send({ message: "Bad Request: userId, transactionAmount are required" });
   }
-
-
   try {
     const rewardPoints = Math.floor(transactionAmount / 10); 
     const currentMonth = new Date().getMonth() + 1;
@@ -100,37 +98,26 @@ export const getUserRewardsPointsForMonth = async (req, res) => {
 
 // Function to get all users in descending order by rewards points for a specific month
 export const getUsersByRewardsForMonth = async (req, res) => {
-  const { month, year } = req.body; // Example: month = 10 (October), year = 2024
-
+  const { month, year } = req.body;
   if (!userId || !month || !year) {
     console.error("Error: Missing required fields in the request body");
     return res
       .status(400)
       .send({ message: "Bad Request: month and year are required" });
   }
-
   try {
-    // Step 1: Get all documents from the 'rewards' collection
     const rewardsCollectionRef = collection(db, LEADERBOARD_COLLECTION);
     const querySnapshot = await getDocs(rewardsCollectionRef);
-
     if (querySnapshot.empty) {
       return res.status(404).send({ message: "No rewards data found" });
     }
-
-    const monthKey = `${year}-${month}`; // Format as "YYYY-MM" for example, "2024-10"
+    const monthKey = `${year}-${month}`;
     const usersWithRewards = [];
-
-    // Step 2: Iterate over each user document and collect their rewards points for the specified month
     for (const userDoc of querySnapshot.docs) {
       const userId = userDoc.id;
       const userRewardsData = userDoc.data().monthlyRewards || {};
-
-      // Check if the user has rewards for the specified month
       if (userRewardsData[monthKey]) {
         const { points } = userRewardsData[monthKey];
-
-        // Fetch the user's name or phone number from the 'users' collection
         const userDocRef = doc(db, "users", userId);
         const userDocSnapshot = await getDoc(userDocRef);
 
@@ -146,11 +133,7 @@ export const getUsersByRewardsForMonth = async (req, res) => {
         }
       }
     }
-
-    // Step 3: Sort the users based on their rewards points in descending order
     usersWithRewards.sort((a, b) => b.points - a.points);
-
-    // Step 4: Return the sorted users with rewards
     res.status(200).send({
       message: `Users sorted by rewards points for ${monthKey}`,
       users: usersWithRewards,

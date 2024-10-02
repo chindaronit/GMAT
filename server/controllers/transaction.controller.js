@@ -1,12 +1,34 @@
 import db from "../models/db.js";
-import { collection, doc, addDoc, getDoc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  addDoc,
+  getDoc,
+  setDoc,
+  Timestamp,
+} from "firebase/firestore";
 
 const TRANSACTION_COLLECTION = "transactions";
 
 // Function to add a new transaction, storing it under a monthly nested structure
 export const addTransaction = async (req, res) => {
-  const data = req.body;
-  const { userId, ...transactionDetails } = data;
+  // const data = req.body;
+  const { userId, payerId, payeeId, type, amount, gstin } = req.body;
+  if (!payerId || !payeeId || !type || !amount || !gstin) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid fields in the request",
+    });
+  }
+
+  const data = {
+    payerId: payerId,
+    payeeId: payeeId,
+    type: type,
+    amount: amount,
+    gstin: gstin,
+    status: "1",
+    Timestamp:Timestamp.now(),
+  };
 
   try {
     const currentMonth = new Date().getMonth() + 1;
@@ -24,15 +46,14 @@ export const addTransaction = async (req, res) => {
     const newTransactionRef = await addDoc(
       collection(db, TRANSACTION_COLLECTION),
       {
-        ...transactionDetails,
-        transactionDate: new Date(),
+        data,
         userId,
       }
     );
     const txnId = newTransactionRef.id;
     const newTransaction = {
       txnId,
-      ...transactionDetails,
+      data,
     };
     if (!monthlyTransactions[monthYearKey]) {
       monthlyTransactions[monthYearKey] = [];

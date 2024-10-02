@@ -9,8 +9,8 @@ import {
 const transactionRouter = express.Router();
 transactionRouter.route("/").get(getTransactionByTxnId).post(addTransaction);
 transactionRouter
-  .route("/all")
-  .get(getAllTransactionsForMonth)
-  .get(getAllTransactionsForUser);
+  .route("/all/user")
+    .get(getAllTransactionsForUser);
+  transactionRouter.route("/all/month").get(getAllTransactionsForMonth);
 
 export default transactionRouter;

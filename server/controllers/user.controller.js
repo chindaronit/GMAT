@@ -9,12 +9,14 @@ import {
   where,
 } from "firebase/firestore";
 
+const USER_COLLECTION = "users";
+
 // Function to get a user by phone number
 export const getUser = async (req, res) => {
   const phNo = req.body.phNo;
 
   try {
-    const usersCollection = collection(db, "users");
+    const usersCollection = collection(db, USER_COLLECTION);
 
     const userQuery = query(usersCollection, where("phNo", "==", phNo));
     const querySnapshot = await getDocs(userQuery);
@@ -39,7 +41,7 @@ export const getUser = async (req, res) => {
 export const addUser = async (req, res) => {
   const data = req.body;
   try {
-    const userRef = await addDoc(collection(db, "users"), data);
+    const userRef = await addDoc(collection(db, USER_COLLECTION), data);
     res.status(200).send({ msg: "User added successfully" });
   } catch (error) {
     console.error(error);
@@ -53,7 +55,7 @@ export const updateUser = async (req, res) => {
   delete req.body.id;
   const data = req.body;
   try {
-    const docRef = doc(db, "users", id);
+    const docRef = doc(db, USER_COLLECTION, id);
     await updateDoc(docRef, data);
 
     res.status(200).send({ msg: "User updated successfully" });

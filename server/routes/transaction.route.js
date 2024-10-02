@@ -1,12 +1,15 @@
 import express from "express";
 import {
-    getTransaction,
-    getAllTransactions,
+    getTransactionByTxnId,
+    getAllTransactionsForMonth,
     addTransaction
 } from "../controllers/transaction.controller.js";
 
 const transactionRouter = express.Router();
-transactionRouter.route("/").get(getTransaction).post(addTransaction);
-transactionRouter.route("/all").get(getAllTransactions);
+transactionRouter.route("/").get(getTransactionByTxnId).post(addTransaction);
+transactionRouter
+  .route("/all")
+  .get(getAllTransactionsForMonth)
+  .get(getAllTransactionsForUser);
 
 export default transactionRouter;

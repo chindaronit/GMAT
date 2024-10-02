@@ -20,7 +20,7 @@ export const updateUserTransactionRewards = async (req, res) => {
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
     const rewardsCollectionRef = collection(db, "rewards");
-    const userRewardsDocRef = doc(rewardsCollectionRef, userId);
+    const userRewardsDocRef  = doc(rewardsCollectionRef, userId);
     const userRewardsDoc = await getDoc(userRewardsDocRef);
 
     let monthlyRewards = {};

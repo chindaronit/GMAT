@@ -11,6 +11,8 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
+const LEADERBOARD_COLLECTION="rewards"
+
 // Function to update rewards for a user based on a transaction
 export const updateUserTransactionRewards = async (req, res) => {
   const { userId, transactionAmount } = req.body;
@@ -19,7 +21,7 @@ export const updateUserTransactionRewards = async (req, res) => {
     const rewardPoints = Math.floor(transactionAmount / 10); 
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
-    const rewardsCollectionRef = collection(db, "rewards");
+    const rewardsCollectionRef = collection(db, LEADERBOARD_COLLECTION);
     const userRewardsDocRef  = doc(rewardsCollectionRef, userId);
     const userRewardsDoc = await getDoc(userRewardsDocRef);
 
@@ -52,7 +54,7 @@ export const getUserRewardsPointsForMonth = async (req, res) => {
 
   try {
     const monthKey = `${year}-${month}`;
-    const rewardsCollectionRef = collection(db, "rewards");
+    const rewardsCollectionRef = collection(db, LEADERBOARD_COLLECTION);
     const userRewardsDocRef = doc(rewardsCollectionRef, userId);
     const userRewardsDoc = await getDoc(userRewardsDocRef);
 
@@ -87,7 +89,7 @@ export const getUsersByRewardsForMonth = async (req, res) => {
 
   try {
     // Step 1: Get all documents from the 'rewards' collection
-    const rewardsCollectionRef = collection(db, "rewards");
+    const rewardsCollectionRef = collection(db, LEADERBOARD_COLLECTION);
     const querySnapshot = await getDocs(rewardsCollectionRef);
 
     if (querySnapshot.empty) {

@@ -16,7 +16,7 @@ export const getUserByPhone = async (req, res) => {
   const phNo = req.body.phNo;
   if (!phNo) {
     return res.status(400).send({
-      message: "Bad Request: Missing or invalid fields in the request",
+      message: "Bad Request: Missing or invalid phNo in the request",
     });
   }
 
@@ -48,7 +48,7 @@ export const getUserByVPA = async (req, res) => {
 
   if (!vpa) {
     return res.status(400).send({
-      message: "Bad Request: Missing or invalid fields in the request",
+      message: "Bad Request: Missing or invalid vpa in the request",
     });
   }
   

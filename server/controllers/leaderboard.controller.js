@@ -4,10 +4,7 @@ import {
   doc,
   setDoc,
   getDocs,
-  updateDoc,
   getDoc,
-  query,
-  where,
   Timestamp,
 } from "firebase/firestore";
 
@@ -98,7 +95,7 @@ export const getUserRewardsPointsForMonth = async (req, res) => {
 
 // Function to get all users in descending order by rewards points for a specific month
 export const getUsersByRewardsForMonth = async (req, res) => {
-  const { month, year } = req.body;
+  const { month, year } = req.body; 
   if (!userId || !month || !year) {
     console.error("Error: Missing required fields in the request body");
     return res

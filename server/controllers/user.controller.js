@@ -14,8 +14,10 @@ const USER_COLLECTION = "users";
 // Function to get a user by phone number
 export const getUserByPhone = async (req, res) => {
   const phNo = req.body.phNo;
-  if (vpa == undefined) {
-    return res.status(500).send({ message: "VPA id is undefined" });
+  if (!phNo) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid fields in the request",
+    });
   }
 
   try {
@@ -44,8 +46,10 @@ export const getUserByPhone = async (req, res) => {
 export const getUserByVPA = async (req, res) => {
   const vpa = req.body.vpa;
 
-  if (vpa == undefined) {
-    return res.status(500).send({ message: "VPA id is undefined"});
+  if (!vpa) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid fields in the request",
+    });
   }
   
   try {
@@ -74,8 +78,12 @@ export const getUserByVPA = async (req, res) => {
 export const addUser = async (req, res) => {
   const { name, vpa, profile, qr, isMerchant, phNo } = req.body;
   
-  if (vpa == "" || vpa == undefined || phNo == "" || phNo == undefined || isMerchant == undefined || qr == undefined || name == undefined) {
-    return res.status(500).send({ message: "Internal server error" });
+  if (!vpa || !phNo || isMerchant === undefined || !qr || !name) {
+    return res
+      .status(400)
+      .send({
+        message: "Bad Request: Missing or invalid fields in the request",
+      });
   }
 
   const data = {
@@ -102,16 +110,10 @@ export const updateUser = async (req, res) => {
   delete req.body.id;
   const { name, vpa, profile, qr, isMerchant, phNo } = req.body;
 
-  if (
-    vpa == "" ||
-    vpa == undefined ||
-    phNo == "" ||
-    phNo == undefined ||
-    isMerchant == undefined ||
-    qr == undefined ||
-    name == undefined
-  ) {
-    return res.status(500).send({ message: "Internal server error" });
+  if (!vpa || !phNo || isMerchant === undefined || !qr || !name || !id) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid fields in the request",
+    });
   }
 
   const data = {

@@ -17,31 +17,41 @@ const TRANSACTION_COLLECTION = "transactions";
 // Function to add a new transaction, storing it under a monthly nested structure
 export const addTransaction = async (req, res) => {
   const data = req.body;
-  const { userId, txnId, transactionDate, ...transactionDetails } = data;
+  const { userId, ...transactionDetails } = data;
 
   try {
-    // Parse the month and year from the transaction date in "YYYY-MM" format
-    const transactionDateObj = new Date(transactionDate);
-    const monthYearKey = `${transactionDateObj.getFullYear()}-${String(
-      transactionDateObj.getMonth() + 1
-    ).padStart(2, "0")}`; // Format month to always have 2 digits (e.g., "2024-09")
+    const currentMonth = new Date().getMonth() + 1; // Get current month (1-based index)
+    const currentYear = new Date().getFullYear(); // Get current year
+    const monthYearKey = `${currentYear}-${String(currentMonth).padStart(
+      2,
+      "0"
+    )}`; // Format month to 2 digits
 
-    // Create a reference to the user-specific document in the "transactions" collection
+    // Create a reference to the user's transaction document in the "transactions" collection
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
-
+    
     // Get the existing transactions for the user (if any)
     const transactionDoc = await getDoc(transactionDocRef);
 
     let monthlyTransactions = {};
     if (transactionDoc.exists()) {
-      // Retrieve existing transactions data
       monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
     }
 
-    // Create a new transaction object
+    // Add the transaction to a new document and get the auto-generated ID
+    const newTransactionRef = await addDoc(
+      collection(db, TRANSACTION_COLLECTION),
+      {
+        ...transactionDetails,
+        transactionDate: new Date(), // Set the transaction date
+        userId, // Include userId to relate the transaction to the user
+      }
+    );
+    const txnId = newTransactionRef.id; // Get the generated transaction ID
+
+    // Create a new transaction object with the generated txnId
     const newTransaction = {
       txnId,
-      transactionDate,
       ...transactionDetails,
     };
 
@@ -51,15 +61,110 @@ export const addTransaction = async (req, res) => {
     }
     monthlyTransactions[monthYearKey].push(newTransaction);
 
-    // Update the document with the new transaction data
+    // Update the user's main transaction document with the nested monthly transactions
     await setDoc(transactionDocRef, { monthlyTransactions }, { merge: true });
 
-    res.status(200).send({ msg: "Transaction added successfully" });
+    res.status(200).send({ msg: "Transaction added successfully", txnId });
   } catch (error) {
     console.error("Error adding transaction:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 };
+
+
+// // Function to add a new transaction, storing it under a monthly nested structure
+// export const addTransaction = async (req, res) => {
+//   const data = req.body;
+//   const { userId, ...transactionDetails } = data;
+
+//   try {
+//     const currentMonth = new Date().getMonth() + 1; // Get current month (1-based index)
+//     const currentYear = new Date().getFullYear(); // Get current year
+//     const monthYearKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`; // Format month to 2 digits
+
+//     // Create a reference to the user-specific document in the "transactions" collection
+//     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
+
+//     // Get the existing transactions for the user (if any)
+//     const transactionDoc = await getDoc(transactionDocRef);
+
+//     let monthlyTransactions = {};
+//     if (transactionDoc.exists()) {
+//       monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
+//     }
+
+//     // Add the transaction to a new document and get the auto-generated ID
+//     const transactionRef = await addDoc(collection(db, `${TRANSACTION_COLLECTION}/${userId}/monthlyTransactions`), {
+//       ...transactionDetails,
+//       transactionDate: new Date(), // Set the transaction date
+//     });
+//     const txnId = transactionRef.id; // Get the generated transaction ID
+
+//     // Create a new transaction object with the generated txnId
+//     const newTransaction = {
+//       txnId,
+//       ...transactionDetails,
+//     };
+
+//     // Update the transactions for the specified month
+//     if (!monthlyTransactions[monthYearKey]) {
+//       monthlyTransactions[monthYearKey] = [];
+//     }
+//     monthlyTransactions[monthYearKey].push(newTransaction);
+
+//     // Update the user's main transaction document with the nested monthly transactions
+//     await setDoc(transactionDocRef, { monthlyTransactions }, { merge: true });
+
+//     res.status(200).send({ msg: "Transaction added successfully", txnId });
+//   } catch (error) {
+//     console.error("Error adding transaction:", error);
+//     res.status(500).send({ message: "Internal server error" });
+//   }
+// };
+
+// // Function to add a new transaction, storing it under a monthly nested structure
+// export const addTransaction = async (req, res) => {
+//   const data = req.body;
+//   const { userId, txnId, ...transactionDetails } = data;
+
+//   try {
+//      const currentMonth = new Date().getMonth() + 1;
+//      const currentYear = new Date().getFullYear();
+//     const monthYearKey = `${currentYear}-${currentMonth}`;
+
+//     // Create a reference to the user-specific document in the "transactions" collection
+//     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
+
+//     // Get the existing transactions for the user (if any)
+//     const transactionDoc = await getDoc(transactionDocRef);
+
+//     let monthlyTransactions = {};
+//     if (transactionDoc.exists()) {
+//       monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
+//     }
+
+//     // Create a new transaction object
+//     const newTransaction = {
+//       txnId,
+//       transactionDate,
+//       ...transactionDetails,
+//     };
+
+//     // Update the transactions for the specified month
+//     if (!monthlyTransactions[monthYearKey]) {
+//       monthlyTransactions[monthYearKey] = [];
+//     }
+//     monthlyTransactions[monthYearKey].push(newTransaction);
+
+//     // Update the document with the new transaction data
+//     await setDoc(transactionDocRef, { monthlyTransactions }, { merge: true });
+
+//     res.status(200).send({ msg: "Transaction added successfully" });
+//   } catch (error) {
+//     console.error("Error adding transaction:", error);
+//     res.status(500).send({ message: "Internal server error" });
+//   }
+// };
 
 // Function to get all transactions for a user in a particular month (format: YYYY-MM)
 export const getAllTransactionsForMonth = async (req, res) => {

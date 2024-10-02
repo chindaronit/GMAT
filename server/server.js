@@ -11,7 +11,7 @@ app.use(express.json());
 
 // Routing to URL
 app.use("/users", userRouter);
-app.use("/transactions", transactionRouter);
+// app.use("/transactions", transactionRouter);
 
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}...`);

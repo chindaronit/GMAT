@@ -13,8 +13,9 @@ const USER_COLLECTION = "users";
 
 // Function to get a user by phone number
 export const getUser = async (req, res) => {
+  console.log(req.body);
   const phNo = req.body.phNo;
-
+  
   try {
     const usersCollection = collection(db, USER_COLLECTION);
 

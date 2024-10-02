@@ -17,6 +17,14 @@ const LEADERBOARD_COLLECTION="rewards"
 export const updateUserTransactionRewards = async (req, res) => {
   const { userId, transactionAmount } = req.body;
 
+  if (!userId || !transactionAmount) {
+    console.error("Error: Missing required fields in the request body");
+    return res
+      .status(400)
+      .send({ message: "Bad Request: userId, transactionAmount are required" });
+  }
+
+
   try {
     const rewardPoints = Math.floor(transactionAmount / 10); 
     const currentMonth = new Date().getMonth() + 1;
@@ -50,7 +58,14 @@ export const updateUserTransactionRewards = async (req, res) => {
 
 // Function to get reward points for a specific user by phone number and a particular month (format: YYYY-MM)
 export const getUserRewardsPointsForMonth = async (req, res) => {
-  const { userId, month,year } = req.body; 
+  const { userId, month, year } = req.body; 
+  
+  if (!userId || !month || !year) {
+    console.error("Error: Missing required fields in the request body");
+    return res
+      .status(400)
+      .send({ message: "Bad Request: userId, month, and year are required" });
+  }
 
   try {
     const monthKey = `${year}-${month}`;
@@ -86,6 +101,13 @@ export const getUserRewardsPointsForMonth = async (req, res) => {
 // Function to get all users in descending order by rewards points for a specific month
 export const getUsersByRewardsForMonth = async (req, res) => {
   const { month, year } = req.body; // Example: month = 10 (October), year = 2024
+
+  if (!userId || !month || !year) {
+    console.error("Error: Missing required fields in the request body");
+    return res
+      .status(400)
+      .send({ message: "Bad Request: month and year are required" });
+  }
 
   try {
     // Step 1: Get all documents from the 'rewards' collection

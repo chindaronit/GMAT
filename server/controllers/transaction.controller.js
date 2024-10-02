@@ -1,11 +1,5 @@
 import db from "../models/db.js";
-import {
-  collection,
-  doc,
-  addDoc,
-  getDoc,
-  setDoc,
-} from "firebase/firestore";
+import { collection, doc, addDoc, getDoc, setDoc } from "firebase/firestore";
 
 const TRANSACTION_COLLECTION = "transactions";
 
@@ -54,7 +48,7 @@ export const addTransaction = async (req, res) => {
 
 // Function to get all transactions for a user in a particular month (format: YYYY-MM)
 export const getAllTransactionsForMonth = async (req, res) => {
-  const { userId, month,year } = req.body;
+  const { userId, month, year } = req.body;
 
   try {
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
@@ -72,18 +66,15 @@ export const getAllTransactionsForMonth = async (req, res) => {
         .status(404)
         .send({ message: `No transactions found for the month: ${monthYear}` });
     }
-    res
-      .status(200)
-      .send({
-        message: "Transactions retrieved successfully",
-        transactions: transactionsForMonth,
-      });
+    res.status(200).send({
+      message: "Transactions retrieved successfully",
+      transactions: transactionsForMonth,
+    });
   } catch (error) {
     console.error("Error retrieving transactions:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 };
-
 
 // Function to get a specific transaction by transactionId
 export const getTransactionByTxnId = async (req, res) => {
@@ -136,6 +127,43 @@ export const getAllTransactionsForUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error retrieving all transactions for user:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
+
+// Function to get all transactions for a particular user using userId and payeeId (present in transaction details)
+export const getUserTransactionsByUserIdAndPayeeId = async (req, res) => {
+  const { userId, payeeId } = req.body;
+  try {
+    const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
+    const transactionDoc = await getDoc(transactionDocRef);
+    if (!transactionDoc.exists()) {
+      return res
+        .status(404)
+        .send({ message: "No transaction data found for the user" });
+    }
+    const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
+    let allTransactions = [];
+    for (const monthKey in monthlyTransactions) {
+      if (monthlyTransactions.hasOwnProperty(monthKey)) {
+        allTransactions = allTransactions.concat(monthlyTransactions[monthKey]);
+      }
+    }
+    const filteredTransactions = allTransactions.filter((transaction) => {
+      return transaction.payee === payeeId;
+    });
+
+    if (filteredTransactions.length === 0) {
+      return res
+        .status(404)
+        .send({ message: "No transactions found for the specified payee" });
+    }
+    res.status(200).send({
+      message: "Transactions retrieved successfully",
+      transactions: filteredTransactions,
+    });
+  } catch (error) {
+    console.error("Error retrieving transactions:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 };

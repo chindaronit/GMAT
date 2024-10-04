@@ -13,11 +13,10 @@ const LEADERBOARD_COLLECTION="rewards"
 // Function to update rewards for a user based on a transaction
 export const updateUserTransactionRewards = async (req, res) => {
   const { userId, transactionAmount } = req.body;
-
   if (!userId || !transactionAmount) {
     console.error("Error: Missing required fields in the request body");
     return res
-      .status(400)
+      .status(400)  
       .send({ message: "Bad Request: userId, transactionAmount are required" });
   }
   try {

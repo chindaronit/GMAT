@@ -4,6 +4,7 @@ import {
   doc,
   addDoc,
   getDoc,
+  getDocs,
   setDoc,
   Timestamp,
 } from "firebase/firestore";
@@ -27,7 +28,7 @@ export const addTransaction = async (req, res) => {
     amount: amount,
     gstin: gstin,
     status: "1",
-    Timestamp:Timestamp.now(),
+    Timestamp: Timestamp.now(),
   };
 
   try {
@@ -70,6 +71,11 @@ export const addTransaction = async (req, res) => {
 // Function to get all transactions for a user in a particular month (format: YYYY-MM)
 export const getAllTransactionsForMonth = async (req, res) => {
   const { userId, month, year } = req.body;
+  if (!userId || !month || !year) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid fields in the request",
+    });
+  }
 
   try {
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
@@ -100,6 +106,12 @@ export const getAllTransactionsForMonth = async (req, res) => {
 // Function to get a specific transaction by transactionId
 export const getTransactionByTxnId = async (req, res) => {
   const { userId, txnId } = req.body;
+  if (!userId || !txnId) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid fields in the request",
+    });
+  }
+
   try {
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
     const transactionDoc = await getDoc(transactionDocRef);
@@ -132,6 +144,11 @@ export const getTransactionByTxnId = async (req, res) => {
 // Function to get all transactions for a user across all months
 export const getAllTransactionsForUser = async (req, res) => {
   const { userId } = req.body;
+  if (!userId) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid fields in the request",
+    });
+  }
   try {
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
     const transactionDoc = await getDoc(transactionDocRef);
@@ -155,6 +172,12 @@ export const getAllTransactionsForUser = async (req, res) => {
 // Function to get all transactions for a particular user using userId and payeeId (present in transaction details)
 export const getUserTransactionsByUserIdAndPayeeId = async (req, res) => {
   const { userId, payeeId } = req.body;
+  if (!userId || !payeeId) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid fields in the request",
+    });
+  }
+
   try {
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
     const transactionDoc = await getDoc(transactionDocRef);
@@ -171,7 +194,7 @@ export const getUserTransactionsByUserIdAndPayeeId = async (req, res) => {
       }
     }
     const filteredTransactions = allTransactions.filter((transaction) => {
-      return transaction.payee === payeeId;
+      return transaction.payeeId === payeeId;
     });
 
     if (filteredTransactions.length === 0) {
@@ -185,6 +208,136 @@ export const getUserTransactionsByUserIdAndPayeeId = async (req, res) => {
     });
   } catch (error) {
     console.error("Error retrieving transactions:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
+
+// Function to get all transactions for a particular GSTIN across all users
+export const getAllTransactionsForGstin = async (req, res) => {
+  const { gstin } = req.body;
+
+  // Validate input GSTIN
+  if (!gstin) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid GSTIN in the request",
+    });
+  }
+
+  try {
+    const transactionsCollectionRef = collection(db, TRANSACTION_COLLECTION);
+    const transactionDocsSnapshot = await getDocs(transactionsCollectionRef);
+
+    let matchingTransactions = [];
+    transactionDocsSnapshot.forEach((docSnapshot) => {
+      const userTransactions = docSnapshot.data().monthlyTransactions || {};
+      let allUserTransactions = [];
+      for (const monthKey in userTransactions) {
+        if (userTransactions.hasOwnProperty(monthKey)) {
+          allUserTransactions = allUserTransactions.concat(userTransactions[monthKey]);
+        }
+      }
+      const gstinFilteredTransactions = allUserTransactions.filter(
+        (transaction) => transaction.data.gstin === gstin
+      );
+      matchingTransactions = matchingTransactions.concat(gstinFilteredTransactions);
+    });
+
+    if (matchingTransactions.length === 0) {
+      return res.status(404).send({
+        message: `No transactions found for the GSTIN: ${gstin}`,
+      });
+    }
+    res.status(200).send({
+      message: "Transactions retrieved successfully",
+      transactions: matchingTransactions,
+    });
+  } catch (error) {
+    console.error("Error retrieving transactions for GSTIN:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
+
+
+// Function to get all transactions for a particular GSTIN across all users for a specified month
+export const getAllTransactionsForGstinInMonth = async (req, res) => {
+  const { gstin, monthYear } = req.body;
+
+  // Validate input GSTIN and monthYear (format: YYYY-MM)
+  if (!gstin || !monthYear || !/^\d{4}-(0[1-9]|1[0-2])$/.test(monthYear)) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid GSTIN or monthYear in the request",
+    });
+  }
+
+  try {
+    const transactionsCollectionRef = collection(db, TRANSACTION_COLLECTION);
+    const transactionDocsSnapshot = await getDocs(transactionsCollectionRef);
+    let matchingTransactions = [];
+    transactionDocsSnapshot.forEach((docSnapshot) => {
+      const userTransactions = docSnapshot.data().monthlyTransactions || {};
+      const transactionsForMonth = userTransactions[monthYear] || [];
+      const gstinFilteredTransactions = transactionsForMonth.filter(
+        (transaction) => transaction.data.gstin === gstin
+      );
+      matchingTransactions = matchingTransactions.concat(gstinFilteredTransactions);
+    });
+
+    if (matchingTransactions.length === 0) {
+      return res.status(404).send({
+        message: `No transactions found for the GSTIN: ${gstin} in the month: ${monthYear}`,
+      });
+    }
+    res.status(200).send({
+      message: "Transactions retrieved successfully",
+      transactions: matchingTransactions,
+    });
+  } catch (error) {
+    console.error("Error retrieving transactions for GSTIN in the specified month:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
+
+// Function to get all transactions for a particular GSTIN across all users for a specific year
+export const getAllTransactionsForGstinInYear = async (req, res) => {
+  const { gstin, year } = req.body;
+  if (!gstin || !year || !/^\d{4}$/.test(year)) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid GSTIN or year in the request",
+    });
+  }
+  try {
+    const transactionsCollectionRef = collection(db, TRANSACTION_COLLECTION);
+    const transactionDocsSnapshot = await getDocs(transactionsCollectionRef);
+    let matchingTransactions = [];
+    transactionDocsSnapshot.forEach((docSnapshot) => {
+      const userTransactions = docSnapshot.data().monthlyTransactions || {};
+      for (const monthKey in userTransactions) {
+        if (monthKey.startsWith(year)) {
+          const transactionsForMonth = userTransactions[monthKey] || [];
+          const gstinFilteredTransactions = transactionsForMonth.filter(
+            (transaction) => transaction.data.gstin === gstin
+          );
+          matchingTransactions = matchingTransactions.concat(
+            gstinFilteredTransactions
+          );
+        }
+      }
+    });
+
+    if (matchingTransactions.length === 0) {
+      return res.status(404).send({
+        message: `No transactions found for the GSTIN: ${gstin} in the year: ${year}`,
+      });
+    }
+    res.status(200).send({
+      message: "Transactions retrieved successfully",
+      transactions: matchingTransactions,
+    });
+  } catch (error) {
+    console.error(
+      "Error retrieving transactions for GSTIN in the specified year:",
+      error
+    );
     res.status(500).send({ message: "Internal server error" });
   }
 };

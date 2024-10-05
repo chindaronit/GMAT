@@ -135,3 +135,25 @@ export const updateUser = async (req, res) => {
     res.status(500).send({ message: "Internal server error" });
   }
 };
+
+// Function to get all user details by user ID
+export const getUserById = async (req, res) => {
+  const userId = req.params.id;
+  if (!userId) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid user ID in the request",
+    });
+  }
+  try {
+    const userDoc = doc(db, USER_COLLECTION, userId);
+    const userSnapshot = await getDoc(userDoc);
+    if (!userSnapshot.exists()) {
+      return res.status(404).send({ message: "User not found" });
+    }
+    const userData = userSnapshot.data();
+    res.status(200).send({ id: userSnapshot.id, ...userData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+};

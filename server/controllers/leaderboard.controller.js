@@ -42,7 +42,7 @@ export const updateUserTransactionRewards = async (req, res) => {
     monthlyRewards[monthKey].lastUpdated = Timestamp.fromDate(new Date());
     await setDoc(userRewardsDocRef, { monthlyRewards }, { merge: true });
     res.status(200).send({
-      message: `Transaction successful. Added ${rewardPoints} points for user ${phNo}.`,
+      message: `Transaction successful. Added ${rewardPoints} points for user ${userId}.`,
     });
   } catch (error) {
     console.error(error);

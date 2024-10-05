@@ -1,21 +1,20 @@
 import boto3 
 
-user_file = open("./Client_script.sh", "r")
+user_file = open("./instance_script.sh", "r")
 user_src = '\n'.join(user_file)
-
 
 ec2=boto3.client('ec2')
 
 def create_instance(type,server,src):
     instance = ec2.run_instances(
-        ImageId='ami-0ded8326293d3201b',
+        ImageId='ami-078264b8ba71bc45e',
         InstanceType=type,
         MaxCount=1,
         MinCount=1,
-        KeyName='skywalker_key',
-        SecurityGroups=['launch-wizard-2'],
+        KeyName='gmatKeyPair',
+        SecurityGroups=['default'],
         IamInstanceProfile={
-            'Name': 'ec2S3connector'
+            'Name': 's3Connector'
         },
         UserData=src
     ) 
@@ -25,7 +24,7 @@ def create_instance(type,server,src):
     while(instance.state['Name']!='running'):
         instance=ec2_r.Instance(InstanceId)
 
-    print(server + ' Server Created! ')
+    print(server + ' Server Created!')
     print("endpoint : "+ ec2.describe_instances(InstanceIds=[InstanceId])['Reservations'][0]['Instances'][0]['PublicDnsName']) 
 
-create_instance('t3.large','Server_recommendation',user_src)
+create_instance('t2.micro','gmat-server',user_src)

@@ -1,4 +1,7 @@
 #!/bin/bash
-sudo mkdir server
-sudo aws s3 sync s3://skywalkerinflux/server/ gmat-server
+mkdir server
+sudo aws s3 sync s3://__/server/ server
 cd server
+sudo yum install -y npm
+sudo npm install
+sudo npm start

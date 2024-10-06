@@ -9,12 +9,17 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     #                     /user/get/vpa GET
     # ***************************************************************
 
-
+    status_codes = ['500', '400', '404','401']
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
     user_get_vpa_url = url + 'users/'
+    type = 'HTTP'
+    passthroughBehavior = "WHEN_NO_MATCH"
     requestParameters = {
         'method.request.querystring.userId': True,
+    }
+    requestModels = {
+        "application/json": Model,
     }
     
     putMethod(client, apiId, authorizationType, userResourceId, httpMethod, requestParameters, requestModels)
@@ -40,7 +45,6 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     httpMethod = 'POST'
     integrationHttpMethod = 'POST'
     user_post_url = url + 'users/'
-    type = 'HTTP'
     passthroughBehavior = "WHEN_NO_MATCH"
     requestModels = {
         "application/json": Model,
@@ -52,7 +56,7 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     succ_response(client, apiId, userResourceId, httpMethod, contentType, Model)
 
     # Add error responses for status codes 500, 400, 401
-    status_codes = ['500', '400', '404','401']
+    
     for statusCode in status_codes:
         other_response(client, apiId, userResourceId, httpMethod, statusCode, contentType, Model)
 

@@ -138,7 +138,7 @@ export const updateUser = async (req, res) => {
 
 // Function to get all user details by user ID
 export const getUserById = async (req, res) => {
-  const userId = req.params.id;
+  const userId = req.query.userId;
   if (!userId) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid user ID in the request",

@@ -14,7 +14,7 @@ def create_instance(type,server,src):
         KeyName='gmatKeyPair',
         SecurityGroups=['default'],
         IamInstanceProfile={
-            'Name': 's3Connector'
+            'Name': 'ec2s3Connector'
         },
         UserData=src
     ) 

@@ -43,14 +43,15 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     print("Successfully created /user POST and PUT methods...")
 
     # ***************************************************************
-    #                     /user/vpa GET
+    #                     /user/get/vpa GET
     # ***************************************************************
 
+    vpaResourceId = create_resource(client, apiId, userResourceId, "get")
     vpaResourceId = create_resource(client, apiId, vpaResourceId, "vpa")
 
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
-    user_get_vpa_url = url + 'user/vpa'
+    user_get_vpa_url = url + 'user/get/vpa'
     putMethod(client, apiId, authorizationType, vpaResourceId, httpMethod, requestParameters, requestModels)
     putIntegration(client, apiId, httpMethod, vpaResourceId, type, integrationHttpMethod, user_get_vpa_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, vpaResourceId, httpMethod, contentType, Model)
@@ -58,17 +59,18 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     for statusCode in status_codes:
         other_response(client, apiId, vpaResourceId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /user/vpa GET method...")
+    print("Successfully created /user/get/vpa GET method...")
 
     # ***************************************************************
-    #                     /user/ph GET
+    #                     /user/get/ph GET
     # ***************************************************************
 
+    phoneResourceId = create_resource(client, apiId, userResourceId, "get")
     phoneResourceId = create_resource(client, apiId, phoneResourceId, "ph")
 
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
-    user_get_ph_url = url + 'user/ph'
+    user_get_ph_url = url + 'user/get/ph'
     putMethod(client, apiId, authorizationType, phoneResourceId, httpMethod, requestParameters, requestModels)
     putIntegration(client, apiId, httpMethod, phoneResourceId, type, integrationHttpMethod, user_get_ph_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, phoneResourceId, httpMethod, contentType, Model)
@@ -76,4 +78,4 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     for statusCode in status_codes:
         other_response(client, apiId, phoneResourceId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /user/ph GET method...")
+    print("Successfully created /user/get/ph GET method...")

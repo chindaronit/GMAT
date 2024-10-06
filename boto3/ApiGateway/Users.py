@@ -38,7 +38,7 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
 
 
     # ***************************************************************
-    #                     /user POST & PUT
+    #                     /user POST
     # ***************************************************************
     
     # /user POST
@@ -61,7 +61,7 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
         other_response(client, apiId, userResourceId, httpMethod, statusCode, contentType, Model)
 
     # /user PUT
-    updateUserId = create_resource(client, apiId, getResourceId, "update")
+    updateUserId = create_resource(client, apiId, userResourceId, "update")
     httpMethod = 'POST'
     integrationHttpMethod = 'POST'
     user_put_url = url + 'users/update'
@@ -72,7 +72,7 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     for statusCode in status_codes:
         other_response(client, apiId, updateUserId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /users/ POST and PUT methods...")
+    print("Successfully created /users/ POST methods...")
 
     # ***************************************************************
     #                     /user/get/vpa GET

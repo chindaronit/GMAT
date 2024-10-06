@@ -17,7 +17,7 @@ authorizationType = 'NONE'
 contentType = 'application/json'
 Model = 'Empty'
 stageName = 'dev'
-base_url = 'http://ec2-13-232-233-105.ap-south-1.compute.amazonaws.com/'
+base_url = 'http://ec2-3-109-158-0.ap-south-1.compute.amazonaws.com/'
 
 print("Started creating API Gateway for transaction, user, and leaderboard services...")
 

@@ -61,15 +61,16 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
         other_response(client, apiId, userResourceId, httpMethod, statusCode, contentType, Model)
 
     # /user PUT
-    httpMethod = 'PUT'
-    integrationHttpMethod = 'PUT'
-    user_put_url = url + 'users/'
-    putMethod(client, apiId, authorizationType, userResourceId, httpMethod, requestParameters, requestModels)
-    putIntegration(client, apiId, httpMethod, userResourceId, type, integrationHttpMethod, user_put_url, passthroughBehavior, requestParameters)
-    succ_response(client, apiId, userResourceId, httpMethod, contentType, Model)
+    updateUserId = create_resource(client, apiId, getResourceId, "update")
+    httpMethod = 'POST'
+    integrationHttpMethod = 'POST'
+    user_put_url = url + 'users/update'
+    putMethod(client, apiId, authorizationType, updateUserId, httpMethod, requestParameters, requestModels)
+    putIntegration(client, apiId, httpMethod, updateUserId, type, integrationHttpMethod, user_put_url, passthroughBehavior, requestParameters)
+    succ_response(client, apiId, updateUserId, httpMethod, contentType, Model)
 
     for statusCode in status_codes:
-        other_response(client, apiId, userResourceId, httpMethod, statusCode, contentType, Model)
+        other_response(client, apiId, updateUserId, httpMethod, statusCode, contentType, Model)
 
     print("Successfully created /users/ POST and PUT methods...")
 

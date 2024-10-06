@@ -8,7 +8,7 @@ import {
 const leaderboardRouter = express.Router();
 leaderboardRouter
   .route("/")
-  .put(updateUserTransactionRewards)
+  .post(updateUserTransactionRewards)
   .get(getUserRewardsPointsForMonth);
 leaderboardRouter.route("/all").get(getUsersByRewardsForMonth);
 

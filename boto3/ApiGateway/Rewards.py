@@ -10,8 +10,8 @@ def leaderboard_api(client, apiId, rootResourceId, authorizationType, contentTyp
     leaderboardResourceId = create_resource(client, apiId, rootResourceId, "leaderboard")
 
     # /leaderboard PUT
-    httpMethod = 'PUT'
-    integrationHttpMethod = 'PUT'
+    httpMethod = 'POST'
+    integrationHttpMethod = 'POST'
     leaderboard_put_url = url + 'leaderboard'
     type = 'HTTP'
     passthroughBehavior = "WHEN_NO_MATCH"

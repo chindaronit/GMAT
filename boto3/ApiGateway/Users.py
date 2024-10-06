@@ -7,12 +7,12 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     #                     /user POST & PUT
     # ***************************************************************
     
-    userResourceId = create_resource(client, apiId, rootResourceId, "user")
+    userResourceId = create_resource(client, apiId, rootResourceId, "users")
 
     # /user POST
     httpMethod = 'POST'
     integrationHttpMethod = 'POST'
-    user_post_url = url + 'user'
+    user_post_url = url + 'users/'
     type = 'HTTP'
     passthroughBehavior = "WHEN_NO_MATCH"
     requestModels = {
@@ -32,7 +32,7 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     # /user PUT
     httpMethod = 'PUT'
     integrationHttpMethod = 'PUT'
-    user_put_url = url + 'user'
+    user_put_url = url + 'users/'
     putMethod(client, apiId, authorizationType, userResourceId, httpMethod, requestParameters, requestModels)
     putIntegration(client, apiId, httpMethod, userResourceId, type, integrationHttpMethod, user_put_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, userResourceId, httpMethod, contentType, Model)
@@ -40,18 +40,21 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     for statusCode in status_codes:
         other_response(client, apiId, userResourceId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /user POST and PUT methods...")
+    print("Successfully created /users/ POST and PUT methods...")
 
     # ***************************************************************
     #                     /user/get/vpa GET
     # ***************************************************************
 
-    vpaResourceId = create_resource(client, apiId, userResourceId, "get")
-    vpaResourceId = create_resource(client, apiId, vpaResourceId, "vpa")
+    # Create the "get" resource only once
+    getResourceId = create_resource(client, apiId, userResourceId, "get")
+
+    # Create "vpa" under "get"
+    vpaResourceId = create_resource(client, apiId, getResourceId, "vpa")
 
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
-    user_get_vpa_url = url + 'user/get/vpa'
+    user_get_vpa_url = url + 'users/get/vpa/'
     putMethod(client, apiId, authorizationType, vpaResourceId, httpMethod, requestParameters, requestModels)
     putIntegration(client, apiId, httpMethod, vpaResourceId, type, integrationHttpMethod, user_get_vpa_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, vpaResourceId, httpMethod, contentType, Model)
@@ -59,18 +62,18 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     for statusCode in status_codes:
         other_response(client, apiId, vpaResourceId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /user/get/vpa GET method...")
+    print("Successfully created /users/get/vpa/ GET method...")
 
     # ***************************************************************
     #                     /user/get/ph GET
     # ***************************************************************
 
-    phoneResourceId = create_resource(client, apiId, userResourceId, "get")
-    phoneResourceId = create_resource(client, apiId, phoneResourceId, "ph")
+    # Reuse the "get" resource and create "ph" under "get"
+    phoneResourceId = create_resource(client, apiId, getResourceId, "ph")
 
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
-    user_get_ph_url = url + 'user/get/ph'
+    user_get_ph_url = url + 'users/get/ph/'
     putMethod(client, apiId, authorizationType, phoneResourceId, httpMethod, requestParameters, requestModels)
     putIntegration(client, apiId, httpMethod, phoneResourceId, type, integrationHttpMethod, user_get_ph_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, phoneResourceId, httpMethod, contentType, Model)
@@ -78,4 +81,4 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     for statusCode in status_codes:
         other_response(client, apiId, phoneResourceId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /user/get/ph GET method...")
+    print("Successfully created /users/get/ph GET method...")

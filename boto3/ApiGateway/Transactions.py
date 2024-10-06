@@ -30,7 +30,7 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     succ_response(client, apiId, transactionResourceId, httpMethod, contentType, Model)
 
     # Add responses for status codes 500, 400, 401
-    status_codes = ['500', '400', '401']
+    status_codes = ['500', '400', '401','404']
     for statusCode in status_codes:
         other_response(client, apiId, transactionResourceId, httpMethod, statusCode, contentType, Model)
     

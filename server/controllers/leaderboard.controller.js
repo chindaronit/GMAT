@@ -52,7 +52,7 @@ export const updateUserTransactionRewards = async (req, res) => {
 
 // Function to get reward points for a specific user by phone number and a particular month (format: YYYY-MM)
 export const getUserRewardsPointsForMonth = async (req, res) => {
-  const { userId, month, year } = req.body; 
+  const { userId, month, year } = req.query; 
   
   if (!userId || !month || !year) {
     console.error("Error: Missing required fields in the request body");

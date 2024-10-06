@@ -66,7 +66,7 @@ export const addTransaction = async (req, res) => {
 
 // Function to get all transactions for a user in a particular month (format: YYYY-MM)
 export const getAllTransactionsForMonth = async (req, res) => {
-  const { userId, month, year } = req.body;
+  const { userId, month, year } = req.query;
   if (!userId || !month || !year) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid fields in the request",
@@ -101,7 +101,7 @@ export const getAllTransactionsForMonth = async (req, res) => {
 
 // Function to get a specific transaction by transactionId
 export const getTransactionByTxnId = async (req, res) => {
-  const { userId, txnId } = req.body;
+  const { userId, txnId } = req.query;
   if (!userId || !txnId) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid fields in the request",
@@ -139,7 +139,7 @@ export const getTransactionByTxnId = async (req, res) => {
 
 // Function to get all transactions for a user across all months
 export const getAllTransactionsForUser = async (req, res) => {
-  const { userId } = req.body;
+  const { userId } = req.query;
   if (!userId) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid fields in the request",
@@ -167,7 +167,7 @@ export const getAllTransactionsForUser = async (req, res) => {
 
 // Function to get all transactions for a particular user using userId and payeeId (present in transaction details)
 export const getUserTransactionsByUserIdAndPayeeId = async (req, res) => {
-  const { userId, payeeId } = req.body;
+  const { userId, payeeId } = req.query;
   if (!userId || !payeeId) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid fields in the request",
@@ -210,7 +210,7 @@ export const getUserTransactionsByUserIdAndPayeeId = async (req, res) => {
 
 // Function to get all transactions for a particular GSTIN across all users
 export const getAllTransactionsForGstin = async (req, res) => {
-  const { gstin } = req.body;
+  const { gstin } = req.query;
 
   // Validate input GSTIN
   if (!gstin) {
@@ -259,7 +259,7 @@ export const getAllTransactionsForGstin = async (req, res) => {
 
 // Function to get all transactions for a particular payerId and payeeId
 export const getAllTransactionsForPayerIdAndPayeeId = async (req, res) => {
-  const { payerId, payeeId } = req.body;
+  const { payerId, payeeId } = req.query;
 
   if (!payerId || !payeeId) {
     return res.status(400).send({
@@ -321,7 +321,7 @@ export const getAllTransactionsForPayerIdAndPayeeId = async (req, res) => {
 
 // Function to get all transactions for a particular GSTIN across all users for a specified month
 export const getAllTransactionsForGstinInMonth = async (req, res) => {
-  const { gstin, month, year } = req.body;
+  const { gstin, month, year } = req.query;
   const monthYear = `${year}-${month}`;
 
   // Validate input GSTIN and monthYear (format: YYYY-MM)
@@ -367,7 +367,7 @@ export const getAllTransactionsForGstinInMonth = async (req, res) => {
 
 // Function to get all transactions for a particular GSTIN across all users for a specific year
 export const getAllTransactionsForGstinInYear = async (req, res) => {
-  const { gstin, year } = req.body;
+  const { gstin, year } = req.query;
   if (!gstin || !year) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid GSTIN or year in the request",

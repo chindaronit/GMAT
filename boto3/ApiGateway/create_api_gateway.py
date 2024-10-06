@@ -17,7 +17,7 @@ authorizationType = 'NONE'
 contentType = 'application/json'
 Model = 'Empty'
 stageName = 'dev'
-base_url = ''
+base_url = 'http://ec2-13-235-80-27.ap-south-1.compute.amazonaws.com/'
 
 print("Started creating API Gateway for transaction, user, and leaderboard services...")
 
@@ -39,7 +39,7 @@ user_api(client, apiId, resourceId, authorizationType, contentType, Model, base_
 
 # ***************************************************************
 #                     /leaderboard
-# ***************************************************************
+# ***************************************************************users/get/ph/
 # Call the `leaderboard_api` function to set up all routes related to leaderboard.
 leaderboard_api(client, apiId, resourceId, authorizationType, contentType, Model, base_url)
 

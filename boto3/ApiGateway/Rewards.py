@@ -51,7 +51,7 @@ def leaderboard_api(client, apiId, rootResourceId, authorizationType, contentTyp
     for statusCode in status_codes:
         other_response(client, apiId, leaderboardResourceId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /leaderboard PUT and GET methods...")
+    print("Successfully created /leaderboard/ PUT and GET methods...")
 
     # ***************************************************************
     #                     /leaderboard/all GET
@@ -78,4 +78,4 @@ def leaderboard_api(client, apiId, rootResourceId, authorizationType, contentTyp
     for statusCode in status_codes:
         other_response(client, apiId, allResourceId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /leaderboard/all GET method...")
+    print("Successfully created /leaderboard/all/ GET method...")

@@ -32,7 +32,6 @@ class ScannerViewModel @Inject constructor(
     }
 
     private fun startScanning() {
-        println("yes")
         viewModelScope.launch {
             repo.startScanning().collect {
                 if (!it.isNullOrBlank()) {

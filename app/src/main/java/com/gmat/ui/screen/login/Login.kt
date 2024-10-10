@@ -1,6 +1,7 @@
 package com.gmat.ui.screen.login
 
 
+import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -35,9 +37,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
+import com.gmat.functionality.startPhoneNumberVerification
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.Top
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +52,8 @@ fun Login(
     var number by remember {
         mutableStateOf("")
     }
+    val auth= FirebaseAuth.getInstance()
+    val context= LocalContext.current as Activity
 
     Scaffold(
         topBar = {
@@ -107,11 +113,8 @@ fun Login(
 
                 Button(
                     onClick = {
-                        navController.navigate(NavRoutes.OTP.route) {
-                            popUpTo(NavRoutes.Login.route){
-                                inclusive=true
-                            }
-                            launchSingleTop = true  // Avoids multiple instances of the OTP screen
+                        startPhoneNumberVerification(phoneNumber = number, auth = auth, activity = context){ verificationId ->
+                            navController.navigate(NavRoutes.OTP.withArgs(verificationId))
                         }
                     },
                     modifier = modifier

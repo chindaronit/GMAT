@@ -16,7 +16,6 @@ import dagger.hilt.android.scopes.ViewModelScoped
 @Module
 object QRScanner {
 
-
     @ViewModelScoped
     @Provides
     fun provideContext(app: Application):Context{

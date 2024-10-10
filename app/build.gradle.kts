@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.play.services.code.scanner)
+    implementation(libs.firebase.auth.ktx)
     ksp(libs.hilt.android.compiler)
     ksp(libs.hilt.compile)
     implementation(libs.hilt.android)
@@ -77,4 +78,7 @@ dependencies {
     implementation(libs.play.services.base)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.okhttp)
 }

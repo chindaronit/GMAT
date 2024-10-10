@@ -42,17 +42,34 @@ import java.time.LocalTime
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import com.gmat.ui.events.QRScannerEvents
+import com.gmat.ui.events.UserEvents
 import com.gmat.ui.state.QRScannerState
+import com.gmat.ui.state.UserState
 
 @Composable
 fun HomeScreen(
     navController: NavController,
     scannerState: QRScannerState,
+    onUserEvents: (UserEvents)->Unit,
+    userState: UserState,
     onScannerEvent: (QRScannerEvents)->Unit
 ) {
     val user = "Ronit Chinda"
     val isBusiness by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    LaunchedEffect(key1 = Unit) {
+        onUserEvents(UserEvents.GetUserByUserId("BDWvpffTFveroU6kNgdf"))
+    }
+
+    LaunchedEffect(key1 = userState.isLoading) {
+        if(!userState.isLoading && userState.user!=null){
+            println(userState.user)
+        }
+        if(!userState.isLoading && userState.user==null){
+            println("user is null")
+        }
+    }
 
     var hasCameraPermission by remember {
         mutableStateOf(

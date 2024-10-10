@@ -5,10 +5,14 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gmat.navigation.AppNavHost
+import com.gmat.ui.events.UserEvents
 import com.gmat.ui.theme.GMATTheme
 import com.gmat.ui.viewModel.ScannerViewModel
+import com.gmat.ui.viewModel.UserViewModel
 import com.google.android.gms.common.moduleinstall.ModuleInstall
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -21,15 +25,14 @@ class MainActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         installGoogleScanner()
-
         setContent {
             GMATTheme {
                 val scannerViewModel: ScannerViewModel = hiltViewModel()
-                AppNavHost(scannerViewModel=scannerViewModel)
+                val userViewModel: UserViewModel = hiltViewModel()
+                AppNavHost(scannerViewModel=scannerViewModel, userViewModel = userViewModel)
             }
         }
     }
-
 
     private fun installGoogleScanner() {
         val moduleInstall = ModuleInstall.getClient(this)
@@ -41,5 +44,4 @@ class MainActivity : AppCompatActivity(){
             Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
         }
     }
-
 }

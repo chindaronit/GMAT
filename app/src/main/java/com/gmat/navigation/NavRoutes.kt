@@ -20,22 +20,31 @@ sealed class NavRoutes(val route: String) {
     data object EditDetails : NavRoutes("profile/editDetails")
     data object FAQ : NavRoutes("profile/faq")
     data object TransactionHistory : NavRoutes("history")
-    data object Rewards: NavRoutes("reward")
+    data object Rewards : NavRoutes("reward")
     data object Login : NavRoutes("login")
-    data object OTP: NavRoutes("otp")
-    data object Register: NavRoutes("register")
-    data object AddTransactionDetails: NavRoutes("addTransactionDetails")
-    data object TransactionReceipt: NavRoutes("receipt")
-    data object UpgradeQR: NavRoutes("upgradeQr")
-    data object UpgradedQR: NavRoutes("upgradedQr")
-    data object TransactionChat: NavRoutes("transactionChat")
-    data object Home: NavRoutes("home")
+    data object OTP : NavRoutes("otp")
+    data object Register : NavRoutes("register")
+    data object AddTransactionDetails : NavRoutes("addTransactionDetails")
+    data object TransactionReceipt : NavRoutes("receipt")
+    data object UpgradeQR : NavRoutes("upgradeQr")
+    data object UpgradedQR : NavRoutes("upgradedQr")
+    data object TransactionChat : NavRoutes("transactionChat")
+    data object Home : NavRoutes("home")
+
+    fun withArgs(vararg args: String):String {
+        return buildString {
+            append(route)
+            args.forEach { args ->
+                append("/$args")
+            }
+        }
+    }
 }
+
 
 
 val authScreens=mapOf<String,@Composable (navController: NavController) -> Unit>(
     NavRoutes.Login.route to { navController -> Login(navController=navController) },
-    NavRoutes.OTP.route to { navController -> OTP(navController = navController) },
     NavRoutes.Register.route to { navController -> Register(navController = navController) }
 )
 

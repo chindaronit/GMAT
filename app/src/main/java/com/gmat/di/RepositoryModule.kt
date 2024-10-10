@@ -21,4 +21,5 @@ abstract class RepositoryModule {
     ) : QRCodeRepository
 
 
+
 }

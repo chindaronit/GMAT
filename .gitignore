@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+/server/node_modules
+.env
+/boto3/bin
+/boto3/include
+/boto3/lib
+/boto3/lib64

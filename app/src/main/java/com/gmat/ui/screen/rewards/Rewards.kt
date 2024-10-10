@@ -18,10 +18,12 @@ import androidx.navigation.NavController
 import com.gmat.R
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.components.RenderPainterIcon
+import com.gmat.ui.state.LeaderboardState
 
 @Composable
 fun Rewards(
-    navController: NavController
+    navController: NavController,
+    leaderboardState: LeaderboardState
 ) {
     Scaffold(
         topBar = {
@@ -62,12 +64,14 @@ fun Rewards(
                         modifier = Modifier.padding(horizontal = 30.dp)
                     ) {
                         Text(
-                            text = stringResource(id = R.string.your_rank)+":",
+                            text = stringResource(id = R.string.your_rank)+": "+ (leaderboardState.userLeaderboardEntry?.points
+                                ?: "0"),
                             fontSize = 20.sp
                         )
                         Spacer(modifier = Modifier.height(5.dp))
                         Text(
-                            text = stringResource(id = R.string.your_points)+":",
+                            text = stringResource(id = R.string.your_points)+": " + (leaderboardState.userLeaderboardEntry?.points
+                                ?: "0"),
                             fontWeight = FontWeight.ExtraLight,
                             fontSize = 18.sp
                         )
@@ -96,18 +100,13 @@ fun Rewards(
                         modifier = Modifier.padding(start = 15.dp, top = 20.dp, bottom = 10.dp)
                     )
                 }
-
-                LeaderboardEntry(
-                    name = "Ronit Chinda",
-                    points = "1000",
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                )
-
-                LeaderboardEntry(
-                    name = "Vishal Kumar Prajapati",
-                    points = "1000",
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                )
+                leaderboardState.allEntries.forEach { it->
+                    LeaderboardEntry(
+                        name = it.name,
+                        points = it.points,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
             }
         }
     }

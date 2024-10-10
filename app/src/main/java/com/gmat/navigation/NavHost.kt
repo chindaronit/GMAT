@@ -18,23 +18,29 @@ import com.gmat.ui.screen.transaction.AddTransactionDetails
 import com.gmat.ui.screen.transaction.TransactionChat
 import com.gmat.ui.screen.transaction.TransactionHistory
 import com.gmat.ui.screen.transaction.TransactionReceipt
+import com.gmat.ui.viewModel.LeaderboardViewModel
 import com.gmat.ui.viewModel.ScannerViewModel
+import com.gmat.ui.viewModel.TransactionViewModel
 import com.gmat.ui.viewModel.UserViewModel
 
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     scannerViewModel: ScannerViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    transactionViewModel: TransactionViewModel,
+    leaderboardViewModel: LeaderboardViewModel
 ) {
 
     NavHost(navController, startDestination = NavRoutes.Home.route) {
         animatedComposable(NavRoutes.Profile.route) {
-            Profile(navController)
+            val userState by userViewModel.state.collectAsState()
+            Profile(navController, userState)
         }
 
         animatedComposable(NavRoutes.Rewards.route) {
-            Rewards(navController)
+            val leaderboardState by leaderboardViewModel.state.collectAsState()
+            Rewards(navController,leaderboardState)
         }
 
         animatedComposable(NavRoutes.UpgradeQR.route) {
@@ -47,15 +53,16 @@ fun AppNavHost(
         }
 
         animatedComposable(NavRoutes.UpgradedQR.route) {
+            val userState by scannerViewModel.state.collectAsState()
             UpgradedQR(navController = navController)
         }
 
         animatedComposable(NavRoutes.Home.route) {
-            val state by scannerViewModel.state.collectAsState()
+            val scannerState by scannerViewModel.state.collectAsState()
             val userState by userViewModel.state.collectAsState()
             HomeScreen(
                 navController = navController,
-                scannerState = state,
+                scannerState = scannerState,
                 onScannerEvent = scannerViewModel::onEvent,
                 userState = userState,
                 onUserEvents = userViewModel::onEvent

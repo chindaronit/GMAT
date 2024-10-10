@@ -37,10 +37,12 @@ import androidx.navigation.NavController
 import com.gmat.R
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
+import com.gmat.ui.state.UserState
 
 @Composable
 fun Profile(
-    navController: NavController
+    navController: NavController,
+    userState: UserState
 ) {
 
     Scaffold(
@@ -62,7 +64,7 @@ fun Profile(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState()),
         ) {
-            ProfileCard(uName = "Ronit Chinda", uMobile = "7988224882", uUpiId = "7988224882@sbi")
+            ProfileCard(uName = userState.user!!.name, uMobile = userState.user.phNo, uUpiId = userState.user.vpa)
             Column(
                 modifier = Modifier.padding(20.dp),
             ) {

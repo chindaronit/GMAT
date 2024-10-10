@@ -36,7 +36,7 @@ class UserViewModel @Inject constructor(
                 getUserByVPA(event.vpa)
             }
             is UserEvents.UpdateUser ->{
-
+                
             }
         }
     }

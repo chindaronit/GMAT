@@ -8,7 +8,6 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface TransactionAPI {
-
     // Get a transaction by its transaction ID
     @GET("/transactions")
     suspend fun getTransactionByTxnId(

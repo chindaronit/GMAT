@@ -3,6 +3,7 @@ package com.gmat.ui.viewModel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gmat.data.model.UserModel
 import com.gmat.data.repository.api.UserAPI
 import com.gmat.ui.events.UserEvents
 import com.gmat.ui.state.UserState
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
+
 @HiltViewModel
 class UserViewModel @Inject constructor(
     private val userAPI: UserAPI
@@ -24,7 +26,7 @@ class UserViewModel @Inject constructor(
     fun onEvent(event: UserEvents) {
         when(event){
             is UserEvents.AddUser -> {
-
+                addUser(event.user)
             }
             is UserEvents.GetUserByPhone -> {
                 getUserByPhone(event.phNo)
@@ -36,7 +38,7 @@ class UserViewModel @Inject constructor(
                 getUserByVPA(event.vpa)
             }
             is UserEvents.UpdateUser ->{
-                
+                updateUser(event.user)
             }
         }
     }
@@ -120,6 +122,32 @@ class UserViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+            }
+        }
+    }
+
+    private fun addUser(user: UserModel) {
+        val phNo= user.phNo
+        viewModelScope.launch {
+            val response=userAPI.addUser(user)
+            if (response.isSuccessful) {
+                getUserByPhone(phNo)
+            } else {
+                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
+            }
+        }
+    }
+
+    private fun updateUser(user: UserModel) {
+        val userId= user.userId
+        viewModelScope.launch {
+            val response=userAPI.updateUser(user)
+            if (response.isSuccessful) {
+                getUserByPhone(userId)
+            } else {
+                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
             }
         }
     }

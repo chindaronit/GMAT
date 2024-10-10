@@ -1,13 +1,12 @@
 package com.gmat.data.repository.api
 
 import com.gmat.data.model.UserModel
-import com.gmat.env.Status
 import retrofit2.Response
 import retrofit2.http.*
 
 interface UserAPI {
     @POST("/users")
-    suspend fun addUser(@Body user: UserModel): Status<Unit>
+    suspend fun addUser(@Body user: UserModel): Response<Unit>
 
     // Pass phone number as a query parameter
     @GET("/users/get/vpa")
@@ -24,5 +23,5 @@ interface UserAPI {
     @POST("/users/update")
     suspend fun updateUser(
         @Body user: UserModel
-    ): Response<UserModel>
+    ): Response<Unit>
 }

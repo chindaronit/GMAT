@@ -1,7 +1,6 @@
 package com.gmat.data.repository.api
 
 import com.gmat.data.model.LeaderboardModel
-import com.gmat.data.model.UserModel
 import com.gmat.env.Status
 import retrofit2.Response
 import retrofit2.http.GET
@@ -9,7 +8,6 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface LeaderboardAPI {
-
     // Update user transaction rewards
     @POST("/leaderboard")
     suspend fun updateUserTransactionRewards(

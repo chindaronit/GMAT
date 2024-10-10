@@ -36,15 +36,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.gmat.data.model.UserModel
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.Top
+import com.gmat.ui.events.UserEvents
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Register(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    onUserEvents: (UserEvents)->Unit
 ) {
 
     var name by remember {
@@ -156,6 +159,7 @@ fun Register(
                 }
                 Spacer(modifier = modifier.height(20.dp))
                 Button(onClick = {
+                    onUserEvents(UserEvents.AddUser(user = UserModel(name=name, phNo = "7988224882", vpa = "chinda@vbl", isMerchant = currentVal == "Merchant")))
                     navController.navigate(NavRoutes.Home.route) {
                         popUpTo(NavRoutes.Register.route) {
                             inclusive = true

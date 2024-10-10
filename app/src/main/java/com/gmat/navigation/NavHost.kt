@@ -40,7 +40,7 @@ fun AppNavHost(
 
         animatedComposable(NavRoutes.Rewards.route) {
             val leaderboardState by leaderboardViewModel.state.collectAsState()
-            Rewards(navController,leaderboardState)
+            Rewards(navController, leaderboardState)
         }
 
         animatedComposable(NavRoutes.UpgradeQR.route) {
@@ -53,8 +53,8 @@ fun AppNavHost(
         }
 
         animatedComposable(NavRoutes.UpgradedQR.route) {
-            val userState by scannerViewModel.state.collectAsState()
-            UpgradedQR(navController = navController)
+            val userState by userViewModel.state.collectAsState()
+            UpgradedQR(navController = navController, userState = userState)
         }
 
         animatedComposable(NavRoutes.Home.route) {
@@ -99,30 +99,27 @@ fun AppNavHost(
                     nullable = false
                 }
             )) { entry ->
-            OTP(navController = navController, verificationId = entry.arguments?.getString("verificationId") ?: "")
+            OTP(
+                navController = navController,
+                verificationId = entry.arguments?.getString("verificationId") ?: ""
+            )
         }
 
         authScreens.forEach { (route, screen) ->
             if (route == NavRoutes.Login.route) {
                 slideInComposable(route) {
-                    screen(navController)
+                    screen(navController,userViewModel)
                 }
             } else {
                 animatedComposable(route) {
-                    screen(navController)
+                    screen(navController,userViewModel)
                 }
             }
         }
 
         settingScreens.forEach { (route, screen) ->
-            if (route == NavRoutes.Profile.route) {
-                slideInComposable(route) {
-                    screen(navController)
-                }
-            } else {
-                animatedComposable(route) {
-                    screen(navController)
-                }
+            animatedComposable(route) {
+                screen(navController)
             }
         }
     }

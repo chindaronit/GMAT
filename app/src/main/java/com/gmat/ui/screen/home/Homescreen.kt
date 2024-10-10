@@ -54,22 +54,10 @@ fun HomeScreen(
     userState: UserState,
     onScannerEvent: (QRScannerEvents)->Unit
 ) {
-    val user = "Ronit Chinda"
+    val user = userState.user!!
     val isBusiness by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    LaunchedEffect(key1 = Unit) {
-        onUserEvents(UserEvents.GetUserByUserId("BDWvpffTFveroU6kNgdf"))
-    }
-
-    LaunchedEffect(key1 = userState.isLoading) {
-        if(!userState.isLoading && userState.user!=null){
-            println(userState.user)
-        }
-        if(!userState.isLoading && userState.user==null){
-            println("user is null")
-        }
-    }
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -121,7 +109,7 @@ fun HomeScreen(
                             fontFamily = FontFamily.Monospace
                         )
                         Text(
-                            user,
+                            user.name,
                             maxLines = 1,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.ExtraLight,

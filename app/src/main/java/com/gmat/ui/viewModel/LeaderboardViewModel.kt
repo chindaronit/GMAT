@@ -47,7 +47,7 @@ class LeaderboardViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            leaderboard = response.body()
+                            userLeaderboardEntry = response.body()
                         )
                     }
                 } else {
@@ -69,7 +69,7 @@ class LeaderboardViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isLoading = false,
-//                            leaderboard = response.body()
+                            allEntries = response.body()!!
                         )
                     }
                 } else {

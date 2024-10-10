@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.events.QRScannerEvents
+import com.gmat.ui.state.UserState
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -88,9 +89,10 @@ fun generateQrCode(text: String): Bitmap? {
 @Composable
 fun UpgradedQR(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    userState: UserState
 ) {
-    val qrCodeBitmap = remember { generateQrCode("upi://pay?pa=gpay-11249012205@okbizaxis&mc=5411&pn=Google%20Pay%20Merchant&oobe=fos123&qrst=stk&tr=1249012205&cu=INR&ver=01&mode=01&gstin=22AAAAA0000A1Z5") }
+    val qrCodeBitmap = remember { generateQrCode(userState.user!!.qr) }
     val context = LocalContext.current
     Scaffold(
         topBar = {
@@ -133,7 +135,7 @@ fun UpgradedQR(
             }
             Spacer(modifier = modifier.height(20.dp))
             Text(
-                text = "UPI ID: chinda@ybl",
+                text = userState.user!!.vpa,
                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
             )
             Spacer(modifier = modifier.weight(1f))

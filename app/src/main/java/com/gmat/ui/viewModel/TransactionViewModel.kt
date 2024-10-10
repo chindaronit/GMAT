@@ -20,6 +20,11 @@ class TransactionViewModel @Inject constructor(
     fun onEvent(event: TransactionEvents) {
         when(event){
             is TransactionEvents.AddTransaction -> TODO()
+            is TransactionEvents.GetAllTransactionsForMonth -> TODO()
+            is TransactionEvents.GetAllTransactionsForPayerIdAndPayeeId -> TODO()
+            is TransactionEvents.GetAllTransactionsForUser -> TODO()
+            is TransactionEvents.GetTransactionById -> TODO()
+            is TransactionEvents.GetUserTransactionsByUserIdAndPayeeId -> TODO()
         }
     }
 

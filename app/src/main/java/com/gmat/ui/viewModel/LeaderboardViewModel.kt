@@ -19,7 +19,10 @@ class LeaderboardViewModel @Inject constructor(
 
     fun onEvent(event: LeaderboardEvents) {
         when(event){
+            is LeaderboardEvents.AddUserTransactionRewards -> TODO()
+            is LeaderboardEvents.GetAllUsersByRewardsForMonth -> TODO()
             is LeaderboardEvents.GetLeaderboardThroughUserId -> TODO()
+            is LeaderboardEvents.GetUserRewardsPointsForMonth -> TODO()
             is LeaderboardEvents.UpdateLeaderboard -> TODO()
         }
     }

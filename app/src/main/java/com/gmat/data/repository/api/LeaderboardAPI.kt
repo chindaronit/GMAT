@@ -13,7 +13,7 @@ interface LeaderboardAPI {
     suspend fun updateUserTransactionRewards(
         @Query("userId") userId: String,
         @Query("transactionAmount") transactionAmount: String,
-    ): Status<Unit>
+    ): Response<Unit>
 
     // Get rewards points for a specific month for a user
     @GET("/leaderboard")
@@ -29,4 +29,6 @@ interface LeaderboardAPI {
         @Query("month") month: Int,
         @Query("year") year: Int
     ): Response<List<LeaderboardModel>>
+
+    abstract fun updateLeaderboard(leaderboard: LeaderboardModel): Any
 }

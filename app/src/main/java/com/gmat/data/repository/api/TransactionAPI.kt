@@ -1,7 +1,6 @@
 package com.gmat.data.repository.api
 
 import com.gmat.data.model.TransactionModel
-import com.gmat.env.Status
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -19,9 +18,9 @@ interface TransactionAPI {
     suspend fun addTransaction(
         @Query("payerId") payerId: String,
         @Query("payeeId") payeeId: String,
-        @Query("amount") amount: Double,
+        @Query("amount") amount: String,
         @Query("gstin") gstin: String? = null
-    ): Status<Unit>
+    ): Response<Unit>
 
     // Get all transactions for a specific user
     @GET("/transactions/all/user")

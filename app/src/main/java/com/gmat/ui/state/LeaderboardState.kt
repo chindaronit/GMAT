@@ -5,5 +5,6 @@ import com.gmat.data.model.LeaderboardModel
 data class LeaderboardState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val leaderboard: LeaderboardModel? =null
+    val userLeaderboardEntry: LeaderboardModel? =null,
+    val allEntries: List<LeaderboardModel> = emptyList()
 )

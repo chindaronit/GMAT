@@ -1,5 +1,7 @@
 package com.gmat.di
 
+import com.gmat.data.repository.api.LeaderboardAPI
+import com.gmat.data.repository.api.TransactionAPI
 import com.gmat.data.repository.api.UserAPI
 import com.gmat.env.CONSTANTS
 import dagger.Module
@@ -37,5 +39,17 @@ class NetworkModule {
     @Provides
     fun provideUserAPI(retrofit: Retrofit): UserAPI {
         return retrofit.create(UserAPI::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideLeaderboardAPI(retrofit: Retrofit): LeaderboardAPI {
+        return retrofit.create(LeaderboardAPI::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideTransactionAPI(retrofit: Retrofit): TransactionAPI {
+        return retrofit.create(TransactionAPI::class.java)
     }
 }

@@ -11,7 +11,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.gmat.navigation.AppNavHost
 import com.gmat.ui.events.UserEvents
 import com.gmat.ui.theme.GMATTheme
+import com.gmat.ui.viewModel.LeaderboardViewModel
 import com.gmat.ui.viewModel.ScannerViewModel
+import com.gmat.ui.viewModel.TransactionViewModel
 import com.gmat.ui.viewModel.UserViewModel
 import com.google.android.gms.common.moduleinstall.ModuleInstall
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
@@ -29,7 +31,9 @@ class MainActivity : AppCompatActivity(){
             GMATTheme {
                 val scannerViewModel: ScannerViewModel = hiltViewModel()
                 val userViewModel: UserViewModel = hiltViewModel()
-                AppNavHost(scannerViewModel=scannerViewModel, userViewModel = userViewModel)
+                val leaderboardViewModel: LeaderboardViewModel = hiltViewModel()
+                val transactionViewModel: TransactionViewModel = hiltViewModel()
+                AppNavHost(scannerViewModel=scannerViewModel, userViewModel = userViewModel, transactionViewModel = transactionViewModel, leaderboardViewModel = leaderboardViewModel)
             }
         }
     }

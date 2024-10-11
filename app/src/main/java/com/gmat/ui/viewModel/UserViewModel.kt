@@ -40,6 +40,22 @@ class UserViewModel @Inject constructor(
             is UserEvents.UpdateUser ->{
                 updateUser(event.user)
             }
+
+            UserEvents.SignOut -> {
+                _state.update { it.copy(phNo = "", user = null) }
+            }
+
+            is UserEvents.ChangePhNo -> {
+                _state.update { it.copy(phNo=event.phNo) }
+            }
+
+            UserEvents.SignIn -> {
+                getUserByPhone(state.value.phNo)
+            }
+
+            is UserEvents.ChangeVerificationId -> {
+                _state.update { it.copy(verificationId = event.id) }
+            }
         }
     }
 
@@ -48,7 +64,7 @@ class UserViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = userAPI.getUserByUserId(userId)
-                println(response)
+
                 if (response.isSuccessful && response.body() != null) {
                     Log.d("GetUserByUserId", "user: ${response.body()}")
                     _state.update {
@@ -66,7 +82,7 @@ class UserViewModel @Inject constructor(
                         }
                         404 -> {
                             Log.d("GetUserByUserId", "Not Found: 404")
-                            _state.update { it.copy(isLoading = false, error = "User not found") }
+                            _state.update { it.copy(isLoading = false, error = "User not found")}
                         }
                         else -> {
                             println(response.code())
@@ -81,12 +97,12 @@ class UserViewModel @Inject constructor(
         }
     }
 
-
     private fun getUserByPhone(phNo: String) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
                 val response = userAPI.getUserByPhone(phNo)
+                println(response)
                 if (response.isSuccessful && response.body()!=null) {
                     _state.update {
                         it.copy(
@@ -95,8 +111,22 @@ class UserViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                    _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
+                    // Handle different status codes
+                    when (response.code()) {
+                        403 -> {
+                            Log.d("GetUserByUserPh", "Forbidden: 403")
+                            _state.update { it.copy(isLoading = false, error = "Forbidden: Access denied") }
+                        }
+                        404 -> {
+                            Log.d("GetUserByUserPh", "Not Found: 404")
+                            _state.update { it.copy(isLoading = false, error = "User not found", user = UserModel()) }
+                        }
+                        else -> {
+                            println(response.code())
+                            val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                            _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
@@ -127,17 +157,27 @@ class UserViewModel @Inject constructor(
     }
 
     private fun addUser(user: UserModel) {
-        val phNo= user.phNo
+        val phNo = state.value.phNo
+        user.phNo=phNo
         viewModelScope.launch {
-            val response=userAPI.addUser(user)
-            if (response.isSuccessful) {
-                getUserByPhone(phNo)
-            } else {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
+            try {
+                val response = userAPI.addUser(user)
+                if (response.isSuccessful) {
+                    println("User added successfully")
+                    getUserByPhone(phNo) // Fetch user details after adding
+                } else {
+                    // Log the error response
+                    Log.e("AddUser", "Error: ${response.code()}, Message: ${response.message()}")
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
+                }
+            } catch (e: Exception) {
+                Log.e("AddUser", "Exception: ${e.message}")
+                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
             }
         }
     }
+
 
     private fun updateUser(user: UserModel) {
         val userId= user.userId

@@ -1,6 +1,5 @@
 package com.gmat.ui.screen.login
 
-
 import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,10 +22,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,23 +32,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
+import com.gmat.functionality.formatPhoneNumberForVerification
 import com.gmat.functionality.startPhoneNumberVerification
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.Top
+import com.gmat.ui.events.UserEvents
+import com.gmat.ui.state.UserState
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    userState: UserState,
+    onUserEvents: (UserEvents) -> Unit
 ) {
-    var number by remember {
-        mutableStateOf("")
-    }
-    val auth= FirebaseAuth.getInstance()
-    val context= LocalContext.current as Activity
+
+    val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current as Activity
 
     Scaffold(
         topBar = {
@@ -89,10 +87,10 @@ fun Login(
                 )
                 Spacer(modifier = modifier.height(20.dp))
                 OutlinedTextField(
-                    value = number,
+                    value = userState.phNo,
                     onValueChange = {
                         if (it.length <= 10 && it.isDigitsOnly()) {
-                            number = it
+                            onUserEvents(UserEvents.ChangePhNo(it))
                         }
                     },
                     placeholder = {
@@ -113,9 +111,17 @@ fun Login(
 
                 Button(
                     onClick = {
-                        startPhoneNumberVerification(phoneNumber = number, auth = auth, activity = context){ verificationId ->
-                            navController.navigate(NavRoutes.OTP.withArgs(verificationId))
-                        }
+                        startPhoneNumberVerification(
+                            phoneNumber = formatPhoneNumberForVerification(
+                                userState.phNo
+                            ),
+                            auth = auth,
+                            activity = context,
+                            onVerificationFailed = {},
+                            onVerificationCompleted = {
+                                onUserEvents(UserEvents.ChangeVerificationId(it))
+                                navController.navigate(NavRoutes.OTP.route)
+                            })
                     },
                     modifier = modifier
                         .fillMaxWidth()

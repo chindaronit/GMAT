@@ -12,6 +12,7 @@ import com.gmat.ui.screen.profile.Languages
 import com.gmat.ui.screen.profile.Profile
 import com.gmat.ui.screen.transaction.AddTransactionDetails
 import com.gmat.ui.screen.transaction.TransactionReceipt
+import com.gmat.ui.state.UserState
 import com.gmat.ui.viewModel.UserViewModel
 
 sealed class NavRoutes(val route: String) {
@@ -42,12 +43,10 @@ sealed class NavRoutes(val route: String) {
     }
 }
 
-
-val authScreens = mapOf<String, @Composable (navController: NavController, userViewModel: UserViewModel) -> Unit>(
-    NavRoutes.Login.route to { navController, _ -> Login(navController = navController) },
-    NavRoutes.Register.route to { navController, userViewModel -> Register(navController = navController, onUserEvents = userViewModel::onEvent) }
+val authScreens = mapOf<String, @Composable (navController: NavController, userViewModel: UserViewModel,userState: UserState) -> Unit>(
+    NavRoutes.Login.route to { navController, userViewModel, userState -> Login(navController = navController, userState = userState ,onUserEvents= userViewModel::onEvent) },
+    NavRoutes.Register.route to { navController, userViewModel, userState -> Register(navController = navController,userState=userState,onUserEvents = userViewModel::onEvent) }
 )
-
 
 val settingScreens = mapOf<String, @Composable (navController: NavController) -> Unit>(
     NavRoutes.Language.route to { navController -> Languages(navController = navController) },

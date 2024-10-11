@@ -5,7 +5,7 @@ data class UserModel(
     val name: String="",
     val vpa: String="",
     val profile: String="",
-    val phNo: String="",
+    var phNo: String="",
     val qr: String="",
     val isMerchant: Boolean=false
 )

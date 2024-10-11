@@ -25,6 +25,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,12 +42,14 @@ import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.Top
 import com.gmat.ui.events.UserEvents
+import com.gmat.ui.state.UserState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Register(
     modifier: Modifier = Modifier,
     navController: NavController,
+    userState: UserState,
     onUserEvents: (UserEvents)->Unit
 ) {
 
@@ -60,6 +63,17 @@ fun Register(
 
     val values = listOf("Personal", "Merchant")
     var currentVal = "Personal"
+
+    LaunchedEffect(key1 = userState.user) {
+        if(userState.user!=null){
+            if(userState.user.phNo.isNotBlank()){
+                navController.navigate(NavRoutes.Home.route) {
+                    popUpTo(0) { inclusive = true } // This removes everything from the backstack
+                    launchSingleTop = true
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -159,13 +173,7 @@ fun Register(
                 }
                 Spacer(modifier = modifier.height(20.dp))
                 Button(onClick = {
-                    onUserEvents(UserEvents.AddUser(user = UserModel(name=name, phNo = "7988224882", vpa = "chinda@vbl", isMerchant = currentVal == "Merchant")))
-                    navController.navigate(NavRoutes.Home.route) {
-                        popUpTo(NavRoutes.Register.route) {
-                            inclusive = true
-                        } // Clears the back stack
-                        launchSingleTop = true  // Avoids multiple instances of the OTP screen
-                    }
+                    onUserEvents(UserEvents.AddUser(user = UserModel(name=name, vpa = "chinda@vbl", isMerchant = currentVal == "Merchant")))
                 }) {
                     Text(
                         "Get Started",

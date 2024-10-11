@@ -2,7 +2,6 @@
 agp = "8.5.2"
 converterGson = "2.9.0"
 core = "3.5.0"
-firebaseBom = "33.3.0"
 hilt = "2.52"
 ksp = "2.0.0-1.0.24"
 hiltCompiler = "1.2.0"
@@ -18,11 +17,11 @@ material3 = "1.2.1"
 navigationCompose = "2.8.0"
 appcompat = "1.7.0"
 okhttp = "4.12.0"
-playServicesBase = "18.5.0"
 playServicesCodeScanner = "16.1.0"
-gmsPlayService="4.4.2"
-firebaseAuthKtx = "23.0.0"
 retrofit = "(insert latest version)"
+googleGmsGoogleServices = "4.4.2"
+firebaseFirestore = "25.1.0"
+firebaseAuthKtx = "23.0.0"
 
 [libraries]
 
@@ -40,8 +39,6 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 #Hilt
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 core = { module = "com.google.zxing:core", version.ref = "core" }
-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroidCompiler" }
 hilt-compile = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompiler"}
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
@@ -50,10 +47,10 @@ hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", ve
 # Coil
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
-play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
 play-services-code-scanner = { group = "com.google.android.gms", name = "play-services-code-scanner", version.ref = "playServicesCodeScanner" }
-firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 
 
 [plugins]
@@ -62,4 +59,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-google-services= {id="com.google.gms.google-services",version.ref="gmsPlayService"}
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }

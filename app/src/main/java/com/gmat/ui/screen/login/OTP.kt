@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,8 @@ import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.OtpTextField
 import com.gmat.ui.components.login.Top
+import com.gmat.ui.events.UserEvents
+import com.gmat.ui.state.UserState
 import com.google.firebase.auth.PhoneAuthProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,14 +44,31 @@ import com.google.firebase.auth.PhoneAuthProvider
 fun OTP(
     modifier: Modifier = Modifier,
     navController: NavController,
-    verificationId: String
+    userState: UserState,
+    onUserEvents: (UserEvents) -> Unit
 ) {
+    var otpValue by remember { mutableStateOf("") }
+    val context = LocalContext.current as Activity
 
-    var otpValue by remember {
-        mutableStateOf("")
+    LaunchedEffect(key1 = userState.user) {
+        userState.user?.let { user ->
+            if (user.phNo.isNotBlank()) {
+                navController.navigate(NavRoutes.Home.route) {
+                    popUpTo(0) { inclusive = true } // This removes everything from the backstack
+                    launchSingleTop = true
+                }
+
+            } else {
+                // Navigate to Register and pop the backstack
+                navController.navigate(NavRoutes.Register.route){
+                    popUpTo(0) { inclusive = true } // This removes everything from the backstack
+                    launchSingleTop = true
+                }
+
+            }
+        }
     }
 
-    val context= LocalContext.current as Activity
 
     Scaffold(
         topBar = {
@@ -57,31 +77,25 @@ fun OTP(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
-                title = {
-                    Text("GMAT")
-                }
+                title = { Text("GMAT") }
             )
         },
-
-        ) { innerPadding ->
+    ) { innerPadding ->
         Box(
             modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
             Column(
-                modifier = modifier
-                    .align(Alignment.TopCenter)
+                modifier = modifier.align(Alignment.TopCenter)
             ) {
                 Top()
             }
 
             Column(
-                modifier = modifier
-                    .align(Alignment.Center),
+                modifier = modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Text(
                     text = "Enter OTP",
                     fontSize = 25.sp,
@@ -91,23 +105,20 @@ fun OTP(
                 Spacer(modifier = modifier.height(20.dp))
                 OtpTextField(
                     otpText = otpValue,
-                    onOtpTextChange = { value, _ ->
-                        otpValue = value
-                    }
+                    onOtpTextChange = { value, _ -> otpValue = value }
                 )
                 Spacer(modifier = modifier.height(30.dp))
                 Button(
                     onClick = {
                         if (otpValue.length == 6) {
-                            if (verificationId.isNotEmpty() && otpValue.isNotEmpty()) {
-                                val credential = PhoneAuthProvider.getCredential(verificationId, otpValue)
-                                signInWithPhoneAuthCredential(credential, context) {
-                                    // Navigate to your custom OTP screen
-                                    navController.navigate(NavRoutes.Register.route) {
-                                        popUpTo(NavRoutes.OTP.withArgs(verificationId)) { inclusive = true }
-                                        launchSingleTop = true
-                                    }
-                                }
+                            if (userState.verificationId.isNotEmpty() && otpValue.isNotEmpty()) {
+                                val credential =
+                                    PhoneAuthProvider.getCredential(userState.verificationId, otpValue)
+                                signInWithPhoneAuthCredential(
+                                    credential,
+                                    activity = context,
+                                    onFailure = {},
+                                    onSuccess = { onUserEvents(UserEvents.SignIn) })
                             } else {
                                 Log.w("Login", "Verification ID or OTP is empty.")
                             }
@@ -123,9 +134,9 @@ fun OTP(
                     )
                 }
             }
+
             Column(
-                modifier = modifier
-                    .align(Alignment.BottomCenter)
+                modifier = modifier.align(Alignment.BottomCenter)
             ) {
                 Bottom()
             }

@@ -9,8 +9,8 @@ interface UserAPI {
     suspend fun addUser(@Body user: UserModel): Response<Unit>
 
     // Pass phone number as a query parameter
-    @GET("/users/get/vpa")
-    suspend fun getUserByPhone(@Query("phoneNumber") phoneNumber: String): Response<UserModel>
+    @GET("/users/get/ph")
+    suspend fun getUserByPhone(@Query("phNo") phoneNumber: String): Response<UserModel>
 
     // Pass VPA as a query parameter
     @GET("/users/get/vpa")

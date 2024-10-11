@@ -32,7 +32,7 @@ fun AppNavHost(
     leaderboardViewModel: LeaderboardViewModel
 ) {
 
-    NavHost(navController, startDestination = NavRoutes.Home.route) {
+    NavHost(navController, startDestination = NavRoutes.Login.route) {
         animatedComposable(NavRoutes.Profile.route) {
             val userState by userViewModel.state.collectAsState()
             Profile(navController, userState)
@@ -70,6 +70,7 @@ fun AppNavHost(
         }
 
         animatedComposable(NavRoutes.TransactionChat.route) {
+            val transactionState by transactionViewModel.state.collectAsState()
             TransactionChat(navController = navController)
         }
 
@@ -90,29 +91,25 @@ fun AppNavHost(
             TransactionReceipt(navController = navController)
         }
 
-        animatedComposable(
-            route = NavRoutes.OTP.route + "/{verificationId}",
-            arguments = listOf(
-                navArgument("verificationId") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                    nullable = false
-                }
-            )) { entry ->
+        animatedComposable(route = NavRoutes.OTP.route) {
+            val userState by userViewModel.state.collectAsState()
             OTP(
                 navController = navController,
-                verificationId = entry.arguments?.getString("verificationId") ?: ""
+                userState = userState,
+                onUserEvents = userViewModel::onEvent
             )
         }
 
         authScreens.forEach { (route, screen) ->
             if (route == NavRoutes.Login.route) {
                 slideInComposable(route) {
-                    screen(navController,userViewModel)
+                    val userState by userViewModel.state.collectAsState()
+                    screen(navController,userViewModel,userState)
                 }
             } else {
                 animatedComposable(route) {
-                    screen(navController,userViewModel)
+                    val userState by userViewModel.state.collectAsState()
+                    screen(navController,userViewModel,userState)
                 }
             }
         }

@@ -50,13 +50,19 @@ import com.gmat.ui.state.UserState
 fun HomeScreen(
     navController: NavController,
     scannerState: QRScannerState,
-    onUserEvents: (UserEvents)->Unit,
+    onUserEvents: (UserEvents) -> Unit,
     userState: UserState,
-    onScannerEvent: (QRScannerEvents)->Unit
+    onScannerEvent: (QRScannerEvents) -> Unit
 ) {
-    val user = userState.user!!
+    val user = userState.user
     val isBusiness by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    LaunchedEffect(key1 = userState.user) {
+        if (userState.user == null) {
+            navController.navigate(NavRoutes.Login.route)
+        }
+    }
 
 
     var hasCameraPermission by remember {
@@ -84,162 +90,164 @@ fun HomeScreen(
     }
 
     LaunchedEffect(key1 = scannerState.details) {
-        if(scannerState.details.isNotBlank()){
-            if(isBusiness){
+        if (scannerState.details.isNotBlank()) {
+            if (isBusiness) {
                 navController.navigate(NavRoutes.UpgradeQR.route)
-            }
-            else{
+            } else {
                 navController.navigate(NavRoutes.AddTransactionDetails.route)
             }
         }
     }
 
-    Scaffold(
-        topBar = {
-            Bar(
-                title = {
-                    Column(
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.spacedBy(0.dp)
-                    ) {
-                        Text(
-                            greet(),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            fontFamily = FontFamily.Monospace
-                        )
-                        Text(
-                            user.name,
-                            maxLines = 1,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.ExtraLight,
-                            overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace
-                        )
-                    }
 
-                },
-                actions = {
-                    IconButton(onClick = { navController.navigate(NavRoutes.Profile.route) }) {
-                        AsyncImage(
-                            model = R.drawable.user_icon,
-                            contentDescription = "User Profile",
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
-                        )
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .fillMaxSize(), // Ensure the column fills available space
-        ) {
-            Top()
-
-            HorizontalDivider(
-                Modifier
-                    .width(150.dp)
-                    .padding(bottom = 20.dp)
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally),
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                if (isBusiness) {
-                    MerchantFeatures(navController, onScanClick = {
-                        onScannerEvent(QRScannerEvents.StartScanning)
-                    })
-                } else {
-                    PersonalFeatures(navController, onScanClick = {
-                        onScannerEvent(QRScannerEvents.StartScanning)
-                    })
-                }
-            }
-
-            Spacer(modifier = Modifier.height(30.dp))
-            Text(
-                text = stringResource(id = R.string.business),
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 20.dp)
-            )
-            Spacer(modifier = Modifier.height(30.dp))
-
-            // List of example user names
-            val userNames = listOf(
-                "Alice Johnson", "Bob Smith", "Carol Davis", "David Brown",
-                "Eve Wilson", "Frank Moore", "Grace Lee", "Hank White",
-                "Ivy Harris", "Jack Martin", "Ivy Harris", "Jack Martin"
-            )
-
-            LazyVerticalGrid(
-                state = rememberLazyGridState(),
-                columns = GridCells.Fixed(4),
-                verticalArrangement = Arrangement.spacedBy(15.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxSize()
-                    .height(300.dp),
-                content = {
-                    items(userNames.size) { index ->
-                        Card(
-                            onClick = { navController.navigate(NavRoutes.TransactionChat.route) },
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            )
+    if (user!=null) {
+        Scaffold(
+            topBar = {
+                Bar(
+                    title = {
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.spacedBy(0.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
+                            Text(
+                                greet(),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontFamily = FontFamily.Monospace
+                            )
+                            Text(
+                                user.name,
+                                maxLines = 1,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.ExtraLight,
+                                overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace
+                            )
+                        }
+
+                    },
+                    actions = {
+                        IconButton(onClick = { navController.navigate(NavRoutes.Profile.route) }) {
+                            AsyncImage(
+                                model = R.drawable.user_icon,
+                                contentDescription = "User Profile",
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                            )
+                        }
+                    }
+                )
+            }
+        ) { innerPadding ->
+
+
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize(), // Ensure the column fills available space
+            ) {
+                Top()
+
+                HorizontalDivider(
+                    Modifier
+                        .width(150.dp)
+                        .padding(bottom = 20.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally),
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    if (isBusiness) {
+                        MerchantFeatures(navController, onScanClick = {
+                            onScannerEvent(QRScannerEvents.StartScanning)
+                        })
+                    } else {
+                        PersonalFeatures(navController, onScanClick = {
+                            onScannerEvent(QRScannerEvents.StartScanning)
+                        })
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+                Text(
+                    text = stringResource(id = R.string.business),
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 20.dp)
+                )
+                Spacer(modifier = Modifier.height(30.dp))
+
+                // List of example user names
+                val userNames = listOf(
+                    "Alice Johnson", "Bob Smith", "Carol Davis", "David Brown",
+                    "Eve Wilson", "Frank Moore", "Grace Lee", "Hank White",
+                    "Ivy Harris", "Jack Martin", "Ivy Harris", "Jack Martin"
+                )
+
+                LazyVerticalGrid(
+                    state = rememberLazyGridState(),
+                    columns = GridCells.Fixed(4),
+                    verticalArrangement = Arrangement.spacedBy(15.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxSize()
+                        .height(300.dp),
+                    content = {
+                        items(userNames.size) { index ->
+                            Card(
+                                onClick = { navController.navigate(NavRoutes.TransactionChat.route) },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                )
                             ) {
-                                AsyncImage(
-                                    model = R.drawable.user_icon,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(48.dp),
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = userNames[index],
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    textAlign = TextAlign.Center,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    AsyncImage(
+                                        model = R.drawable.user_icon,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(48.dp),
+                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = userNames[index],
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        textAlign = TextAlign.Center,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             }
                         }
                     }
-                }
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                AsyncImage(
-                    model = R.drawable.gmatlogo,
-                    contentDescription = null,
-                    modifier = Modifier.alpha(0.8f),
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                 )
-            }
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    AsyncImage(
+                        model = R.drawable.gmatlogo,
+                        contentDescription = null,
+                        modifier = Modifier.alpha(0.8f),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                    )
+                }
+            }
         }
     }
 }

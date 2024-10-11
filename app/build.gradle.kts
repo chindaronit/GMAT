@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.google.services)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -61,12 +61,6 @@ android {
 
 dependencies {
     implementation(libs.coil.compose)
-    implementation(libs.hilt.navigation.compose)
-    implementation(libs.play.services.code.scanner)
-    implementation(libs.firebase.auth.ktx)
-    ksp(libs.hilt.android.compiler)
-    ksp(libs.hilt.compile)
-    implementation(libs.hilt.android)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material3)
@@ -74,11 +68,15 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.navigation.compose)
-    implementation (libs.core)
-    implementation(libs.play.services.base)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
+    implementation(libs.core)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp)
+    implementation(libs.play.services.code.scanner)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth.ktx)
+    ksp(libs.hilt.android.compiler)
+    ksp(libs.hilt.compile)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.android)
 }

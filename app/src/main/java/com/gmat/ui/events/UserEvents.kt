@@ -13,5 +13,5 @@ sealed class UserEvents {
     data object SignIn: UserEvents()
     data class ChangeVerificationId(val id: String) : UserEvents()
     data class OnProfileChange(val profile: String): UserEvents()
-    data class OnNameChange(val profile: String): UserEvents()
+    data class OnNameChange(val name: String): UserEvents()
 }

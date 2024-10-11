@@ -1,5 +1,5 @@
 package com.gmat.env
 
 object CONSTANTS {
-    const val BASE_URL = "https://itni2bfxwg.execute-api.ap-south-1.amazonaws.com/dev/"
+    const val BASE_URL = "http://ec2-15-207-221-74.ap-south-1.compute.amazonaws.com/"
 }

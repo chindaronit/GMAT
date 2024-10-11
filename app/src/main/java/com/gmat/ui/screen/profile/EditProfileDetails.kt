@@ -10,6 +10,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
@@ -23,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -86,7 +88,10 @@ fun EditProfileDetails(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = {
+                        onUserEvents(UserEvents.UpdateUser)
+                        navController.navigateUp()
+                    }) {
                         Icon(imageVector = Icons.Rounded.Check, contentDescription = null)
                     }
                 })
@@ -102,7 +107,14 @@ fun EditProfileDetails(
         ) {
 
             if(userState.user!!.profile.isNotBlank()){
-                AsyncImage(model = userState.user.profile, contentDescription = null)
+                AsyncImage(
+                    model = userState.user.profile,
+                    contentDescription = null,
+                    modifier = modifier
+                        .padding(top = 10.dp)
+                        .size(150.dp)
+                        .clip(CircleShape)
+                )
             }
             else{
                 Icon(
@@ -120,11 +132,9 @@ fun EditProfileDetails(
             }
             Spacer(modifier = modifier.height(20.dp))
             OutlinedTextField(
-                value = userState.user.name,
+                value = userState.newName,
                 onValueChange = {
-                    if(it.isNotBlank()){
-                        onUserEvents(UserEvents.OnNameChange(it))
-                    }
+                    onUserEvents(UserEvents.OnNameChange(it))
                 },
                 modifier = modifier.fillMaxWidth(),
                 label = { Text("Name") }

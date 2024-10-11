@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,121 +20,154 @@ import androidx.navigation.NavController
 import com.gmat.R
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.components.RenderPainterIcon
+import com.gmat.ui.events.LeaderboardEvents
 import com.gmat.ui.state.LeaderboardState
+import com.gmat.ui.state.UserState
 import com.gmat.ui.theme.bronze
 import com.gmat.ui.theme.gold
 import com.gmat.ui.theme.silver
+import java.time.LocalDate
+import java.time.Month
 
 @Composable
 fun Rewards(
     navController: NavController,
-    leaderboardState: LeaderboardState
+    userState: UserState,
+    leaderboardState: LeaderboardState,
+    onLeaderboardEvents: (LeaderboardEvents) -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            CenterBar(
-                onClick = { navController.navigateUp() },
-                title = {
-                    Text(
-                        text = "Rewards",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                })
-        },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-        ) {
 
-            ElevatedCard(
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 15.dp, vertical = 30.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RenderPainterIcon(id = R.drawable.reward_icon, modifier = Modifier.size(100.dp))
-                    Column(
-                        modifier = Modifier.padding(horizontal = 30.dp)
-                    ) {
-                        Text(
-                            text = "Your Rank: ${leaderboardState.userLeaderboardEntry?.points ?: "-"}",
-                            fontSize = 20.sp
-                        )
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Text(
-                            text = "Your Points: ${leaderboardState.userLeaderboardEntry?.points ?: "-"}",
-                            fontWeight = FontWeight.ExtraLight,
-                            fontSize = 18.sp
-                        )
-                    }
-                }
-            }
+    LaunchedEffect(key1 = Unit) {
+        val currentDate = LocalDate.now()
+        val month = currentDate.monthValue // current month
+        val year = currentDate.year         // current year
 
+        onLeaderboardEvents(
+            LeaderboardEvents.GetUserRewardsPointsForMonth(
+                userId = userState.user!!.userId,
+                month = month,
+                year = year
+            )
+        )
+
+        onLeaderboardEvents(
+            LeaderboardEvents.GetAllUsersByRewardsForMonth(
+                month = month,
+                year = year
+            )
+        )
+    }
+
+    if (leaderboardState.userLeaderboardEntry != null) {
+        Scaffold(
+            topBar = {
+                CenterBar(
+                    onClick = { navController.navigateUp() },
+                    title = {
+                        Text(
+                            text = "Rewards",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    })
+            },
+        ) { innerPadding ->
             Column(
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .fillMaxWidth()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
             ) {
-                Card(
+
+                ElevatedCard(
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                     modifier = Modifier
-                        .padding(5.dp)
+                        .padding(10.dp)
                         .fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Text(
-                        text = "Leaderboard",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 15.dp, top = 20.dp, bottom = 10.dp)
-                    )
-                }
-
-                if (leaderboardState.allEntries.isNotEmpty()) {
-                    val sortedEntries = leaderboardState.allEntries
-                        .sortedByDescending { it.points.toInt() } // Sort by points in descending order
-                        .take(10) // Take top 10 entries
-
-                    sortedEntries.forEachIndexed { index, entry ->
-                        LeaderboardEntry(
-                            name = entry.name,
-                            points = entry.points,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                            position = index + 1
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 15.dp, vertical = 30.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RenderPainterIcon(
+                            id = R.drawable.reward_icon,
+                            modifier = Modifier.size(100.dp)
                         )
-                        if (index < sortedEntries.size - 1) {
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 25.dp)
+                        Column(
+                            modifier = Modifier.padding(horizontal = 30.dp)
+                        ) {
+                            Text(
+                                text = "Your Rank: ${leaderboardState.userLeaderboardEntry?.points ?: "-"}",
+                                fontSize = 20.sp
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Text(
+                                text = "Your Points: ${leaderboardState.userLeaderboardEntry?.points ?: "-"}",
+                                fontWeight = FontWeight.ExtraLight,
+                                fontSize = 18.sp
                             )
                         }
                     }
-                } else {
-                    // No entries available, show "No records"
-                    Text(
-                        text = "No records",
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        fontWeight = FontWeight.Light,
-                        fontSize = 16.sp
-                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .fillMaxWidth()
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        Text(
+                            text = "Leaderboard",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 15.dp, top = 20.dp, bottom = 10.dp)
+                        )
+                    }
+
+                    if (leaderboardState.allEntries.data.isNotEmpty()) {
+                        val sortedEntries = leaderboardState.allEntries.data
+                            .sortedByDescending { it.points.toInt() } // Sort by points in descending order
+                            .take(10) // Take top 10 entries
+
+                        sortedEntries.forEachIndexed { index, entry ->
+                            LeaderboardEntry(
+                                name = entry.name,
+                                points = entry.points,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                position = index + 1
+                            )
+                            if (index < sortedEntries.size - 1) {
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 25.dp)
+                                )
+                            }
+                        }
+                    } else {
+                        // No entries available, show "No records"
+                        Text(
+                            text = "No records",
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            fontWeight = FontWeight.Light,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }
@@ -163,7 +197,7 @@ fun LeaderboardEntry(name: String, points: String, modifier: Modifier = Modifier
                     .border(
                         BorderStroke(
                             3.dp,
-                            when(position){
+                            when (position) {
                                 1 -> gold
                                 2 -> silver
                                 3 -> bronze
@@ -174,7 +208,7 @@ fun LeaderboardEntry(name: String, points: String, modifier: Modifier = Modifier
                     )
                     .padding(10.dp),
                 tint =
-                when(position){
+                when (position) {
                     1 -> gold
                     2 -> silver
                     3 -> bronze

@@ -40,7 +40,8 @@ fun AppNavHost(
 
         animatedComposable(NavRoutes.Rewards.route) {
             val leaderboardState by leaderboardViewModel.state.collectAsState()
-            Rewards(navController, leaderboardState)
+            val userState by userViewModel.state.collectAsState()
+            Rewards(navController, leaderboardState = leaderboardState, onLeaderboardEvents = leaderboardViewModel::onEvent,userState=userState)
         }
 
         animatedComposable(NavRoutes.UpgradeQR.route) {

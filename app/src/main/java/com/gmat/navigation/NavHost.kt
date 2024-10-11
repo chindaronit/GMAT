@@ -70,8 +70,9 @@ fun AppNavHost(
         }
 
         animatedComposable(NavRoutes.TransactionChat.route) {
+            val userState by userViewModel.state.collectAsState()
             val transactionState by transactionViewModel.state.collectAsState()
-            TransactionChat(navController = navController)
+            TransactionChat(navController = navController, userState = userState, transactionState = transactionState)
         }
 
         animatedComposable(NavRoutes.TransactionHistory.route) {
@@ -89,7 +90,8 @@ fun AppNavHost(
         }
 
         animatedComposable(NavRoutes.TransactionReceipt.route) {
-            TransactionReceipt(navController = navController)
+            val transactionState by transactionViewModel.state.collectAsState()
+            TransactionReceipt(navController = navController,transactionState = transactionState)
         }
 
         animatedComposable(route = NavRoutes.OTP.route) {

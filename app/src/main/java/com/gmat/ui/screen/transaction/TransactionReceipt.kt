@@ -38,13 +38,14 @@ import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.components.transaction.ProfileTransactionCard
+import com.gmat.ui.state.TransactionState
 import com.gmat.ui.theme.DarkGreen
-import java.util.Date
 
 @Composable
 fun TransactionReceipt(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    transactionState: TransactionState
 ) {
     Scaffold(
         topBar = {
@@ -101,15 +102,17 @@ fun TransactionReceipt(
                     )
                 }
                 Spacer(modifier = Modifier.height(50.dp))
-                ReceiptCard(
-                    modifier = modifier,
-                    date = formatDate(Date()),
-                    type = "Merchant",
-                    gstin = "07AAECR2971C1Z",
-                    payee = "chinda@sbi",
-                    payer = "vishal@ybl",
-                    txnId = "424855509757"
-                )
+                transactionState.transaction?.let {
+                    ReceiptCard(
+                        modifier = modifier,
+                        date = formatDate(transactionState.transaction.timestamp),
+                        type = if ((transactionState.transaction.type ?: 0) == 0) "Merchant" else "Personal",
+                        gstin = transactionState.transaction.gstin,
+                        payee = transactionState.transaction.payeeId,
+                        payer = transactionState.transaction.payerId,
+                        txnId = transactionState.transaction.txnId
+                    )
+                }
             }
         }
     )

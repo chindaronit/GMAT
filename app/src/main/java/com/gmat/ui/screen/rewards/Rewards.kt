@@ -119,7 +119,7 @@ fun Rewards(
                         )
                         if (index < sortedEntries.size - 1) {
                             HorizontalDivider(
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 25.dp)

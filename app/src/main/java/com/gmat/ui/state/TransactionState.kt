@@ -7,5 +7,6 @@ data class TransactionState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val transaction: TransactionModel? = null,
-    val transactions: List<TransactionModel> = emptyList()
+    val transactions: List<TransactionModel> = emptyList(),
+    val trasactionChat:List<TransactionModel> = emptyList()
 )

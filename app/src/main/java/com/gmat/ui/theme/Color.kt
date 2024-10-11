@@ -14,3 +14,7 @@ val DarkerGreen= Color(0xFF00702F)
 val DarkRed= Color(0xFF850000)
 
 val LighterGray= Color(0xFFF1F1F1)
+
+val gold=Color(0xFFFFD700)
+val silver=Color(0xFF8A8A8A)
+val bronze=Color(0xFFCD7F32)

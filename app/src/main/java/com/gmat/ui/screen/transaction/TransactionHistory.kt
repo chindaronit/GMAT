@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,8 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,6 +53,7 @@ import com.gmat.R
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
+import com.gmat.ui.state.TransactionState
 import com.gmat.ui.theme.DarkGreen
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -64,7 +62,8 @@ import java.util.Date
 @Composable
 fun TransactionHistory(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    transactionState: TransactionState
 ) {
 
     val dateValues = listOf("Last 10 Days", "Last 30 Days", "This Month")
@@ -109,7 +108,7 @@ fun TransactionHistory(
                 )
             }
             LazyColumn {
-                items(5) {
+                items(transactionState.transactions.size) {
                     Card(
                         modifier = Modifier
                             .padding(5.dp)

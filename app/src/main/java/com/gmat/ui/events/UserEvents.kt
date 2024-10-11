@@ -8,8 +8,10 @@ sealed class UserEvents {
     data class GetUserByVPA(val vpa: String) : UserEvents()
     data class GetUserByUserId(val userId: String) : UserEvents()
     data class AddUser(val user: UserModel) : UserEvents()
-    data class UpdateUser(val user: UserModel) : UserEvents()
+    data object UpdateUser: UserEvents()
     data class ChangePhNo(val phNo: String) : UserEvents()
     data object SignIn: UserEvents()
     data class ChangeVerificationId(val id: String) : UserEvents()
+    data class OnProfileChange(val profile: String): UserEvents()
+    data class OnNameChange(val profile: String): UserEvents()
 }

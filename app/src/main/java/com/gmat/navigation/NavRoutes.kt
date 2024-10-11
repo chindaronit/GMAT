@@ -14,6 +14,7 @@ import com.gmat.ui.screen.transaction.AddTransactionDetails
 import com.gmat.ui.screen.transaction.TransactionReceipt
 import com.gmat.ui.state.UserState
 import com.gmat.ui.viewModel.UserViewModel
+import com.google.firebase.firestore.auth.User
 
 sealed class NavRoutes(val route: String) {
     data object Profile : NavRoutes("profile")
@@ -48,9 +49,9 @@ val authScreens = mapOf<String, @Composable (navController: NavController, userV
     NavRoutes.Register.route to { navController, userViewModel, userState -> Register(navController = navController,userState=userState,onUserEvents = userViewModel::onEvent) }
 )
 
-val settingScreens = mapOf<String, @Composable (navController: NavController) -> Unit>(
-    NavRoutes.Language.route to { navController -> Languages(navController = navController) },
-    NavRoutes.AboutUs.route to { navController -> AboutUs(navController = navController) },
-    NavRoutes.EditDetails.route to { navController -> EditProfileDetails(navController = navController) },
-    NavRoutes.FAQ.route to { navController -> FAQ(navController = navController) }
+val settingScreens = mapOf<String, @Composable (navController: NavController,userViewModel: UserViewModel,userState: UserState) -> Unit>(
+    NavRoutes.Language.route to { navController,_,_ -> Languages(navController = navController) },
+    NavRoutes.AboutUs.route to { navController,_,_ -> AboutUs(navController = navController) },
+    NavRoutes.EditDetails.route to { navController,userViewModel,userState -> EditProfileDetails(navController = navController,userState=userState, onUserEvents = userViewModel::onEvent) },
+    NavRoutes.FAQ.route to { navController,_,_ -> FAQ(navController = navController) }
 )

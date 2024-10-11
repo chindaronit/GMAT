@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.play.services.code.scanner)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.storage.ktx)
     ksp(libs.hilt.android.compiler)
     ksp(libs.hilt.compile)
     implementation(libs.hilt.navigation.compose)

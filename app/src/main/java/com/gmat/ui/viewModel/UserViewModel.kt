@@ -38,7 +38,7 @@ class UserViewModel @Inject constructor(
                 getUserByVPA(event.vpa)
             }
             is UserEvents.UpdateUser ->{
-                updateUser(event.user)
+                updateUser()
             }
 
             UserEvents.SignOut -> {
@@ -56,6 +56,15 @@ class UserViewModel @Inject constructor(
             is UserEvents.ChangeVerificationId -> {
                 _state.update { it.copy(verificationId = event.id) }
             }
+
+            is UserEvents.OnNameChange -> {
+                _state.update { it.copy(newName = event.profile) }
+            }
+
+            is UserEvents.OnProfileChange -> {
+
+            }
+
         }
     }
 
@@ -179,12 +188,16 @@ class UserViewModel @Inject constructor(
     }
 
 
-    private fun updateUser(user: UserModel) {
-        val userId= user.userId
+    private fun updateUser() {
+        val updatedUser=_state.value.user!!
+        updatedUser.profile=_state.value.newProfile
+        updatedUser.name=_state.value.newName
+        val userId= updatedUser.userId
+        _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val response=userAPI.updateUser(user)
+            val response=userAPI.updateUser(updatedUser)
             if (response.isSuccessful) {
-                getUserByPhone(userId)
+                getUserByUserId(userId)
             } else {
                 val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
                 _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }

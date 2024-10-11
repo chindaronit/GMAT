@@ -55,7 +55,6 @@ fun HomeScreen(
     onScannerEvent: (QRScannerEvents) -> Unit
 ) {
     val user = userState.user
-    val isBusiness by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     LaunchedEffect(key1 = userState.user) {
@@ -91,7 +90,7 @@ fun HomeScreen(
 
     LaunchedEffect(key1 = scannerState.details) {
         if (scannerState.details.isNotBlank()) {
-            if (isBusiness) {
+            if (user!!.isMerchant) {
                 navController.navigate(NavRoutes.UpgradeQR.route)
             } else {
                 navController.navigate(NavRoutes.AddTransactionDetails.route)
@@ -164,7 +163,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    if (isBusiness) {
+                    if (user.isMerchant) {
                         MerchantFeatures(navController, onScanClick = {
                             onScannerEvent(QRScannerEvents.StartScanning)
                         })

@@ -38,7 +38,7 @@ class UserViewModel @Inject constructor(
                 getUserByVPA(event.vpa)
             }
             is UserEvents.UpdateUser ->{
-                updateUser(event.user)
+                updateUser()
             }
 
             UserEvents.SignOut -> {
@@ -50,12 +50,21 @@ class UserViewModel @Inject constructor(
             }
 
             UserEvents.SignIn -> {
-                getUserByPhone(state.value.phNo)
+                getUserByPhone(_state.value.phNo)
             }
 
             is UserEvents.ChangeVerificationId -> {
                 _state.update { it.copy(verificationId = event.id) }
             }
+
+            is UserEvents.OnNameChange -> {
+                _state.update { it.copy(newName = event.name) }
+            }
+
+            is UserEvents.OnProfileChange -> {
+                _state.update { it.copy(newProfile = event.profile) }
+            }
+
         }
     }
 
@@ -66,7 +75,6 @@ class UserViewModel @Inject constructor(
                 val response = userAPI.getUserByUserId(userId)
 
                 if (response.isSuccessful && response.body() != null) {
-                    Log.d("GetUserByUserId", "user: ${response.body()}")
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -179,15 +187,32 @@ class UserViewModel @Inject constructor(
     }
 
 
-    private fun updateUser(user: UserModel) {
-        val userId= user.userId
+    private fun updateUser() {
+        val updatedUser=_state.value.user!!
+        updatedUser.profile= _state.value.newProfile.ifBlank { _state.value.user!!.profile }
+        updatedUser.name= _state.value.newName.ifBlank { _state.value.user!!.name }
+        val userId= updatedUser.userId
+        _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val response=userAPI.updateUser(user)
+            val response=userAPI.updateUser(updatedUser)
             if (response.isSuccessful) {
-                getUserByPhone(userId)
+                getUserByUserId(userId)
             } else {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
+                when (response.code()) {
+                    403 -> {
+                        Log.d("UpdateUser", "Forbidden: 403")
+                        _state.update { it.copy(isLoading = false, error = "Forbidden: Access denied") }
+                    }
+                    400 -> {
+                        Log.d("UpdateUser", "Forbidden: 400")
+                        _state.update { it.copy(isLoading = false, error = "Bad Request: Missing or invalid fields") }
+                    }
+                    else -> {
+                        println(response.code())
+                        val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                        _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
+                    }
+                }
             }
         }
     }

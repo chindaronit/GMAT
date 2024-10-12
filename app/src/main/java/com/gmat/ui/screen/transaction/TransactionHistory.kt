@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -52,6 +53,8 @@ import com.gmat.R
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
+import com.gmat.ui.state.TransactionState
+import com.gmat.ui.theme.DarkGreen
 import kotlinx.coroutines.launch
 import java.util.Date
 
@@ -59,7 +62,8 @@ import java.util.Date
 @Composable
 fun TransactionHistory(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    transactionState: TransactionState
 ) {
 
     val dateValues = listOf("Last 10 Days", "Last 30 Days", "This Month")
@@ -104,7 +108,7 @@ fun TransactionHistory(
                 )
             }
             LazyColumn {
-                items(5) {
+                items(transactionState.transactions.size) {
                     Card(
                         modifier = Modifier
                             .padding(5.dp)

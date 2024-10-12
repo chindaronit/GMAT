@@ -7,5 +7,7 @@ data class UserState (
     val error: String? = null,
     val user: UserModel? =null,
     val phNo: String = "",
-    val verificationId: String=""
+    val verificationId: String="",
+    val newName: String="",
+    val newProfile: String=""
 )

@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,7 +56,6 @@ fun HomeScreen(
     onScannerEvent: (QRScannerEvents) -> Unit
 ) {
     val user = userState.user
-    val isBusiness by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     LaunchedEffect(key1 = userState.user) {
@@ -91,7 +91,7 @@ fun HomeScreen(
 
     LaunchedEffect(key1 = scannerState.details) {
         if (scannerState.details.isNotBlank()) {
-            if (isBusiness) {
+            if (user!!.isMerchant) {
                 navController.navigate(NavRoutes.UpgradeQR.route)
             } else {
                 navController.navigate(NavRoutes.AddTransactionDetails.route)
@@ -127,14 +127,22 @@ fun HomeScreen(
                     },
                     actions = {
                         IconButton(onClick = { navController.navigate(NavRoutes.Profile.route) }) {
-                            AsyncImage(
-                                model = R.drawable.user_icon,
-                                contentDescription = "User Profile",
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .clip(CircleShape)
-                            )
+                            if(userState.user.profile.isNotBlank()){
+                                AsyncImage(
+                                    model = userState.user.profile,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .clip(CircleShape)
+                                )
+                            }
+                            else{
+                                Icon(
+                                    painter = painterResource(R.drawable.user_icon),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(50.dp)
+                                )
+                            }
                         }
                     }
                 )
@@ -164,7 +172,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    if (isBusiness) {
+                    if (user.isMerchant) {
                         MerchantFeatures(navController, onScanClick = {
                             onScannerEvent(QRScannerEvents.StartScanning)
                         })

@@ -1,6 +1,7 @@
 package com.gmat.data.repository.api
 
 import com.gmat.data.model.LeaderboardModel
+import com.gmat.data.model.LeaderboardResponses
 import com.gmat.env.Status
 import retrofit2.Response
 import retrofit2.http.GET
@@ -28,7 +29,7 @@ interface LeaderboardAPI {
     suspend fun getUsersByRewardsForMonth(
         @Query("month") month: Int,
         @Query("year") year: Int
-    ): Response<List<LeaderboardModel>>
+    ): Response<LeaderboardResponses>
 
-    abstract fun updateLeaderboard(leaderboard: LeaderboardModel): Any
+    suspend fun updateLeaderboard(leaderboard: LeaderboardModel): Response<Unit>
 }

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.gmat.R
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
@@ -64,7 +65,7 @@ fun Profile(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState()),
         ) {
-            ProfileCard(uName = userState.user!!.name, uMobile = userState.user.phNo, uUpiId = userState.user.vpa)
+            ProfileCard(uName = userState.user!!.name, uMobile = userState.user.phNo, uUpiId = userState.user.vpa, uProfile = userState.user.profile)
             Column(
                 modifier = Modifier.padding(20.dp),
             ) {
@@ -112,6 +113,7 @@ fun ProfileCard(
     uName: String = "",
     uUpiId: String = "",
     uMobile: String = "",
+    uProfile: String=""
 ) {
     ElevatedCard(
         onClick = {},
@@ -133,11 +135,23 @@ fun ProfileCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start,
         ) {
-            Icon(
-                painter = painterResource(R.drawable.user_icon),
-                contentDescription = null,
-                modifier = Modifier.size(80.dp)
-            )
+            if(uProfile.isNotBlank()){
+                AsyncImage(
+                    model = uProfile,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(90.dp)
+                        .clip(CircleShape)
+                )
+            }
+            else{
+                Icon(
+                    painter = painterResource(R.drawable.user_icon),
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.width(20.dp))
             Column(
                 modifier = Modifier.padding(horizontal = 10.dp)
@@ -147,9 +161,9 @@ fun ProfileCard(
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 22.sp
                 )
-                Text(text = uUpiId)
+                Text(text = "UPI ID: $uUpiId")
                 Text(
-                    text = uMobile,
+                    text = "Mobile: $uMobile",
                     fontWeight = FontWeight.SemiBold
                 )
             }

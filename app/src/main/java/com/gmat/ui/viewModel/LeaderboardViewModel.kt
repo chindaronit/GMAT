@@ -43,7 +43,6 @@ class LeaderboardViewModel @Inject constructor(
             try {
                 val response = leaderboardAPI.getUserRewardsPointsForMonth(userId, month, year)
                 if (response.isSuccessful && response.body() != null) {
-                    Log.d("GetUserRewardsPointsForMonth", "User rewards: ${response.body()}")
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -65,7 +64,7 @@ class LeaderboardViewModel @Inject constructor(
             try {
                 val response = leaderboardAPI.getUsersByRewardsForMonth(month, year)
                 if (response.isSuccessful && response.body() != null) {
-                    Log.d("GetAllUsersByRewardsForMonth", "Users: ${response.body()}")
+                    println("got success")
                     _state.update {
                         it.copy(
                             isLoading = false,

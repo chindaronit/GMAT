@@ -40,7 +40,8 @@ fun AppNavHost(
 
         animatedComposable(NavRoutes.Rewards.route) {
             val leaderboardState by leaderboardViewModel.state.collectAsState()
-            Rewards(navController, leaderboardState)
+            val userState by userViewModel.state.collectAsState()
+            Rewards(navController, leaderboardState = leaderboardState, onLeaderboardEvents = leaderboardViewModel::onEvent,userState=userState)
         }
 
         animatedComposable(NavRoutes.UpgradeQR.route) {
@@ -76,7 +77,8 @@ fun AppNavHost(
         }
 
         animatedComposable(NavRoutes.TransactionHistory.route) {
-            TransactionHistory(navController = navController)
+            val transactionState by transactionViewModel.state.collectAsState()
+            TransactionHistory(navController = navController, transactionState = transactionState)
         }
 
         animatedComposable(NavRoutes.AddTransactionDetails.route) {
@@ -118,7 +120,8 @@ fun AppNavHost(
 
         settingScreens.forEach { (route, screen) ->
             animatedComposable(route) {
-                screen(navController)
+                val userState by userViewModel.state.collectAsState()
+                screen(navController,userViewModel,userState)
             }
         }
     }

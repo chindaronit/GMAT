@@ -10,6 +10,7 @@ import {
   getAllTransactionsForPayerIdAndPayeeId,
   getAllTransactionsForGstin,
   getRecentTransactionsForUser,
+  getRecentTransactionsForMerchant,
 } from "../controllers/transaction.controller.js";
 
 const transactionRouter = express.Router();
@@ -17,6 +18,7 @@ transactionRouter.route("/").get(getTransactionByTxnId).post(addTransaction);
 transactionRouter.route("/all/user").get(getAllTransactionsForUser);
 transactionRouter.route("/all/month").get(getAllTransactionsForMonth);
 transactionRouter.route("/recenttransaction").get(getRecentTransactionsForUser);
+transactionRouter.route("/recentmerchanttransaction").get(getRecentTransactionsForMerchant);
 transactionRouter
   .route("/all/payee")
   .get(getUserTransactionsByUserIdAndPayeeId);

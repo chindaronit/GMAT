@@ -24,17 +24,32 @@ export const addTransaction = async (req, res) => {
     });
   }
 
-  const data = {
+  let data = {
     payerId: payerId,
     payeeId: payeeId,
     type: type,
     amount: amount,
     gstin: gstin,
     status: "1",
-    Timestamp: Timestamp.now(),
+    timestamp: Timestamp.now(),
   };
 
   try {
+    const payeeVpa = data.payeeId;
+    const usersCollection = collection(db, USER_COLLECTION);
+    const userQuery = query(usersCollection, where("vpa", "==", payeeVpa));
+    const payeeQuerySnapshot = await getDocs(userQuery);
+    let payeeName = null;
+    if (!payeeQuerySnapshot.empty) {
+      payeeQuerySnapshot.forEach((payeeDoc) => {
+        const payeeData = payeeDoc.data();
+        payeeName = payeeData.name || "Unknown";
+      });
+    } else {
+      payeeName = "Unknown";
+    }
+    data = { ...data, name: payeeName };
+
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
     const monthYearKey = `${currentYear}-${String(currentMonth).padStart(
@@ -60,7 +75,9 @@ export const addTransaction = async (req, res) => {
     await setDoc(transactionDocRef, { monthlyTransactions }, { merge: true });
     // Delete the transaction from the collection (if you need to delete the entire transaction)
     await deleteDoc(doc(db, TRANSACTION_COLLECTION, txnId));
-    res.status(200).send({ msg: "Transaction added successfully", txnId });
+    res
+      .status(200)
+      .send({ msg: "Transaction added successfully", txnId: txnId });
   } catch (error) {
     console.error("Error adding transaction:", error);
     res.status(500).send({ message: "Internal server error" });
@@ -301,7 +318,7 @@ export const getAllTransactionsForPayerIdAndPayeeId = async (req, res) => {
 
     // Sort the transactions by timestamp in descending order
     matchingTransactions.sort(
-      (a, b) => b.Timestamp.toDate() - a.Timestamp.toDate()
+      (a, b) => b.timestamp.toDate() - a.timestamp.toDate()
     );
 
     // Check if any transactions were found
@@ -470,7 +487,7 @@ export const getAllTransactionsForGstinInYear = async (req, res) => {
 
 //       // Sort transactions based on the timestamp in descending order
 //       const sortedTransactions = transactions.sort((a, b) => {
-//         return b.Timestamp.seconds - a.Timestamp.seconds; // Adjust as necessary for sorting
+//         return b.timestamp.seconds - a.timestamp.seconds; // Adjust as necessary for sorting
 //       });
 
 //       return {
@@ -481,8 +498,8 @@ export const getAllTransactionsForGstinInYear = async (req, res) => {
 
 //     // Sort payees based on the latest transaction's timestamp in descending order
 //     const sortedResult = result.sort((a, b) => {
-//       const lastTxnA = a.transactions[0]?.Timestamp.seconds || 0; // Get latest transaction timestamp for payee A
-//       const lastTxnB = b.transactions[0]?.Timestamp.seconds || 0; // Get latest transaction timestamp for payee B
+//       const lastTxnA = a.transactions[0]?.timestamp.seconds || 0; // Get latest transaction timestamp for payee A
+//       const lastTxnB = b.transactions[0]?.timestamp.seconds || 0; // Get latest transaction timestamp for payee B
 //       return lastTxnB - lastTxnA; // Sort by descending order
 //     });
 
@@ -518,7 +535,7 @@ export const getRecentTransactionsForUser = async (req, res) => {
     const allTransactions = Object.values(monthlyTransactions)
       .flat()
       .sort((a, b) => {
-        return b.Timestamp.seconds - a.Timestamp.seconds;
+        return b.timestamp.seconds - a.timestamp.seconds;
       });
     const payerTransactions = allTransactions.filter((txn) => txn.type === "0");
     const usersCollection = collection(db, USER_COLLECTION);
@@ -555,6 +572,92 @@ export const getRecentTransactionsForUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error retrieving recent transactions for user:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
+
+export const getRecentTransactionsForMerchant = async (req, res) => {
+  const { vpa } = req.query;
+
+  if (!vpa) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid vpa in the request",
+    });
+  }
+
+  try {
+    // Reference the entire TRANSACTION_COLLECTION to fetch all documents
+    const transactionCollectionRef = collection(db, TRANSACTION_COLLECTION);
+    const transactionQuerySnapshot = await getDocs(transactionCollectionRef);
+
+    if (transactionQuerySnapshot.empty) {
+      return res.status(404).send({ message: "No transactions found" });
+    }
+
+    // Extract all transactions from the collection
+    const allTransactions = [];
+    transactionQuerySnapshot.forEach((doc) => {
+      const monthlyTransactions = doc.data().monthlyTransactions || {};
+      const transactions = Object.values(monthlyTransactions).flat();
+      allTransactions.push(...transactions);
+    });
+
+    // Sort all transactions by timestamp in descending order
+    const sortedTransactions = allTransactions.sort(
+      (a, b) => b.timestamp.seconds - a.timestamp.seconds
+    );
+
+    // Filter transactions where payeeId matches the given vpa
+    const merchantTransactions = sortedTransactions.filter(
+      (txn) => txn.payeeId.trim() === vpa.trim()
+    );
+
+    if (!merchantTransactions.length) {
+      return res.status(404).send({
+        message: "No transactions found for the given VPA",
+      });
+    }
+
+    // Prepare to fetch payer details
+    const usersCollection = collection(db, USER_COLLECTION);
+    const transactionsWithPayerDetails = [];
+
+    for (const txn of merchantTransactions) {
+      const payerId = txn.payerId.trim();
+      const payerQuery = query(usersCollection, where("vpa", "==", payerId));
+      const payerQuerySnapshot = await getDocs(payerQuery);
+
+      if (!payerQuerySnapshot.empty) {
+        payerQuerySnapshot.forEach((payerDoc) => {
+          const payerDetails = payerDoc.data();
+          transactionsWithPayerDetails.push({
+            payerDetails: payerDetails,
+            transaction: txn,
+          });
+        });
+      } else {
+        console.log(`Payer with ID ${payerId} does not exist.`);
+      }
+    }
+
+    if (!transactionsWithPayerDetails.length) {
+      return res.status(404).send({
+        message: "No payer details found for the transactions",
+      });
+    }
+
+    // Construct the result with payer details and transactions
+    const result = transactionsWithPayerDetails.map((item) => ({
+      payerDetails: item.payerDetails,
+      transaction: item.transaction,
+    }));
+
+    res.status(200).send({
+      message: "Recent transactions retrieved successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error retrieving recent transactions for merchant:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 };

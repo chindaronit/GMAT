@@ -236,8 +236,9 @@ export const getAllTransactionsForGstin = async (req, res) => {
         }
       }
       const gstinFilteredTransactions = allUserTransactions.filter(
-        (transaction) => { 
-          return transaction.gstin === gstin}
+        (transaction) => {
+          return transaction.gstin === gstin;
+        }
       );
       matchingTransactions = matchingTransactions.concat(
         gstinFilteredTransactions
@@ -289,7 +290,8 @@ export const getAllTransactionsForPayerIdAndPayeeId = async (req, res) => {
           const trimmedInputType = type.trim();
           return (
             trimmedPayerId === trimmedInputPayerId &&
-            trimmedPayeeId === trimmedInputPayeeId && trimmedType === trimmedInputType
+            trimmedPayeeId === trimmedInputPayeeId &&
+            trimmedType === trimmedInputType
           );
         });
         matchingTransactions =
@@ -494,7 +496,6 @@ export const getAllTransactionsForGstinInYear = async (req, res) => {
 //   }
 // };
 
-
 export const getRecentTransactionsForUser = async (req, res) => {
   const { userId } = req.query;
 
@@ -550,7 +551,7 @@ export const getRecentTransactionsForUser = async (req, res) => {
 
     res.status(200).send({
       message: "Recent transactions retrieved successfully",
-      transactionsByPayees: result,
+      data: result,
     });
   } catch (error) {
     console.error("Error retrieving recent transactions for user:", error);

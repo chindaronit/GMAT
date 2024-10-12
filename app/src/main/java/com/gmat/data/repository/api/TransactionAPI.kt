@@ -48,4 +48,11 @@ interface TransactionAPI {
         @Query("payerId") payerId: String,
         @Query("payeeId") payeeId: String
     ): Response<List<TransactionModel>>
+
+    // Get all transactions between a payer and payee
+    @GET("/transactions/recenttransaction")
+    suspend fun getRecentTransactionsForUser(
+        @Query("userId") userId: String
+    ): Response<List<TransactionModel>>
+
 }

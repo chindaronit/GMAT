@@ -79,7 +79,7 @@ export const getUserByVPA = async (req, res) => {
 export const addUser = async (req, res) => {
   const { name, vpa, profile, qr, isMerchant, phNo } = req.body;
 
-  if (!vpa || !phNo || isMerchant === undefined || !qr || !name) {
+  if (!vpa || !phNo || isMerchant === undefined|| !name) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid fields in the request",
     });

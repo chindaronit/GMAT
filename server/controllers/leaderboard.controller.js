@@ -8,7 +8,8 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
-const LEADERBOARD_COLLECTION="rewards"
+const LEADERBOARD_COLLECTION = "rewards";
+const USER_COLLECTION = "users";
 
 // Function to update rewards for a user based on a transaction
 export const updateUserTransactionRewards = async (req, res) => {
@@ -16,15 +17,15 @@ export const updateUserTransactionRewards = async (req, res) => {
   if (!userId || !transactionAmount) {
     console.error("Error: Missing required fields in the request body");
     return res
-      .status(400)  
+      .status(400)
       .send({ message: "Bad Request: userId, transactionAmount are required" });
   }
   try {
-    const rewardPoints = Math.floor(transactionAmount / 10); 
+    const rewardPoints = Math.floor(transactionAmount / 10);
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
     const rewardsCollectionRef = collection(db, LEADERBOARD_COLLECTION);
-    const userRewardsDocRef  = doc(rewardsCollectionRef, userId);
+    const userRewardsDocRef = doc(rewardsCollectionRef, userId);
     const userRewardsDoc = await getDoc(userRewardsDocRef);
 
     let monthlyRewards = {};
@@ -52,8 +53,8 @@ export const updateUserTransactionRewards = async (req, res) => {
 
 // Function to get reward points for a specific user by phone number and a particular month (format: YYYY-MM)
 export const getUserRewardsPointsForMonth = async (req, res) => {
-  const { userId, month, year } = req.query; 
-  
+  const { userId, month, year } = req.query;
+
   if (!userId || !month || !year) {
     console.error("Error: Missing required fields in the request body");
     return res
@@ -62,13 +63,22 @@ export const getUserRewardsPointsForMonth = async (req, res) => {
   }
 
   try {
+    // Fetch user's name from the USER_COLLECTION
+    const userDocRef = doc(collection(db, USER_COLLECTION), userId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const userName = userDoc.data().name;
     const monthKey = `${year}-${month}`;
     const rewardsCollectionRef = collection(db, LEADERBOARD_COLLECTION);
     const userRewardsDocRef = doc(rewardsCollectionRef, userId);
     const userRewardsDoc = await getDoc(userRewardsDocRef);
 
     if (!userRewardsDoc.exists()) {
-      return res  
+      return res
         .status(404)
         .send({ message: "Rewards data not found for the user" });
     }
@@ -76,14 +86,17 @@ export const getUserRewardsPointsForMonth = async (req, res) => {
     const rewardsForMonth = rewardsData[monthKey];
 
     if (!rewardsForMonth) {
-      return res.status(404).send({ message: `No rewards data found for the month: ${month}` });
+      return res
+        .status(404)
+        .send({ message: `No rewards data found for the month: ${month}` });
     }
     res.status(200).send({
       message: `Rewards data retrieved successfully for the month: ${month}`,
       rewards: {
-        monthKey,
+        name: userName,
+        month: month,
+        year: year,
         points: rewardsForMonth.points,
-        lastUpdated: rewardsForMonth.lastUpdated,
       },
     });
   } catch (error) {
@@ -94,7 +107,7 @@ export const getUserRewardsPointsForMonth = async (req, res) => {
 
 // Function to get all users in descending order by rewards points for a specific month
 export const getUsersByRewardsForMonth = async (req, res) => {
-  const { month, year } = req.query; 
+  const { month, year } = req.query;
   if (!month || !year) {
     console.error("Error: Missing required fields in the request body");
     return res
@@ -114,16 +127,17 @@ export const getUsersByRewardsForMonth = async (req, res) => {
       const userRewardsData = userDoc.data().monthlyRewards || {};
       if (userRewardsData[monthKey]) {
         const { points } = userRewardsData[monthKey];
-        const userDocRef = doc(db, "users", userId);
+        const userDocRef = doc(collection(db, USER_COLLECTION), userId);
         const userDocSnapshot = await getDoc(userDocRef);
 
         if (userDocSnapshot.exists()) {
           const userData = userDocSnapshot.data();
           const userInfo = {
-            userId,
-            phNo: userData.phNo,
-            name: userData.name || "Unknown",
-            points,
+            userId: userId,
+            name: userData.name,
+            points: points,
+            month: month,
+            year: year,
           };
           usersWithRewards.push(userInfo);
         }
@@ -132,7 +146,7 @@ export const getUsersByRewardsForMonth = async (req, res) => {
     usersWithRewards.sort((a, b) => b.points - a.points);
     res.status(200).send({
       message: `Users sorted by rewards points for ${monthKey}`,
-      users: usersWithRewards,
+      data: usersWithRewards,
     });
   } catch (error) {
     console.error("Error retrieving users by rewards:", error);

@@ -25,6 +25,7 @@ export const addTransaction = async (req, res) => {
   }
 
   let data = {
+    payerUserId:userId,
     payerId: payerId,
     payeeId: payeeId,
     type: type,
@@ -73,9 +74,9 @@ export const getAllTransactionsForMonth = async (req, res) => {
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
     const monthYear = `${year}-${month}`;
     const transactionDoc = await getDoc(transactionDocRef);
-    // if (!transactionDoc.exists()) {
-    //   return res.status(404).send({ message: "No transactions found for the user" });
-    // }
+    if (!transactionDoc.exists()) {
+      return res.status(404).send({ message: "No transactions found for the user" });
+    }
     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
     const transactionsForMonth = monthlyTransactions[monthYear];
     const sortedTransactions = transactionsForMonth.sort((a, b) => {
@@ -106,9 +107,9 @@ export const getTransactionsByPayeeForMonth = async (req, res) => {
     const transactionCollectionRef = collection(db, TRANSACTION_COLLECTION);
     const transactionQuerySnapshot = await getDocs(transactionCollectionRef);
 
-    // if (transactionQuerySnapshot.empty) {
-    //   return res.status(404).send({ message: "No transactions found" });
-    // }
+    if (transactionQuerySnapshot.empty) {
+      return res.status(404).send({ message: "No transactions found" });
+    }
 
     const allTransactions = [];
     transactionQuerySnapshot.forEach((doc) => {
@@ -150,11 +151,11 @@ export const getTransactionByTxnId = async (req, res) => {
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
     const transactionDoc = await getDoc(transactionDocRef);
 
-    // if (!transactionDoc.exists()) {
-    //   return res
-    //     .status(404)
-    //     .send({ message: "User transaction data not found" });
-    // }
+    if (!transactionDoc.exists()) {
+      return res
+        .status(404)
+        .send({ message: "User transaction data not found" });
+    }
     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
     let foundTransaction = null;
     for (const month in monthlyTransactions) {
@@ -162,9 +163,9 @@ export const getTransactionByTxnId = async (req, res) => {
       foundTransaction = transactions.find((txn) => txn.txnId === txnId);
       if (foundTransaction) break;
     }
-    if (!foundTransaction) {
-      return res.status(404).send({ message: "Transaction not found" });
-    }
+    // if (!foundTransaction) {
+    //   return res.status(404).send({ message: "Transaction not found" });
+    // }
     res.status(200).send({
       message: "Transaction retrieved successfully",
       transaction: foundTransaction,
@@ -261,9 +262,9 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
     const transactionCollectionRef = collection(db, TRANSACTION_COLLECTION);
     const transactionQuerySnapshot = await getDocs(transactionCollectionRef);
 
-    // if (transactionQuerySnapshot.empty) {
-    //   return res.status(404).send({ message: "No transactions found" });
-    // }
+    if (transactionQuerySnapshot.empty) {
+      return res.status(404).send({ message: "No transactions found" });
+    }
     const allTransactions = [];
     transactionQuerySnapshot.forEach((doc) => {
       const monthlyTransactions = doc.data().monthlyTransactions || {};

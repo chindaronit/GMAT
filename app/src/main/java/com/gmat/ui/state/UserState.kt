@@ -10,5 +10,6 @@ data class UserState (
     val verificationId: String="",
     val newName: String="",
     val newProfile: String="",
-    val newQr: String=""
+    val newQr: String="",
+    val newVpa: String=""
 )

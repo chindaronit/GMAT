@@ -43,6 +43,7 @@ import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.components.MonthYearPicker
+import com.gmat.ui.components.TransactionPreloader
 import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.state.TransactionState
 import com.gmat.ui.state.UserState
@@ -81,7 +82,11 @@ fun TransactionHistory(
     var selectedMonth by remember { mutableIntStateOf(currMonth) }
     var selectedYear by remember { mutableIntStateOf(currYear) }
 
-    LaunchedEffect(key1 = transactionState.transactionHistory, key2 = selectedMonth,key3=selectedYear) {
+    LaunchedEffect(
+        key1 = transactionState.transactionHistory,
+        key2 = selectedMonth,
+        key3 = selectedYear
+    ) {
         if (transactionState.transactionHistory == null) {
             if (userState.user!!.isMerchant) {
                 onTransactionEvents(
@@ -105,33 +110,44 @@ fun TransactionHistory(
         }
     }
 
-    if (transactionState.transactionHistory!=null){
-        Scaffold(
-            topBar = {
-                CenterBar(
-                    onClick = { navController.navigateUp() },
-                    title = {
-                        Text(
-                            text = stringResource(id = R.string.history),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    })
-            }
-        ) { innerPadding ->
 
+
+
+    Scaffold(
+        topBar = {
+            CenterBar(
+                onClick = { navController.navigateUp() },
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.history),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                })
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = modifier.padding(innerPadding)
+        ) {
+            if (transactionState.isLoading) {
+                TransactionPreloader()
+            }
+        }
+
+        if (transactionState.transactionHistory != null && !transactionState.isLoading) {
             Column(
                 modifier = modifier.padding(innerPadding)
             ) {
 
+
                 DateFilter {
-                    visible=true
+                    visible = true
                 }
 
                 MonthYearPicker(
                     visible = visible,
-                    currentMonth = currMonth - 1,
-                    currentYear = currYear,
+                    currentMonth = selectedMonth-1,
+                    currentYear = selectedYear,
                     onConfirmation = { month, year ->
                         selectedMonth = month
                         selectedYear = year
@@ -153,11 +169,11 @@ fun TransactionHistory(
                     )
                 ) {
                     Text(
-                        text = months[selectedMonth-1]+", $selectedYear",
+                        text = months[selectedMonth - 1] + ", $selectedYear",
                         modifier = modifier.padding(horizontal = 16.dp, vertical = 10.dp)
                     )
                 }
-                if(transactionState.transactionHistory.isEmpty()){
+                if (transactionState.transactionHistory.isEmpty()) {
                     Text(
                         text = "No transactions found!",
                         modifier = modifier.padding(horizontal = 16.dp, vertical = 10.dp)
@@ -170,15 +186,14 @@ fun TransactionHistory(
                             modifier = Modifier
                                 .padding(5.dp)
                                 .clickable {
-                                    if(userState.user!!.isMerchant){
+                                    if (userState.user!!.isMerchant) {
                                         navController.navigate(
                                             NavRoutes.TransactionReceipt.withArgs(
                                                 transaction.txnId,
                                                 transaction.payerUserId
                                             )
                                         )
-                                    }
-                                    else{
+                                    } else {
                                         navController.navigate(
                                             NavRoutes.TransactionReceipt.withArgs(
                                                 transaction.txnId,
@@ -253,8 +268,9 @@ fun TransactionHistory(
             }
         }
     }
-
 }
+
+
 
 
 @Composable

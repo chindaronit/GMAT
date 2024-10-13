@@ -69,6 +69,10 @@ class UserViewModel @Inject constructor(
             is UserEvents.OnChangeQR -> {
                 _state.update { it.copy(newQr = event.qr) }
             }
+
+            is UserEvents.OnChangeVPA -> {
+                _state.update { it.copy(newVpa= event.vpa) }
+            }
         }
     }
 
@@ -153,6 +157,7 @@ class UserViewModel @Inject constructor(
         updatedUser.profile = _state.value.newProfile.ifBlank { _state.value.user!!.profile }
         updatedUser.name = _state.value.newName.ifBlank { _state.value.user!!.name }
         updatedUser.qr = _state.value.newQr.ifBlank { _state.value.user!!.qr }
+        updatedUser.vpa = _state.value.newVpa.ifBlank { _state.value.user!!.vpa }
         val userId = updatedUser.userId
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {

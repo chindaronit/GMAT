@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gmat.R
 import com.gmat.env.addGstinToUpiUrl
+import com.gmat.env.extractPa
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.events.QRScannerEvents
@@ -111,6 +112,7 @@ fun UpgradeQR(
                                     )
                                 )
                             )
+                            onUserEvents(UserEvents.OnChangeVPA(vpa = extractPa(scannerState.details)))
                             canContinue = true
                         } else {
                             Toast.makeText(context, "Invalid GSTIN format", Toast.LENGTH_SHORT)

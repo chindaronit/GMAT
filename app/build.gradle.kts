@@ -82,6 +82,5 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.hilt.android)
     implementation(libs.accompanist.placeholder.material)
-
-
+    implementation(libs.androidx.ui)
 }

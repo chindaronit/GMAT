@@ -39,6 +39,7 @@ import com.gmat.R
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
+import com.gmat.ui.components.ReceiptPreloader
 import com.gmat.ui.components.transaction.ProfileTransactionCard
 import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.state.TransactionState
@@ -51,7 +52,7 @@ fun TransactionReceipt(
     navController: NavController,
     transactionState: TransactionState,
     userState: UserState,
-    onTransactionEvents: (TransactionEvents)->Unit,
+    onTransactionEvents: (TransactionEvents) -> Unit,
     txnId: String,
     userId: String
 ) {
@@ -69,80 +70,89 @@ fun TransactionReceipt(
         }
     }
 
-    if(transactionState.transaction!=null) {
-        val transaction=transactionState.transaction
-        Scaffold(
-            topBar = {
-                CenterBar(
-                    onClick = {
-                        navController.navigate(NavRoutes.Home.route) {
-                            popUpTo(NavRoutes.TransactionReceipt.route) {
-                                inclusive = true  // This clears the entire back stack
-                            }
-                            launchSingleTop = true  // Avoid creating multiple instances of the Home screen
+
+    Scaffold(
+        topBar = {
+            CenterBar(
+                onClick = {
+                    navController.navigate(NavRoutes.Home.route) {
+                        popUpTo(NavRoutes.TransactionReceipt.route) {
+                            inclusive = true  // This clears the entire back stack
                         }
-                    },
-                    title = {
-                        Text(
-                            text = stringResource(id = R.string.receipt),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    })
-            },
-            content = { innerPadding ->
-                Column(
-                    modifier = modifier
-                        .padding(innerPadding)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    ProfileTransactionCard(
-                        uName = transaction.name,
-                        uUpiId = transaction.payeeId,
-                        userState.user!!.isMerchant
-                    )
-                    Spacer(modifier = Modifier.height(50.dp))
-                    Row(
-                        modifier = modifier
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.CurrencyRupee,
-                            contentDescription = "Currency Rupee",
-                            modifier = modifier.size(36.dp)
-                        )
-                        Text(
-                            text = transaction.amount,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = modifier.width(8.dp))
-                        Icon(
-                            painter = painterResource(id = R.drawable.success),
-                            contentDescription = null,
-                            tint = DarkGreen,
-                            modifier = modifier.size(36.dp)
-                        )
+                        launchSingleTop =
+                            true  // Avoid creating multiple instances of the Home screen
                     }
-                    Spacer(modifier = Modifier.height(50.dp))
-
-                        ReceiptCard(
-                            modifier = modifier,
-                            date = formatDate(transaction.timestamp),
-                            type = if (transaction.type == 0
-                            ) "Merchant" else "Personal",
-                            gstin = transaction.gstin,
-                            payee = transaction.payeeId,
-                            payer = transaction.payerId,
-                            txnId = transaction.txnId
-                        )
-
-                }
+                },
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.receipt),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                })
+        }) { innerPadding ->
+        if (transactionState.isLoading) {
+            Column(
+                modifier = modifier
+                    .padding(innerPadding)
+            ) {
+                ReceiptPreloader()
             }
-        )
+        }
+
+        if (transactionState.transaction != null && !transactionState.isLoading) {
+            val transaction = transactionState.transaction
+            Column(
+                modifier = modifier
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                ProfileTransactionCard(
+                    uName = transaction.name,
+                    uUpiId = transaction.payeeId,
+                    userState.user!!.isMerchant
+                )
+                Spacer(modifier = Modifier.height(50.dp))
+                Row(
+                    modifier = modifier
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CurrencyRupee,
+                        contentDescription = "Currency Rupee",
+                        modifier = modifier.size(36.dp)
+                    )
+                    Text(
+                        text = transaction.amount,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = modifier.width(8.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.success),
+                        contentDescription = null,
+                        tint = DarkGreen,
+                        modifier = modifier.size(36.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(50.dp))
+
+                ReceiptCard(
+                    modifier = modifier,
+                    date = formatDate(transaction.timestamp),
+                    type = if (transaction.type == 0
+                    ) "Merchant" else "Personal",
+                    gstin = transaction.gstin,
+                    payee = transaction.payeeId,
+                    payer = transaction.payerId,
+                    txnId = transaction.txnId
+                )
+            }
+        }
     }
+
 }
 
 @Composable

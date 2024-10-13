@@ -22,12 +22,12 @@ import com.gmat.data.model.TransactionModel
 import com.gmat.data.model.UserModel
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
+import com.gmat.ui.components.TransactionPreloader
 import com.gmat.ui.state.TransactionState
 import com.gmat.ui.state.UserState
 import com.gmat.ui.theme.DarkGreen
 import com.gmat.ui.theme.DarkRed
 
-// TransactionChat screen implementation
 @Composable
 fun TransactionChat(
     modifier: Modifier = Modifier,
@@ -81,7 +81,6 @@ fun TransactionChat(
             }
         }
     ) { innerPadding ->
-
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()

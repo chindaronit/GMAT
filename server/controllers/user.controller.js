@@ -26,16 +26,10 @@ export const getUserByPhone = async (req, res) => {
 
     const userQuery = query(usersCollection, where("phNo", "==", phNo));
     const querySnapshot = await getDocs(userQuery);
-
-    // Check if a user with the specified phone number exists
     if (querySnapshot.empty) {
       return res.status(404).send({ message: "User not found" });
     }
-
-    // Assuming there is only one user with the specified phone number
     const user = querySnapshot.docs[0].data();
-
-    // Send the user data in the response
     res.status(200).send({ userId: querySnapshot.docs[0].id, ...user });
   } catch (error) {
     console.error(error);
@@ -58,16 +52,10 @@ export const getUserByVPA = async (req, res) => {
 
     const userQuery = query(usersCollection, where("vpa", "==", vpa));
     const querySnapshot = await getDocs(userQuery);
-
-    // Check if a user with the specified phone number exists
     if (querySnapshot.empty) {
       return res.status(404).send({ message: "User not found" });
     }
-
-    // Assuming there is only one user with the specified phone number
     const user = querySnapshot.docs[0].data();
-
-    // Send the user data in the response
     res.status(200).send({ userId: querySnapshot.docs[0].id, ...user });
   } catch (error) {
     console.error(error);

@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.gmat.ui.components.TransactionPreloader
 import com.gmat.ui.screen.home.HomeScreen
 import com.gmat.ui.screen.login.OTP
 import com.gmat.ui.screen.merchant.UpgradeQR
@@ -32,10 +33,14 @@ fun AppNavHost(
     leaderboardViewModel: LeaderboardViewModel
 ) {
 
-    NavHost(navController, startDestination = NavRoutes.Login.route) {
+    NavHost(navController, startDestination = NavRoutes.Preloader.route) {
         animatedComposable(NavRoutes.Profile.route) {
             val userState by userViewModel.state.collectAsState()
             Profile(navController, userState)
+        }
+
+        animatedComposable(NavRoutes.Preloader.route) {
+            TransactionPreloader()
         }
 
         animatedComposable(NavRoutes.Rewards.route) {

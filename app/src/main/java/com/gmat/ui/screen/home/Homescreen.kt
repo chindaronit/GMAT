@@ -1,8 +1,9 @@
 package com.gmat.ui.screen.home
 
 import android.Manifest
+import android.app.Activity
 import android.content.pm.PackageManager
-import androidx.activity.compose.BackHandler
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -43,9 +44,9 @@ import com.gmat.ui.components.login.Top
 import java.time.LocalTime
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
+import com.gmat.ui.components.HomeScreenPreloader
 import com.gmat.ui.events.QRScannerEvents
 import com.gmat.ui.events.TransactionEvents
-import com.gmat.ui.events.UserEvents
 import com.gmat.ui.state.QRScannerState
 import com.gmat.ui.state.TransactionState
 import com.gmat.ui.state.UserState
@@ -56,11 +57,12 @@ fun HomeScreen(
     scannerState: QRScannerState,
     userState: UserState,
     transactionState: TransactionState,
-    onTransactionEvents: (TransactionEvents)->Unit,
+    onTransactionEvents: (TransactionEvents) -> Unit,
     onScannerEvent: (QRScannerEvents) -> Unit
 ) {
     val user = userState.user
     val context = LocalContext.current
+    val activity = LocalContext.current as Activity
 
     LaunchedEffect(key1 = userState.user) {
         if (userState.user == null) {
@@ -69,12 +71,11 @@ fun HomeScreen(
     }
 
     LaunchedEffect(key1 = transactionState.recentUserTransactions) {
-        if(transactionState.recentUserTransactions==null&&user!=null){
-            if(user.isMerchant){
-                onTransactionEvents(TransactionEvents.GetRecentTransactions(null,user.vpa))
-            }
-            else{
-                onTransactionEvents(TransactionEvents.GetRecentTransactions(user.userId,null))
+        if (transactionState.recentUserTransactions == null && user != null) {
+            if (user.isMerchant) {
+                onTransactionEvents(TransactionEvents.GetRecentTransactions(null, user.vpa))
+            } else {
+                onTransactionEvents(TransactionEvents.GetRecentTransactions(user.userId, null))
             }
         }
     }
@@ -114,8 +115,11 @@ fun HomeScreen(
         }
     }
 
-
-    if (user!=null && transactionState.recentUserTransactions!=null) {
+    if(userState.isLoading || transactionState.isLoading){
+        HomeScreenPreloader()
+    }
+    
+    if (user != null && transactionState.recentUserTransactions != null) {
         Scaffold(
             topBar = {
                 Bar(
@@ -142,7 +146,7 @@ fun HomeScreen(
                     },
                     actions = {
                         IconButton(onClick = { navController.navigate(NavRoutes.Profile.route) }) {
-                            if(userState.user.profile.isNotBlank()){
+                            if (userState.user.profile.isNotBlank()) {
                                 AsyncImage(
                                     model = userState.user.profile,
                                     contentDescription = null,
@@ -150,8 +154,7 @@ fun HomeScreen(
                                         .size(50.dp)
                                         .clip(CircleShape)
                                 )
-                            }
-                            else{
+                            } else {
                                 Icon(
                                     painter = painterResource(R.drawable.user_icon),
                                     contentDescription = null,
@@ -188,9 +191,13 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     if (user.isMerchant) {
-                        MerchantFeatures(navController, onScanClick = {
-                            onScannerEvent(QRScannerEvents.StartScanning)
-                        })
+                        MerchantFeatures(
+                            navController,
+                            userState = userState,
+                            activity = activity,
+                            onScanClick = {
+                                onScannerEvent(QRScannerEvents.StartScanning)
+                            })
                     } else {
                         PersonalFeatures(navController, onScanClick = {
                             onScannerEvent(QRScannerEvents.StartScanning)
@@ -200,7 +207,9 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(30.dp))
                 Text(
-                    text = if(user.isMerchant) stringResource(id = R.string.business) else stringResource(id = R.string.people),
+                    text = if (user.isMerchant) stringResource(id = R.string.business) else stringResource(
+                        id = R.string.people
+                    ),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -219,10 +228,17 @@ fun HomeScreen(
                         .height(300.dp),
                     content = {
                         items(transactionState.recentUserTransactions.size) { index ->
-                            val transactionUser=transactionState.recentUserTransactions[index].userDetails!!
-                            val chatIndex=index.toString()
+                            val transactionUser =
+                                transactionState.recentUserTransactions[index].userDetails!!
+                            val chatIndex = index.toString()
                             Card(
-                                onClick = { navController.navigate(NavRoutes.TransactionChat.withArgs(chatIndex)) },
+                                onClick = {
+                                    navController.navigate(
+                                        NavRoutes.TransactionChat.withArgs(
+                                            chatIndex
+                                        )
+                                    )
+                                },
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.surface,
                                     contentColor = MaterialTheme.colorScheme.onSurface
@@ -233,14 +249,15 @@ fun HomeScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    if(transactionUser.profile.isNotBlank()){
+                                    if (transactionUser.profile.isNotBlank()) {
                                         AsyncImage(
                                             model = transactionUser.profile,
                                             contentDescription = null,
-                                            modifier = Modifier.size(48.dp).clip(CircleShape)
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .clip(CircleShape)
                                         )
-                                    }
-                                    else{
+                                    } else {
                                         AsyncImage(
                                             model = R.drawable.user_icon,
                                             contentDescription = null,
@@ -284,24 +301,50 @@ fun HomeScreen(
 @Composable
 fun MerchantFeatures(
     navController: NavController,
+    userState: UserState,
+    activity: Activity,
     onScanClick: () -> Unit
 ) {
+
     IconWithText(
         iconRes = R.drawable.scanner,
         label = stringResource(id = R.string.upgrade_qr),
-        onClick = { onScanClick() }
+        onClick = {
+            if (userState.user?.qr.isNullOrBlank()) {
+                onScanClick()
+            } else {
+                Toast.makeText(activity, "QR is already Upgraded!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
     )
     Spacer(modifier = Modifier.width(30.dp))
     IconWithText(
         iconRes = R.drawable.qr,
         label = stringResource(id = R.string.upgraded_qr),
-        onClick = { navController.navigate(NavRoutes.UpgradedQR.route) }
+        onClick = {
+            if (!userState.user?.qr.isNullOrBlank()) {
+                navController.navigate(NavRoutes.UpgradedQR.route)
+            }
+            else {
+                Toast.makeText(activity, "Upgrade QR first!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
     )
     Spacer(modifier = Modifier.width(30.dp))
     IconWithText(
         iconRes = R.drawable.history,
         label = stringResource(id = R.string.history),
-        onClick = { navController.navigate(NavRoutes.TransactionHistory.route) }
+        onClick = {
+            if (!userState.user?.qr.isNullOrBlank()) {
+                navController.navigate(NavRoutes.TransactionHistory.route)
+            }
+            else {
+                Toast.makeText(activity, "Upgrade QR first!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
     )
 }
 

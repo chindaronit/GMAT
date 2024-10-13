@@ -73,10 +73,14 @@ fun Profile(
                     title = stringResource(id = R.string.edit_profile),
                     iconResId = R.drawable.edit_icon,
                     onClick = { navController.navigate(NavRoutes.EditDetails.route) })
-                SettingsBox(
-                    title = stringResource(id = R.string.rewards),
-                    iconResId = R.drawable.reward_icon,
-                    onClick = { navController.navigate(NavRoutes.Rewards.route) })
+
+                if(!userState.user.isMerchant)
+                {
+                    SettingsBox(
+                        title = stringResource(id = R.string.rewards),
+                        iconResId = R.drawable.reward_icon,
+                        onClick = { navController.navigate(NavRoutes.Rewards.route) })
+                }
             }
 
             Column(

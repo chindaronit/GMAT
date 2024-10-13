@@ -27,12 +27,12 @@ interface TransactionAPI {
         @Body transaction: TransactionModel
     ): Response<AddTransactionResponse>
 
-    // Get all transactions for a specific user
-    // History
-    @GET("/transactions/all/user")
-    suspend fun getAllTransactionsForUser(
-        @Query("userId") userId: String
-    ): Response<List<TransactionModel>>
+    @GET("/transactions/all/merchant")
+    suspend fun getTransactionHistoryForMerchant(
+        @Query("vpa") vpa: String,
+        @Query("month") month: Int,
+        @Query("year") year: Int
+    ): Response<TransactionHistory>
 
     // Get all transactions for a specific month
     @GET("/transactions/all/month")
@@ -42,19 +42,6 @@ interface TransactionAPI {
         @Query("userId") userId: String
     ): Response<TransactionHistory>
 
-    // Get all transactions for a user based on userId and payeeId
-    @GET("/transactions/all/payee")
-    suspend fun getUserTransactionsByUserIdAndPayeeId(
-        @Query("userId") userId: String,
-        @Query("payeeId") payeeId: String
-    ): Response<List<TransactionModel>>
-
-    // Get all transactions between a payer and payee
-    @GET("/transactions/all/payerpayee")
-    suspend fun getAllTransactionsForPayerIdAndPayeeId(
-        @Query("payerId") payerId: String,
-        @Query("payeeId") payeeId: String
-    ): Response<RecentUserTransactions>
 
     // Get all transactions between a payer and payee
     // TransactionChat

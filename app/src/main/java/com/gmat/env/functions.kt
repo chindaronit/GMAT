@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 
@@ -46,4 +47,13 @@ fun addGstinToUpiUrl(upiUrl: String, gstin: String): String {
     } else {
         "$upiUrl?gstin=$gstin"
     }
+}
+
+fun filterMonthAndYear(timestamp: Timestamp, selectedMonth: Int, selectedYear: Int): Boolean {
+    val calendar = Calendar.getInstance().apply {
+        time = timestamp.toDate()
+    }
+    val transactionMonth = calendar.get(Calendar.MONTH) + 1 // Calendar.MONTH is zero-based, so add 1
+    val transactionYear = calendar.get(Calendar.YEAR)
+    return transactionMonth == selectedMonth && transactionYear == selectedYear
 }

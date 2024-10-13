@@ -11,5 +11,6 @@ data class TransactionModel(
     val type: Int=0,
     val status: Int=1, // complete
     val gstin: String="",
-    val name: String=""
+    val name: String="",
+    val payerUserId: String=""
 )

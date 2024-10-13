@@ -38,10 +38,6 @@ class UserViewModel @Inject constructor(
                 getUserByUserId(event.userId)
             }
 
-            is UserEvents.GetUserByVPA -> {
-                getUserByVPA(event.vpa)
-            }
-
             is UserEvents.UpdateUser -> {
                 updateUser()
             }
@@ -116,32 +112,6 @@ class UserViewModel @Inject constructor(
                     }
                 } else {
                    handleErrorResponse(response)
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Check Your Internet Connection"
-                    )
-                }
-            }
-        }
-    }
-
-    private fun getUserByVPA(vpa: String) {
-        _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            try {
-                val response = userAPI.getUserByVPA(vpa)
-                if (response.isSuccessful && response.body() != null) {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            user = response.body()
-                        )
-                    }
-                } else {
-                    handleErrorResponse(response)
                 }
             } catch (e: Exception) {
                 _state.update {

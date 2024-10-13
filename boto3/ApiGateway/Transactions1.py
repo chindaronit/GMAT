@@ -4,12 +4,12 @@ from GateWayResponses import *
 def transaction_api(client, apiId, rootResourceId, authorizationType, contentType, Model, url):
     
     # ***************************************************************
-    #                     /transactions GET & POST
+    #                     /transaction GET & POST
     # ***************************************************************
     
     transactionResourceId = create_resource(client, apiId, rootResourceId, "transactions")
 
-    # /transactions GET (Get transaction by txnId)
+    # /transaction GET
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
     transaction_get_url = url + 'transactions/'
@@ -34,34 +34,49 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     for statusCode in status_codes:
         other_response(client, apiId, transactionResourceId, httpMethod, statusCode, contentType, Model)
     
-
-    # /transactions POST (Add new transaction)
+    # /transaction POST
     httpMethod = 'POST'
     integrationHttpMethod = 'POST'
     transaction_post_url = url + 'transactions/'
-    requestParameters = {
-        'method.request.querystring.userId': True,
-    }
+    requestParameters={}
     putMethod(client, apiId, authorizationType, transactionResourceId, httpMethod, requestParameters, requestModels)
-    requestParameters = {
-        'integration.request.querystring.userId':'method.request.querystring.userId',
-    }
     putIntegration(client, apiId, httpMethod, transactionResourceId, type, integrationHttpMethod, transaction_post_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, transactionResourceId, httpMethod, contentType, Model)
 
-    status_codes = ['500', '400', '401', '404']
     for statusCode in status_codes:
         other_response(client, apiId, transactionResourceId, httpMethod, statusCode, contentType, Model)
 
     print("Successfully created /transactions/ GET and POST methods...")
 
     # ***************************************************************
-    #                     /transactions/all/month GET
+    #                     /transaction/all/user GET
     # ***************************************************************
-    
-    monthResourceId = create_resource(client, apiId, transactionResourceId, "all")
-    monthResourceId = create_resource(client, apiId, monthResourceId, "month")
-    
+
+    resourceId = create_resource(client, apiId, transactionResourceId, "all")
+    userResourceId = create_resource(client, apiId, resourceId, "user")
+    httpMethod = 'GET'
+    integrationHttpMethod = 'GET'
+    all_user_url = url + 'transactions/all/user/'
+    requestParameters = {
+        'method.request.querystring.userId': True,
+    }
+    putMethod(client, apiId, authorizationType, userResourceId, httpMethod, requestParameters, requestModels)
+    requestParameters = {
+        'integration.request.querystring.userId':'method.request.querystring.userId'
+    }
+    putIntegration(client, apiId, httpMethod, userResourceId, type, integrationHttpMethod, all_user_url, passthroughBehavior, requestParameters)
+    succ_response(client, apiId, userResourceId, httpMethod, contentType, Model)
+
+    for statusCode in status_codes:
+        other_response(client, apiId, userResourceId, httpMethod, statusCode, contentType, Model)
+
+    print("Successfully created /transactions/all/user/ GET method...")
+
+    # ***************************************************************
+    #                     /transaction/all/month GET
+    # ***************************************************************
+
+    monthResourceId = create_resource(client, apiId, resourceId, "month")
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
     all_month_url = url + 'transactions/all/month/'
@@ -69,12 +84,13 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
         'method.request.querystring.userId': True,
         'method.request.querystring.month': True,
         'method.request.querystring.year': True,
+        
     }
     putMethod(client, apiId, authorizationType, monthResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
-        'integration.request.querystring.userId': 'method.request.querystring.userId',
-        'integration.request.querystring.month': 'method.request.querystring.month',
-        'integration.request.querystring.year': 'method.request.querystring.year'
+        'integration.request.querystring.userId':'method.request.querystring.userId',
+        'integration.request.querystring.month':'method.request.querystring.month',
+        'integration.request.querystring.year':'method.request.querystring.year'
     }
     putIntegration(client, apiId, httpMethod, monthResourceId, type, integrationHttpMethod, all_month_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, monthResourceId, httpMethod, contentType, Model)
@@ -85,73 +101,22 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     print("Successfully created /transactions/all/month/ GET method...")
 
     # ***************************************************************
-    #                     /transactions/recenttransaction GET
+    #                     /transaction/all/payee GET
     # ***************************************************************
-    
-    recentTransactionResourceId = create_resource(client, apiId, transactionResourceId, "recenttransaction")
-    
+
+    payeeResourceId = create_resource(client, apiId, resourceId, "payee")
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
-    recent_transaction_url = url + 'transactions/recenttransaction/'
+    all_payee_url = url + 'transactions/all/payee/'
     requestParameters = {
         'method.request.querystring.userId': True,
-    }
-    putMethod(client, apiId, authorizationType, recentTransactionResourceId, httpMethod, requestParameters, requestModels)
-    requestParameters = {
-        'integration.request.querystring.userId': 'method.request.querystring.userId',
-    }
-    putIntegration(client, apiId, httpMethod, recentTransactionResourceId, type, integrationHttpMethod, recent_transaction_url, passthroughBehavior, requestParameters)
-    succ_response(client, apiId, recentTransactionResourceId, httpMethod, contentType, Model)
-
-    for statusCode in status_codes:
-        other_response(client, apiId, recentTransactionResourceId, httpMethod, statusCode, contentType, Model)
-
-    print("Successfully created /transactions/recenttransaction/ GET method...")
-
-    # ***************************************************************
-    #                     /transactions/recentmerchanttransaction GET
-    # ***************************************************************
-    
-    recentMerchantTransactionResourceId = create_resource(client, apiId, transactionResourceId, "recentmerchanttransaction")
-    
-    httpMethod = 'GET'
-    integrationHttpMethod = 'GET'
-    recent_merchant_transaction_url = url + 'transactions/recentmerchanttransaction/'
-    requestParameters = {
-        'method.request.querystring.vpa': True,
-    }
-    putMethod(client, apiId, authorizationType, recentMerchantTransactionResourceId, httpMethod, requestParameters, requestModels)
-    requestParameters = {
-        'integration.request.querystring.vpa': 'method.request.querystring.vpa',
-    }
-    putIntegration(client, apiId, httpMethod, recentMerchantTransactionResourceId, type, integrationHttpMethod, recent_merchant_transaction_url, passthroughBehavior, requestParameters)
-    succ_response(client, apiId, recentMerchantTransactionResourceId, httpMethod, contentType, Model)
-
-    for statusCode in status_codes:
-        other_response(client, apiId, recentMerchantTransactionResourceId, httpMethod, statusCode, contentType, Model)
-
-    print("Successfully created /transactions/recentmerchanttransaction/ GET method...")
-
-    # ***************************************************************
-    #                     /transactions/all/merchant GET
-    # ***************************************************************
-    
-    payeeResourceId = create_resource(client, apiId, transactionResourceId, "all")
-    payeeResourceId = create_resource(client, apiId, payeeResourceId, "merchant")
-    
-    httpMethod = 'GET'
-    integrationHttpMethod = 'GET'
-    all_payee_url = url + 'transactions/all/merchant/'
-    requestParameters = {
-        'method.request.querystring.vpa': True,
-        'method.request.querystring.month': True,
-        'method.request.querystring.year': True,
+        'method.request.querystring.payeeId': True,
+        
     }
     putMethod(client, apiId, authorizationType, payeeResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
-        'integration.request.querystring.vpa': 'method.request.querystring.vpa',
-        'integration.request.querystring.month': 'method.request.querystring.month',
-        'integration.request.querystring.year': 'method.request.querystring.year'
+        'integration.request.querystring.userId':'method.request.querystring.userId',
+        'integration.request.querystring.payeeId':'method.request.querystring.payeeId'
     }
     putIntegration(client, apiId, httpMethod, payeeResourceId, type, integrationHttpMethod, all_payee_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, payeeResourceId, httpMethod, contentType, Model)
@@ -159,50 +124,50 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     for statusCode in status_codes:
         other_response(client, apiId, payeeResourceId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /transactions/all/merchant/ GET method...")
+    print("Successfully created /transactions/all/payee/ GET method...")
 
     # ***************************************************************
-    #                     /transactions/all/gstin GET
+    #                     /transaction/all/payerpayee GET
     # ***************************************************************
-    
-    gstinResourceId = create_resource(client, apiId, transactionResourceId, "all")
-    gstinResourceId = create_resource(client, apiId, gstinResourceId, "gstin")
-    
+
+    payerPayeeResourceId = create_resource(client, apiId, resourceId, "payerpayee")
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
-    all_gstin_url = url + 'transactions/all/gstin/'
+    all_payerpayee_url = url + 'transactions/all/payerpayee/'
     requestParameters = {
-        'method.request.querystring.gstin': True,
+        'method.request.querystring.payerId': True,
+        'method.request.querystring.payeeId': True,    
     }
-    putMethod(client, apiId, authorizationType, gstinResourceId, httpMethod, requestParameters, requestModels)
+    putMethod(client, apiId, authorizationType, payerPayeeResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
-        'integration.request.querystring.gstin': 'method.request.querystring.gstin',
+        'integration.request.querystring.payerId':'method.request.querystring.payerId',
+        'integration.request.querystring.payeeId':'method.request.querystring.payeeId'
     }
-    putIntegration(client, apiId, httpMethod, gstinResourceId, type, integrationHttpMethod, all_gstin_url, passthroughBehavior, requestParameters)
-    succ_response(client, apiId, gstinResourceId, httpMethod, contentType, Model)
+    putIntegration(client, apiId, httpMethod, payerPayeeResourceId, type, integrationHttpMethod, all_payerpayee_url, passthroughBehavior, requestParameters)
+    succ_response(client, apiId, payerPayeeResourceId, httpMethod, contentType, Model)
 
     for statusCode in status_codes:
-        other_response(client, apiId, gstinResourceId, httpMethod, statusCode, contentType, Model)
+        other_response(client, apiId, payerPayeeResourceId, httpMethod, statusCode, contentType, Model)
 
-    print("Successfully created /transactions/all/gstin/ GET method...")
+    print("Successfully created /transactions/all/payerpayee/ GET method...")
 
     # ***************************************************************
-    #                     /transactions/all/gstin/year GET
+    #                     /transaction/all/gstin/year GET
     # ***************************************************************
-    
+
+    gstinResourceId = create_resource(client, apiId, resourceId, "gstin")
     yearResourceId = create_resource(client, apiId, gstinResourceId, "year")
-    
     httpMethod = 'GET'
     integrationHttpMethod = 'GET'
     all_gstin_year_url = url + 'transactions/all/gstin/year/'
     requestParameters = {
         'method.request.querystring.gstin': True,
-        'method.request.querystring.year': True,
+        'method.request.querystring.year': True,    
     }
     putMethod(client, apiId, authorizationType, yearResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
-        'integration.request.querystring.gstin': 'method.request.querystring.gstin',
-        'integration.request.querystring.year': 'method.request.querystring.year',
+        'integration.request.querystring.gstin':'method.request.querystring.gstin',
+        'integration.request.querystring.year':'method.request.querystring.year'
     }
     putIntegration(client, apiId, httpMethod, yearResourceId, type, integrationHttpMethod, all_gstin_year_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, yearResourceId, httpMethod, contentType, Model)

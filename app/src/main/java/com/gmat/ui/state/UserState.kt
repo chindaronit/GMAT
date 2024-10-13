@@ -9,5 +9,6 @@ data class UserState (
     val phNo: String = "",
     val verificationId: String="",
     val newName: String="",
-    val newProfile: String=""
+    val newProfile: String="",
+    val newQr: String=""
 )

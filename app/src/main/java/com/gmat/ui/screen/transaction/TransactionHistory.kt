@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -31,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +44,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -53,17 +54,19 @@ import com.gmat.R
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
+import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.state.TransactionState
-import com.gmat.ui.theme.DarkGreen
+import com.gmat.ui.state.UserState
 import kotlinx.coroutines.launch
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionHistory(
     modifier: Modifier = Modifier,
     navController: NavController,
-    transactionState: TransactionState
+    transactionState: TransactionState,
+    userState: UserState,
+    onTransactionEvents: (TransactionEvents)->Unit,
 ) {
 
     val dateValues = listOf("Last 10 Days", "Last 30 Days", "This Month")
@@ -74,6 +77,12 @@ fun TransactionHistory(
     var showDateSheet by remember { mutableStateOf(false) }
     var showTypeSheet by remember { mutableStateOf(false) }
     var selectedDateValue by remember { mutableStateOf("") }
+
+    LaunchedEffect(key1 = transactionState.transactionHistory) {
+        if(transactionState.transactionHistory==null){
+            onTransactionEvents(TransactionEvents.GetAllTransactionsForMonth(userId = userState.user!!.userId, month = 10, year = 2024))
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -108,12 +117,13 @@ fun TransactionHistory(
                 )
             }
             LazyColumn {
-                items(transactionState.transactions.size) {
+                // Use 'items' to iterate over the list of transactions
+                items(transactionState.transactionHistory ?: emptyList()) { transaction ->
                     Card(
                         modifier = Modifier
                             .padding(5.dp)
                             .clickable {
-                                navController.navigate(NavRoutes.TransactionReceipt.route)
+                                navController.navigate(NavRoutes.TransactionReceipt.withArgs(transaction.txnId,userState.user!!.userId))
                             },
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface,
@@ -145,16 +155,18 @@ fun TransactionHistory(
                                     .weight(1f)
                                     .padding(start = 15.dp),
                             ) {
+                                // Display transaction name
                                 Text(
-                                    text = "Ronit Chinda",
+                                    text = transaction.name,
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     overflow = TextOverflow.Ellipsis,
                                     maxLines = 1,
                                     modifier = Modifier.widthIn(max = 150.dp)
                                 )
+                                // Display additional details (e.g., transaction date)
                                 Text(
-                                    text = formatDate(Date()),
+                                    text = formatDate(transaction.timestamp),  // Adjust the content based on your data model
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Light,
                                 )
@@ -166,8 +178,9 @@ fun TransactionHistory(
                                 tint = Color.Red
                             )
 
+                            // Display transaction amount
                             Text(
-                                text = "-100000",
+                                text = "-${transaction.amount}",  // Adjust the amount display based on your model
                                 modifier = Modifier
                                     .padding(end = 10.dp)
                                     .widthIn(max = 100.dp),
@@ -178,9 +191,9 @@ fun TransactionHistory(
                             )
                         }
                     }
-
                 }
             }
+
 
             if (showDateSheet) {
                 ModalBottomSheet(

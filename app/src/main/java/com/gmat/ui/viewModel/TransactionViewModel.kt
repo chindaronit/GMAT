@@ -27,174 +27,173 @@ class TransactionViewModel @Inject constructor(
     fun onEvent(event: TransactionEvents) {
         when (event) {
             is TransactionEvents.AddTransaction -> {
-                addTransaction(event.transaction)
+                addTransaction(event.userId, event.transaction)
             }
+
             is TransactionEvents.GetTransactionById -> {
-                getTransactionById(event.txnId)
+                getTransactionById(event.userId, event.txnId)
             }
-            is TransactionEvents.GetAllTransactionsForUser -> {
-                getAllTransactionsForUser(event.userId)
-            }
+
             is TransactionEvents.GetAllTransactionsForMonth -> {
-                getAllTransactionsForMonth(event.month, event.year)
+                getAllTransactionsForMonth(event.month, event.year, event.userId)
             }
-            is TransactionEvents.GetUserTransactionsByUserIdAndPayeeId -> {
-                getUserTransactionsByUserIdAndPayeeId(event.userId, event.payeeId)
+
+            is TransactionEvents.GetRecentTransactions -> {
+                getRecentTransactions(event.userId, event.vpa)
             }
-            is TransactionEvents.GetAllTransactionsForPayerIdAndPayeeId -> {
-                getAllTransactionsForPayerIdAndPayeeId(event.payerId, event.payeeId)
-            }
+
         }
     }
 
-    private fun addTransaction(transaction: TransactionModel) {
-        _state.update { it.copy(isLoading = true) }
+    private fun addTransaction(userId: String, transaction: TransactionModel) {
         viewModelScope.launch {
             try {
-                val response = transactionAPI.addTransaction(
-                    payerId = transaction.payerId,
-                    payeeId = transaction.payeeId,
-                    amount = transaction.amount,
-                    gstin = transaction.gstin
-                )
-
-                if (response.isSuccessful) {
-                    Log.d("AddTransaction", "Transaction added successfully")
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            transaction = transaction // You can update the transaction state with the new transaction
-                        )
-                    }
-                } else {
-                    handleErrorResponse(response)
-                }
-            } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
-                Log.e("TransactionViewModel", "Error: ${e.message}")
-            }
-        }
-    }
-
-    private fun getTransactionById(txnId: String) {
-        _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            try {
-                val response = transactionAPI.getTransactionByTxnId(txnId)
+                val response =
+                    transactionAPI.addTransaction(userId = userId, transaction = transaction)
 
                 if (response.isSuccessful && response.body() != null) {
-                    Log.d("GetTransactionById", "Transaction retrieved: ${response.body()}")
+                    transaction.txnId = response.body()!!.txnId
                     _state.update {
                         it.copy(
-                            isLoading = false,
-                            transaction = response.body() // Update the transaction in state
+                            transaction = transaction
                         )
                     }
                 } else {
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
                 Log.e("TransactionViewModel", "Error: ${e.message}")
             }
         }
     }
 
-    private fun getAllTransactionsForUser(userId: String) {
+    private fun getTransactionById(userId: String, txnId: String) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val response = transactionAPI.getAllTransactionsForUser(userId)
-
+                val response = transactionAPI.getTransactionByTxnId(userId = userId, txnId = txnId)
                 if (response.isSuccessful && response.body() != null) {
-                    Log.d("GetAllTransactionsForUser", "Transactions retrieved: ${response.body()}")
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            transactions = response.body()!! // Update transactions in state
+                            transaction = response.body()!!.transaction // Update the transaction in state
                         )
                     }
                 } else {
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
                 Log.e("TransactionViewModel", "Error: ${e.message}")
             }
         }
     }
 
-    private fun getAllTransactionsForMonth(month: Int, year: Int) {
+
+    private fun getAllTransactionsForMonth(month: Int, year: Int, userId: String) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val response = transactionAPI.getAllTransactionsForMonth(month, year)
+                val response = transactionAPI.getAllTransactionsForMonth(month, year, userId)
 
                 if (response.isSuccessful && response.body() != null) {
-                    Log.d("GetAllTransactionsForMonth", "Transactions retrieved: ${response.body()}")
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            transactions = response.body()!! // Update transactions in state
+                            transactionHistory = response.body()!!.transactions // Update transactions in state
                         )
                     }
                 } else {
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
                 Log.e("TransactionViewModel", "Error: ${e.message}")
             }
         }
     }
 
-    private fun getUserTransactionsByUserIdAndPayeeId(userId: String, payeeId: String) {
+
+    private fun getRecentTransactions(userId: String?, vpa: String?) {
         _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            try {
-                val response = transactionAPI.getUserTransactionsByUserIdAndPayeeId(userId, payeeId)
 
-                if (response.isSuccessful && response.body() != null) {
-                    Log.d("GetUserTransactionsByUserIdAndPayeeId", "Transactions retrieved: ${response.body()}")
+        if (vpa == null && userId != null) {
+            viewModelScope.launch {
+                try {
+                    val response = transactionAPI.getRecentTransactionsForUser(userId)
+
+                    if (response.isSuccessful && response.body() != null) {
+                        Log.d(
+                            "GetRecentTransactionForUser",
+                            "Transactions retrieved: ${response.body()}"
+                        )
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                recentUserTransactions = response.body()!!.data // Update transactions in state
+                            )
+                        }
+                    } else {
+                        handleErrorResponse(response)
+                    }
+                } catch (e: Exception) {
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            transactions = response.body()!! // Update transactions in state
+                            error = "Check Your Internet Connection"
                         )
                     }
-                } else {
-                    handleErrorResponse(response)
+                    Log.e("TransactionViewModel", "Error: ${e.message}")
                 }
-            } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
-                Log.e("TransactionViewModel", "Error: ${e.message}")
             }
-        }
-    }
+        } else if (vpa != null) {
+            viewModelScope.launch {
+                try {
+                    val response = transactionAPI.getRecentTransactionsForMerchant(vpa)
 
-    private fun getAllTransactionsForPayerIdAndPayeeId(payerId: String, payeeId: String) {
-        _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            try {
-                val response = transactionAPI.getAllTransactionsForPayerIdAndPayeeId(payerId, payeeId)
-
-                if (response.isSuccessful && response.body() != null) {
-                    Log.d("GetAllTransactionsForPayerIdAndPayeeId", "Transactions retrieved: ${response.body()}")
+                    if (response.isSuccessful && response.body() != null) {
+                        Log.d(
+                            "GetRecentTransactionForMerchant",
+                            "Transactions retrieved: ${response.body()}"
+                        )
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                recentUserTransactions = response.body()!!.data // Update transactions in state
+                            )
+                        }
+                    } else {
+                        handleErrorResponse(response)
+                    }
+                } catch (e: Exception) {
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            transactions = response.body()!! // Update transactions in state
+                            error = "Check Your Internet Connection"
                         )
                     }
-                } else {
-                    handleErrorResponse(response)
+                    Log.e("TransactionViewModel", "Error: ${e.message}")
                 }
-            } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
-                Log.e("TransactionViewModel", "Error: ${e.message}")
             }
-        }
+        } else return
     }
+
 
     private fun handleErrorResponse(response: Response<*>) {
         val errorMessage = when (response.code()) {

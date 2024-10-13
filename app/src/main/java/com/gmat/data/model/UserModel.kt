@@ -6,6 +6,6 @@ data class UserModel(
     val vpa: String="",
     var profile: String="",
     var phNo: String="",
-    val qr: String="",
+    var qr: String="",
     val isMerchant: Boolean=false
 )

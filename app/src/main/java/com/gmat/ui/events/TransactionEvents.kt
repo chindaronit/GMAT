@@ -3,10 +3,8 @@ package com.gmat.ui.events
 import com.gmat.data.model.TransactionModel
 
 sealed class TransactionEvents {
-    data class AddTransaction(val transaction: TransactionModel) : TransactionEvents()
-    data class GetTransactionById(val txnId: String) : TransactionEvents()
-    data class GetAllTransactionsForUser(val userId: String) : TransactionEvents()
-    data class GetAllTransactionsForMonth(val month: Int, val year: Int) : TransactionEvents()
-    data class GetUserTransactionsByUserIdAndPayeeId(val userId: String, val payeeId: String) : TransactionEvents()
-    data class GetAllTransactionsForPayerIdAndPayeeId(val payerId: String, val payeeId: String) : TransactionEvents()
+    data class AddTransaction(val userId: String,val transaction: TransactionModel) : TransactionEvents()
+    data class GetTransactionById(val txnId: String, val userId: String) : TransactionEvents()
+    data class GetAllTransactionsForMonth(val month: Int, val year: Int, val userId: String) : TransactionEvents()
+    data class GetRecentTransactions(val userId: String?,val vpa: String?): TransactionEvents()
 }

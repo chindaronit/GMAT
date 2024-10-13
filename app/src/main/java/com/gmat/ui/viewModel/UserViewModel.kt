@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import retrofit2.Response
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,20 +25,24 @@ class UserViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     fun onEvent(event: UserEvents) {
-        when(event){
+        when (event) {
             is UserEvents.AddUser -> {
                 addUser(event.user)
             }
+
             is UserEvents.GetUserByPhone -> {
                 getUserByPhone(event.phNo)
             }
+
             is UserEvents.GetUserByUserId -> {
                 getUserByUserId(event.userId)
             }
+
             is UserEvents.GetUserByVPA -> {
                 getUserByVPA(event.vpa)
             }
-            is UserEvents.UpdateUser ->{
+
+            is UserEvents.UpdateUser -> {
                 updateUser()
             }
 
@@ -46,7 +51,7 @@ class UserViewModel @Inject constructor(
             }
 
             is UserEvents.ChangePhNo -> {
-                _state.update { it.copy(phNo=event.phNo) }
+                _state.update { it.copy(phNo = event.phNo) }
             }
 
             UserEvents.SignIn -> {
@@ -65,6 +70,9 @@ class UserViewModel @Inject constructor(
                 _state.update { it.copy(newProfile = event.profile) }
             }
 
+            is UserEvents.OnChangeQR -> {
+                _state.update { it.copy(newQr = event.qr) }
+            }
         }
     }
 
@@ -73,7 +81,6 @@ class UserViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = userAPI.getUserByUserId(userId)
-
                 if (response.isSuccessful && response.body() != null) {
                     _state.update {
                         it.copy(
@@ -82,25 +89,15 @@ class UserViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    // Handle different status codes
-                    when (response.code()) {
-                        403 -> {
-                            Log.d("GetUserByUserId", "Forbidden: 403")
-                            _state.update { it.copy(isLoading = false, error = "Forbidden: Access denied") }
-                        }
-                        404 -> {
-                            Log.d("GetUserByUserId", "Not Found: 404")
-                            _state.update { it.copy(isLoading = false, error = "User not found")}
-                        }
-                        else -> {
-                            println(response.code())
-                            val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                            _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
-                        }
-                    }
+                    handleErrorResponse(response)
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
             }
         }
     }
@@ -110,8 +107,7 @@ class UserViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = userAPI.getUserByPhone(phNo)
-                println(response)
-                if (response.isSuccessful && response.body()!=null) {
+                if (response.isSuccessful && response.body() != null) {
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -119,25 +115,15 @@ class UserViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    // Handle different status codes
-                    when (response.code()) {
-                        403 -> {
-                            Log.d("GetUserByUserPh", "Forbidden: 403")
-                            _state.update { it.copy(isLoading = false, error = "Forbidden: Access denied") }
-                        }
-                        404 -> {
-                            Log.d("GetUserByUserPh", "Not Found: 404")
-                            _state.update { it.copy(isLoading = false, error = "User not found", user = UserModel()) }
-                        }
-                        else -> {
-                            println(response.code())
-                            val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                            _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
-                        }
-                    }
+                   handleErrorResponse(response)
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
             }
         }
     }
@@ -147,7 +133,7 @@ class UserViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = userAPI.getUserByVPA(vpa)
-                if (response.isSuccessful && response.body()!=null) {
+                if (response.isSuccessful && response.body() != null) {
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -155,65 +141,72 @@ class UserViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                    _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
+                    handleErrorResponse(response)
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
             }
         }
     }
 
     private fun addUser(user: UserModel) {
         val phNo = state.value.phNo
-        user.phNo=phNo
+        user.phNo = phNo
         viewModelScope.launch {
             try {
                 val response = userAPI.addUser(user)
                 if (response.isSuccessful) {
-                    println("User added successfully")
                     getUserByPhone(phNo) // Fetch user details after adding
                 } else {
-                    // Log the error response
-                    Log.e("AddUser", "Error: ${response.code()}, Message: ${response.message()}")
-                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                    _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
+                    handleErrorResponse(response)
                 }
             } catch (e: Exception) {
                 Log.e("AddUser", "Exception: ${e.message}")
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
             }
         }
     }
 
 
     private fun updateUser() {
-        val updatedUser=_state.value.user!!
-        updatedUser.profile= _state.value.newProfile.ifBlank { _state.value.user!!.profile }
-        updatedUser.name= _state.value.newName.ifBlank { _state.value.user!!.name }
-        val userId= updatedUser.userId
+        val updatedUser = _state.value.user!!
+        updatedUser.profile = _state.value.newProfile.ifBlank { _state.value.user!!.profile }
+        updatedUser.name = _state.value.newName.ifBlank { _state.value.user!!.name }
+        updatedUser.qr = _state.value.newQr.ifBlank { _state.value.user!!.qr }
+        val userId = updatedUser.userId
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val response=userAPI.updateUser(updatedUser)
+            val response = userAPI.updateUser(updatedUser)
             if (response.isSuccessful) {
                 getUserByUserId(userId)
             } else {
-                when (response.code()) {
-                    403 -> {
-                        Log.d("UpdateUser", "Forbidden: 403")
-                        _state.update { it.copy(isLoading = false, error = "Forbidden: Access denied") }
-                    }
-                    400 -> {
-                        Log.d("UpdateUser", "Forbidden: 400")
-                        _state.update { it.copy(isLoading = false, error = "Bad Request: Missing or invalid fields") }
-                    }
-                    else -> {
-                        println(response.code())
-                        val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                        _state.update { it.copy(isLoading = false, error = errorObj.getString("message")) }
-                    }
-                }
+                handleErrorResponse(response)
             }
         }
+    }
+
+    private fun handleErrorResponse(response: Response<*>) {
+        val errorMessage = when (response.code()) {
+            400 -> "Bad Request: Please check the input data"
+            401 -> "Unauthorized: Access denied"
+            404 -> "Not Found: Resource not found"
+            500 -> "Internal Server Error: Please try again later"
+            else -> {
+                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                errorObj.getString("message")
+            }
+        }
+        Log.e("UserViewModel", "Error: $errorMessage")
+        _state.update { it.copy(isLoading = false, error = errorMessage) }
     }
 }

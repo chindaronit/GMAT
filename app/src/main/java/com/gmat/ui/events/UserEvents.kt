@@ -14,4 +14,6 @@ sealed class UserEvents {
     data class ChangeVerificationId(val id: String) : UserEvents()
     data class OnProfileChange(val profile: String): UserEvents()
     data class OnNameChange(val name: String): UserEvents()
+    data class OnChangeQR(val qr: String): UserEvents()
 }
+

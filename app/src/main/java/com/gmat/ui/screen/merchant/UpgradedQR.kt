@@ -31,10 +31,12 @@ import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.events.QRScannerEvents
+import com.gmat.ui.state.QRScannerState
 import com.gmat.ui.state.UserState
 import java.io.File
 import java.io.FileOutputStream
@@ -50,10 +52,14 @@ fun saveQrToGallery(context: Context, bitmap: Bitmap) {
             put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
             put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
         }
-        val imageUri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+        val imageUri = context.contentResolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            contentValues
+        )
         outputStream = imageUri?.let { context.contentResolver.openOutputStream(it) }
     } else {
-        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()
+        val imagesDir =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()
         val image = File(imagesDir, filename)
         outputStream = FileOutputStream(image)
     }
@@ -75,7 +81,11 @@ fun generateQrCode(text: String): Bitmap? {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
         for (x in 0 until width) {
             for (y in 0 until height) {
-                bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.Black.toArgb() else Color.White.toArgb())
+                bitmap.setPixel(
+                    x,
+                    y,
+                    if (bitMatrix[x, y]) Color.Black.toArgb() else Color.White.toArgb()
+                )
             }
         }
         bitmap
@@ -92,63 +102,76 @@ fun UpgradedQR(
     navController: NavController,
     userState: UserState
 ) {
-    val qrCodeBitmap = remember { generateQrCode(userState.user!!.qr) }
     val context = LocalContext.current
-    Scaffold(
-        topBar = {
-            CenterBar(
-                onClick = {
-                    navController.navigate(NavRoutes.Home.route) {
-                        popUpTo(NavRoutes.UpgradeQR.route) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
-                },
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.upgrade_qr),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                })
+
+    BackHandler {
+        navController.navigate(NavRoutes.Home.route) {
+            popUpTo(NavRoutes.UpgradedQR.route) {
+                inclusive = true  // This clears the entire back stack
+            }
+            launchSingleTop = true  // Avoid creating multiple instances of the Home screen
         }
-    ) { contentPadding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(contentPadding)
-                .padding(top = 5.dp, bottom = 5.dp, start = 5.dp, end = 5.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            qrCodeBitmap?.let {
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = null,
+    }
+
+    if (userState.user != null) {
+        val qrCodeBitmap = remember { generateQrCode(userState.user.qr) }
+
+        Scaffold(
+            topBar = {
+                CenterBar(
+                    onClick = {
+                        navController.navigate(NavRoutes.Home.route) {
+                            popUpTo(NavRoutes.UpgradedQR.route) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    },
+                    title = {
+                        Text(
+                            text = stringResource(id = R.string.upgraded_qr),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    })
+            }
+        ) { contentPadding ->
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(contentPadding)
+                    .padding(top = 5.dp, bottom = 5.dp, start = 5.dp, end = 5.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                qrCodeBitmap?.let {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .border(BorderStroke(1.dp, Color.Black)),
+                        contentScale = ContentScale.FillWidth
+                    )
+                }
+                Spacer(modifier = modifier.height(20.dp))
+                Text(
+                    text = userState.user!!.vpa,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                )
+                Spacer(modifier = modifier.weight(1f))
+                Button(
+                    onClick = {
+                        qrCodeBitmap?.let { bitmap ->
+                            saveQrToGallery(context, bitmap)
+                        }
+                    },
                     modifier = modifier
                         .fillMaxWidth()
-                        .background(Color.White)
-                        .border(BorderStroke(1.dp, Color.Black)),
-                    contentScale = ContentScale.FillWidth
-                )
-            }
-            Spacer(modifier = modifier.height(20.dp))
-            Text(
-                text = userState.user!!.vpa,
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
-            )
-            Spacer(modifier = modifier.weight(1f))
-            Button(
-                onClick = {
-                    qrCodeBitmap?.let { bitmap ->
-                        saveQrToGallery(context, bitmap)
-                    }
-                },
-                modifier = modifier
-                    .fillMaxWidth()
-            ) {
-                Text("Download")
+                ) {
+                    Text("Download")
+                }
             }
         }
     }

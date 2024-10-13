@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,32 +24,40 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gmat.R
+import com.gmat.env.addGstinToUpiUrl
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.events.QRScannerEvents
+import com.gmat.ui.events.UserEvents
 import com.gmat.ui.screen.transaction.GSTVerifiedButton
 import com.gmat.ui.state.QRScannerState
+import com.gmat.ui.state.UserState
 
 @Composable
 fun UpgradeQR(
     modifier: Modifier = Modifier,
     navController: NavController,
     scannerState: QRScannerState,
-    onScannerEvent: (QRScannerEvents) -> Unit
+    userState: UserState,
+    onScannerEvent: (QRScannerEvents) -> Unit,
+    onUserEvents: (UserEvents) -> Unit
 ) {
     val context = LocalContext.current
-    var gstin by remember { mutableStateOf("") }
+    var gstin by remember {
+        mutableStateOf("")
+    }
     var canContinue by remember { mutableStateOf(false) }
 
     BackHandler {
         onScannerEvent(QRScannerEvents.ClearState)
         navController.navigate(NavRoutes.Home.route) {
-            popUpTo(NavRoutes.AddTransactionDetails.route) {
+            popUpTo(NavRoutes.UpgradeQR.route) {
                 inclusive = true
             }
             launchSingleTop = true
         }
     }
+
 
     Scaffold(
         topBar = {
@@ -94,7 +103,14 @@ fun UpgradeQR(
                     gstin = input
                     if (input.length == 15) {
                         if (input.matches(Regex("^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"))) {
-                            gstin = input
+                            onUserEvents(
+                                UserEvents.OnChangeQR(
+                                    qr = addGstinToUpiUrl(
+                                        upiUrl = scannerState.details,
+                                        gstin = gstin
+                                    )
+                                )
+                            )
                             canContinue = true
                         } else {
                             Toast.makeText(context, "Invalid GSTIN format", Toast.LENGTH_SHORT)
@@ -119,11 +135,16 @@ fun UpgradeQR(
                 GSTVerifiedButton()
             Spacer(modifier = modifier.weight(1f))
             Button(
-                onClick = { navController.navigate(NavRoutes.UpgradedQR.route) },
+                onClick = {
+                    onScannerEvent(QRScannerEvents.ClearState)
+                    onUserEvents(UserEvents.UpdateUser)
+                    navController.navigate(NavRoutes.UpgradedQR.route)
+                },
                 modifier = modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 enabled = canContinue
+
             ) {
                 Text(stringResource(id = R.string.upgrade_qr))
             }

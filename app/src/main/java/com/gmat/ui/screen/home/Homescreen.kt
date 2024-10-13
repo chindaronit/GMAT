@@ -2,6 +2,7 @@ package com.gmat.ui.screen.home
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -43,16 +44,19 @@ import java.time.LocalTime
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import com.gmat.ui.events.QRScannerEvents
+import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.events.UserEvents
 import com.gmat.ui.state.QRScannerState
+import com.gmat.ui.state.TransactionState
 import com.gmat.ui.state.UserState
 
 @Composable
 fun HomeScreen(
     navController: NavController,
     scannerState: QRScannerState,
-    onUserEvents: (UserEvents) -> Unit,
     userState: UserState,
+    transactionState: TransactionState,
+    onTransactionEvents: (TransactionEvents)->Unit,
     onScannerEvent: (QRScannerEvents) -> Unit
 ) {
     val user = userState.user
@@ -64,6 +68,16 @@ fun HomeScreen(
         }
     }
 
+    LaunchedEffect(key1 = transactionState.recentUserTransactions) {
+        if(transactionState.recentUserTransactions==null&&user!=null){
+            if(user.isMerchant){
+                onTransactionEvents(TransactionEvents.GetRecentTransactions(null,user.vpa))
+            }
+            else{
+                onTransactionEvents(TransactionEvents.GetRecentTransactions(user.userId,null))
+            }
+        }
+    }
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -73,6 +87,7 @@ fun HomeScreen(
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
+
 
     val launcher =
         rememberLauncherForActivityResult(
@@ -100,7 +115,7 @@ fun HomeScreen(
     }
 
 
-    if (user!=null) {
+    if (user!=null && transactionState.recentUserTransactions!=null) {
         Scaffold(
             topBar = {
                 Bar(
@@ -185,20 +200,13 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(30.dp))
                 Text(
-                    text = stringResource(id = R.string.business),
+                    text = if(user.isMerchant) stringResource(id = R.string.business) else stringResource(id = R.string.people),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(start = 20.dp)
                 )
                 Spacer(modifier = Modifier.height(30.dp))
-
-                // List of example user names
-                val userNames = listOf(
-                    "Alice Johnson", "Bob Smith", "Carol Davis", "David Brown",
-                    "Eve Wilson", "Frank Moore", "Grace Lee", "Hank White",
-                    "Ivy Harris", "Jack Martin", "Ivy Harris", "Jack Martin"
-                )
 
                 LazyVerticalGrid(
                     state = rememberLazyGridState(),
@@ -210,9 +218,11 @@ fun HomeScreen(
                         .fillMaxSize()
                         .height(300.dp),
                     content = {
-                        items(userNames.size) { index ->
+                        items(transactionState.recentUserTransactions.size) { index ->
+                            val transactionUser=transactionState.recentUserTransactions[index].userDetails!!
+                            val chatIndex=index.toString()
                             Card(
-                                onClick = { navController.navigate(NavRoutes.TransactionChat.route) },
+                                onClick = { navController.navigate(NavRoutes.TransactionChat.withArgs(chatIndex)) },
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.surface,
                                     contentColor = MaterialTheme.colorScheme.onSurface
@@ -223,15 +233,25 @@ fun HomeScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    AsyncImage(
-                                        model = R.drawable.user_icon,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(48.dp),
-                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                                    )
+                                    if(transactionUser.profile.isNotBlank()){
+                                        AsyncImage(
+                                            model = transactionUser.profile,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(48.dp).clip(CircleShape)
+                                        )
+                                    }
+                                    else{
+                                        AsyncImage(
+                                            model = R.drawable.user_icon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(48.dp),
+                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                                        )
+                                    }
+
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = userNames[index],
+                                        text = transactionUser.name,
                                         fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.onSurface,
                                         textAlign = TextAlign.Center,

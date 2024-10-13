@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gmat.data.repository.api.LeaderboardAPI
+import com.gmat.env.TransactionRequest
 import com.gmat.ui.events.LeaderboardEvents
 import com.gmat.ui.state.LeaderboardState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,9 +29,11 @@ class LeaderboardViewModel @Inject constructor(
             is LeaderboardEvents.GetUserRewardsPointsForMonth -> {
                 getUserRewardsPointsForMonth(event.userId, event.month, event.year)
             }
+
             is LeaderboardEvents.GetAllUsersByRewardsForMonth -> {
                 getAllUsersByRewardsForMonth(event.month, event.year)
             }
+
             is LeaderboardEvents.AddUserTransactionRewards -> {
                 addUserTransactionRewards(event.userId, event.transactionAmount)
             }
@@ -46,14 +49,19 @@ class LeaderboardViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            userLeaderboardEntry = response.body()
+                            userLeaderboardEntry = response.body()!!.rewards
                         )
                     }
                 } else {
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
             }
         }
     }
@@ -64,7 +72,6 @@ class LeaderboardViewModel @Inject constructor(
             try {
                 val response = leaderboardAPI.getUsersByRewardsForMonth(month, year)
                 if (response.isSuccessful && response.body() != null) {
-                    println("got success")
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -75,24 +82,35 @@ class LeaderboardViewModel @Inject constructor(
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
             }
         }
     }
 
     private fun addUserTransactionRewards(userId: String, transactionAmount: String) {
-        _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val response = leaderboardAPI.updateUserTransactionRewards(userId, transactionAmount)
-                if (response.isSuccessful) {
-                    Log.d("AddUserTransactionRewards", "Rewards added successfully")
-                    _state.update { it.copy(isLoading = false) }
-                } else {
+                val response = leaderboardAPI.updateUserTransactionRewards(
+                    TransactionRequest(
+                        userId = userId,
+                        transactionAmount = transactionAmount.toInt()
+                    )
+                )
+                if (!response.isSuccessful) {
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Check Your Internet Connection") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Check Your Internet Connection"
+                    )
+                }
             }
         }
     }

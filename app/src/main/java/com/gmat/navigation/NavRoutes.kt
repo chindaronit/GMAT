@@ -42,6 +42,7 @@ sealed class NavRoutes(val route: String) {
             }
         }
     }
+
 }
 
 val authScreens = mapOf<String, @Composable (navController: NavController, userViewModel: UserViewModel,userState: UserState) -> Unit>(

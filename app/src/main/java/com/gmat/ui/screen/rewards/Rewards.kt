@@ -27,7 +27,6 @@ import com.gmat.ui.theme.bronze
 import com.gmat.ui.theme.gold
 import com.gmat.ui.theme.silver
 import java.time.LocalDate
-import java.time.Month
 
 @Composable
 fun Rewards(
@@ -103,12 +102,12 @@ fun Rewards(
                             modifier = Modifier.padding(horizontal = 30.dp)
                         ) {
                             Text(
-                                text = "Your Rank: ${leaderboardState.userLeaderboardEntry?.points ?: "-"}",
+                                text = "Your Rank: ${leaderboardState.userLeaderboardEntry.points}",
                                 fontSize = 20.sp
                             )
                             Spacer(modifier = Modifier.height(5.dp))
                             Text(
-                                text = "Your Points: ${leaderboardState.userLeaderboardEntry?.points ?: "-"}",
+                                text = "Your Points: ${leaderboardState.userLeaderboardEntry.points}",
                                 fontWeight = FontWeight.ExtraLight,
                                 fontSize = 18.sp
                             )
@@ -140,13 +139,13 @@ fun Rewards(
 
                     if (leaderboardState.allEntries.data.isNotEmpty()) {
                         val sortedEntries = leaderboardState.allEntries.data
-                            .sortedByDescending { it.points.toInt() } // Sort by points in descending order
+                            .sortedByDescending { it.points } // Sort by points in descending order
                             .take(10) // Take top 10 entries
 
                         sortedEntries.forEachIndexed { index, entry ->
                             LeaderboardEntry(
                                 name = entry.name,
-                                points = entry.points,
+                                points = entry.points.toString(),
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                                 position = index + 1
                             )

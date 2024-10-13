@@ -29,6 +29,7 @@ import com.gmat.R
 fun ProfileTransactionCard(
     uName: String = "",
     uUpiId: String = "",
+    isMerchant: Boolean=true
 ) {
     Card(
         shape = RoundedCornerShape(18),
@@ -57,9 +58,9 @@ fun ProfileTransactionCard(
             Column(
                 modifier = Modifier.padding(horizontal = 10.dp)
             ) {
-
+                val text=if(isMerchant) "From: " else "To: "
                 Text(
-                    text = "To: $uName",
+                    text = text+uName,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 22.sp
                 )

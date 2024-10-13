@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,6 +55,9 @@ fun Register(
 ) {
 
     var name by remember {
+        mutableStateOf("")
+    }
+    var vpa by remember {
         mutableStateOf("")
     }
 
@@ -172,8 +176,35 @@ fun Register(
                     }
                 }
                 Spacer(modifier = modifier.height(20.dp))
+                if(currentVal == "Personal"){
+                    OutlinedTextField(
+                        value = vpa,
+                        onValueChange = {
+                            if (it.all { char -> char.isLetter() || char == '@' }) {
+                                vpa = it
+                            }
+                        },
+                        placeholder = {
+                            Text(
+                                text = "Enter your VPA",
+                                fontFamily = FontFamily.Monospace
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.Call,
+                                contentDescription = null
+                            )
+                        },
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                    Spacer(modifier = modifier.height(20.dp))
+                }
                 Button(onClick = {
-                    onUserEvents(UserEvents.AddUser(user = UserModel(name=name, vpa = "chinda@vbl", isMerchant = currentVal == "Merchant")))
+                    onUserEvents(UserEvents.AddUser(user = UserModel(name=name, vpa = vpa, isMerchant = currentVal == "Merchant")))
                 }) {
                     Text(
                         "Get Started",

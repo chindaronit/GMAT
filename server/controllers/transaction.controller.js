@@ -17,8 +17,10 @@ const USER_COLLECTION = "users";
 
 // Function to add a new transaction, storing it under a monthly nested structure
 export const addTransaction = async (req, res) => {
-  const { userId, payerId, payeeId, type, amount, gstin } = req.body;
-  if (!payerId || !payeeId || !type || !amount || !gstin) {
+  const { userId } = req.query;
+  const { payerId, payeeId, type, amount, gstin, name } = req.body;
+
+  if (!payerId || !payeeId || !amount || !name) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid fields in the request",
     });
@@ -31,53 +33,28 @@ export const addTransaction = async (req, res) => {
     amount: amount,
     gstin: gstin,
     status: "1",
+    name: name,
     timestamp: Timestamp.now(),
   };
 
   try {
-    const payeeVpa = data.payeeId;
-    const usersCollection = collection(db, USER_COLLECTION);
-    const userQuery = query(usersCollection, where("vpa", "==", payeeVpa));
-    const payeeQuerySnapshot = await getDocs(userQuery);
-    let payeeName = null;
-    if (!payeeQuerySnapshot.empty) {
-      payeeQuerySnapshot.forEach((payeeDoc) => {
-        const payeeData = payeeDoc.data();
-        payeeName = payeeData.name || "Unknown";
-      });
-    } else {
-      payeeName = "Unknown";
-    }
-    data = { ...data, name: payeeName };
-
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
-    const monthYearKey = `${currentYear}-${String(currentMonth).padStart(
-      2,
-      "0"
-    )}`;
+    const monthYearKey = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
     const transactionDoc = await getDoc(transactionDocRef);
     let monthlyTransactions = {};
     if (transactionDoc.exists()) {
       monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
     }
-    const newTransactionRef = await addDoc(
-      collection(db, TRANSACTION_COLLECTION),
-      data
-    );
-    const txnId = newTransactionRef.id;
+    const txnId = `${userId}_${Timestamp.now().seconds}`;
     const newTransaction = { txnId, ...data };
     if (!monthlyTransactions[monthYearKey]) {
       monthlyTransactions[monthYearKey] = [];
     }
     monthlyTransactions[monthYearKey].push(newTransaction);
     await setDoc(transactionDocRef, { monthlyTransactions }, { merge: true });
-    // Delete the transaction from the collection (if you need to delete the entire transaction)
-    await deleteDoc(doc(db, TRANSACTION_COLLECTION, txnId));
-    res
-      .status(200)
-      .send({ msg: "Transaction added successfully", txnId: txnId });
+    res.status(200).send({ msg: "Transaction added successfully", txnId: txnId });
   } catch (error) {
     console.error("Error adding transaction:", error);
     res.status(500).send({ message: "Internal server error" });
@@ -87,6 +64,7 @@ export const addTransaction = async (req, res) => {
 // Function to get all transactions for a user in a particular month (format: YYYY-MM)
 export const getAllTransactionsForMonth = async (req, res) => {
   const { userId, month, year } = req.query;
+
   if (!userId || !month || !year) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid fields in the request",
@@ -97,27 +75,91 @@ export const getAllTransactionsForMonth = async (req, res) => {
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
     const monthYear = `${year}-${month}`;
     const transactionDoc = await getDoc(transactionDocRef);
+
     if (!transactionDoc.exists()) {
-      return res
-        .status(404)
-        .send({ message: "No transactions found for the user" });
+      return res.status(404).send({ message: "No transactions found for the user" });
     }
+
     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
     const transactionsForMonth = monthlyTransactions[monthYear];
+
     if (!transactionsForMonth) {
-      return res
-        .status(404)
-        .send({ message: `No transactions found for the month: ${monthYear}` });
+      return res.status(404).send({
+        message: `No transactions found for the month: ${monthYear}`,
+      });
     }
+
+    // Sort transactions by timestamp in descending order
+    const sortedTransactions = transactionsForMonth.sort((a, b) => {
+      return b.timestamp.seconds - a.timestamp.seconds;
+    });
+
     res.status(200).send({
       message: "Transactions retrieved successfully",
-      transactions: transactionsForMonth,
+      transactions: sortedTransactions,
     });
   } catch (error) {
     console.error("Error retrieving transactions:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 };
+
+// Function to get all transactions for a payee in a particular month (format: YYYY-MM)
+export const getTransactionsByPayeeForMonth = async (req, res) => {
+  const { vpa, month, year } = req.query;
+  console.log(req.query)
+
+  if (!vpa || !month || !year) {
+    return res.status(400).send({
+      message: "Bad Request: Missing or invalid fields in the request",
+    });
+  }
+
+  try {
+    // Fetch all transaction documents
+    const transactionCollectionRef = collection(db, TRANSACTION_COLLECTION);
+    const transactionQuerySnapshot = await getDocs(transactionCollectionRef);
+
+    if (transactionQuerySnapshot.empty) {
+      return res.status(404).send({ message: "No transactions found" });
+    }
+
+    const allTransactions = [];
+    transactionQuerySnapshot.forEach((doc) => {
+      const monthlyTransactions = doc.data().monthlyTransactions || {};
+      const transactions = Object.values(monthlyTransactions).flat();
+      allTransactions.push(...transactions);
+    });
+
+    const monthYearKey = `${year}-${month}`;;
+
+    // Filter the transactions for the given payeeId and the specified month/year
+    const filteredTransactions = allTransactions.filter((txn) => {
+      const txnMonthYear = `${new Date(txn.timestamp.seconds * 1000).getFullYear()}-${String(new Date(txn.timestamp.seconds * 1000).getMonth() + 1).padStart(2, '0')}`;
+      return txn.payeeId.trim() === vpa.trim() && txnMonthYear === monthYearKey;
+    });
+
+    if (!filteredTransactions.length) {
+      return res.status(404).send({
+        message: `No transactions found for payee ${payeeId} in the month: ${monthYearKey}`,
+      });
+    }
+
+    // Sort transactions by timestamp in descending order
+    const sortedTransactions = filteredTransactions.sort((a, b) => {
+      return b.timestamp.seconds - a.timestamp.seconds;
+    });
+
+    res.status(200).send({
+      message: "Transactions retrieved successfully",
+      transactions: sortedTransactions,
+    });
+  } catch (error) {
+    console.error("Error retrieving transactions:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
+
 
 // Function to get a specific transaction by transactionId
 export const getTransactionByTxnId = async (req, res) => {
@@ -434,148 +476,6 @@ export const getAllTransactionsForGstinInYear = async (req, res) => {
   }
 };
 
-// export const getRecentTransactionsForUser = async (req, res) => {
-//   const { userId } = req.query;
-
-//   if (!userId) {
-//     return res.status(400).send({
-//       message: "Bad Request: Missing or invalid userId in the request",
-//     });
-//   }
-
-//   try {
-//     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
-//     const transactionDoc = await getDoc(transactionDocRef);
-//     if (!transactionDoc.exists()) {
-//       return res
-//         .status(404)
-//         .send({ message: "No transactions found for the user" });
-//     }
-
-//     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
-//     const allTransactions = Object.values(monthlyTransactions).flat();
-//     const payerTransactions = allTransactions.filter((txn) => txn.type === "0");
-//     const usersCollection = collection(db, USER_COLLECTION);
-//     const transactionsByPayee = {};
-
-//     for (const txn of payerTransactions) {
-//       const vpa = txn.payeeId.trim();
-//       const userQuery = query(usersCollection, where("vpa", "==", vpa));
-//       const payeeQuerySnapshot = await getDocs(userQuery);
-
-//       if (!payeeQuerySnapshot.empty) {
-//         payeeQuerySnapshot.forEach((payeeDoc) => {
-//           const payeeDetails = payeeDoc.data();
-//           const payeeId = payeeDoc.id;
-
-//           if (!transactionsByPayee[payeeId]) {
-//             transactionsByPayee[payeeId] = {
-//               payeeDetails: payeeDetails,
-//               transactions: [],
-//             };
-//           }
-//           transactionsByPayee[payeeId].transactions.push(txn);
-//         });
-//       } else {
-//         console.log(`Payee with ID ${vpa} does not exist.`);
-//       }
-//     }
-
-//     // Prepare the result array
-//     const result = Object.keys(transactionsByPayee).map((payeeId) => {
-//       const { payeeDetails, transactions } = transactionsByPayee[payeeId];
-
-//       // Sort transactions based on the timestamp in descending order
-//       const sortedTransactions = transactions.sort((a, b) => {
-//         return b.timestamp.seconds - a.timestamp.seconds; // Adjust as necessary for sorting
-//       });
-
-//       return {
-//         payeeDetails: payeeDetails,
-//         transactions: sortedTransactions,
-//       };
-//     });
-
-//     // Sort payees based on the latest transaction's timestamp in descending order
-//     const sortedResult = result.sort((a, b) => {
-//       const lastTxnA = a.transactions[0]?.timestamp.seconds || 0; // Get latest transaction timestamp for payee A
-//       const lastTxnB = b.transactions[0]?.timestamp.seconds || 0; // Get latest transaction timestamp for payee B
-//       return lastTxnB - lastTxnA; // Sort by descending order
-//     });
-
-//     res.status(200).send({
-//       message: "Recent transactions retrieved successfully",
-//       transactionsByPayees: sortedResult,
-//     });
-//   } catch (error) {
-//     console.error("Error retrieving recent transactions for user:", error);
-//     res.status(500).send({ message: "Internal server error" });
-//   }
-// };
-
-// export const getRecentTransactionsForUser = async (req, res) => {
-//   const { userId } = req.query;
-
-//   if (!userId) {
-//     return res.status(400).send({
-//       message: "Bad Request: Missing or invalid userId in the request",
-//     });
-//   }
-
-//   try {
-//     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
-//     const transactionDoc = await getDoc(transactionDocRef);
-//     if (!transactionDoc.exists()) {
-//       return res
-//         .status(404)
-//         .send({ message: "No transactions found for the user" });
-//     }
-
-//     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
-//     const allTransactions = Object.values(monthlyTransactions)
-//       .flat()
-//       .sort((a, b) => {
-//         return b.timestamp.seconds - a.timestamp.seconds;
-//       });
-//     const payerTransactions = allTransactions.filter((txn) => txn.type === "0");
-//     const usersCollection = collection(db, USER_COLLECTION);
-//     const transactionsByPayee = {};
-//     for (const txn of payerTransactions) {
-//       const vpa = txn.payeeId.trim();
-//       const userQuery = query(usersCollection, where("vpa", "==", vpa));
-//       const payeeQuerySnapshot = await getDocs(userQuery);
-
-//       if (!payeeQuerySnapshot.empty) {
-//         payeeQuerySnapshot.forEach((payeeDoc) => {
-//           const payeeDetails = payeeDoc.data();
-//           const payeeId = payeeDoc.id;
-//           if (!transactionsByPayee[payeeId]) {
-//             transactionsByPayee[payeeId] = {
-//               payeeDetails: payeeDetails,
-//               transactions: [],
-//             };
-//           }
-//           transactionsByPayee[payeeId].transactions.push(txn);
-//         });
-//       } else {
-//         console.log(`Payee with ID ${vpa} does not exist.`);
-//       }
-//     }
-//     const result = Object.keys(transactionsByPayee).map((payeeId) => ({
-//       payeeDetails: transactionsByPayee[payeeId].payeeDetails,
-//       transactions: transactionsByPayee[payeeId].transactions,
-//     }));
-
-//     res.status(200).send({
-//       message: "Recent transactions retrieved successfully",
-//       data: result,
-//     });
-//   } catch (error) {
-//     console.error("Error retrieving recent transactions for user:", error);
-//     res.status(500).send({ message: "Internal server error" });
-//   }
-// };
-
 export const getRecentTransactionsForUser = async (req, res) => {
   const { userId } = req.query;
 
@@ -620,7 +520,10 @@ export const getRecentTransactionsForUser = async (req, res) => {
           // If payee does not exist in the object, initialize their details
           if (!transactionsByPayee[payeeId]) {
             transactionsByPayee[payeeId] = {
-              payeeDetails: payeeDetails,
+              payeeDetails: {
+                ...payeeDetails,
+                userId: payeeId, // Add userId to the userDetails object
+              },
               transactions: [],
             };
           }
@@ -642,9 +545,9 @@ export const getRecentTransactionsForUser = async (req, res) => {
       })
       .slice(0, 12); // Limit to top 12 payees
 
-    // Prepare the final result
+    // Prepare the final result and include userId inside userDetails
     const result = sortedPayees.map((payee) => ({
-      payeeDetails: payee.payeeDetails,
+      userDetails: payee.payeeDetails, // Now contains userId
       transactions: payee.transactions,
     }));
 
@@ -670,18 +573,25 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
   try {
     const transactionCollectionRef = collection(db, TRANSACTION_COLLECTION);
     const transactionQuerySnapshot = await getDocs(transactionCollectionRef);
+
     if (transactionQuerySnapshot.empty) {
       return res.status(404).send({ message: "No transactions found" });
     }
+
+    // Gather all transactions from the collection
     const allTransactions = [];
     transactionQuerySnapshot.forEach((doc) => {
       const monthlyTransactions = doc.data().monthlyTransactions || {};
       const transactions = Object.values(monthlyTransactions).flat();
       allTransactions.push(...transactions);
     });
+
+    // Sort all transactions by timestamp in descending order
     const sortedTransactions = allTransactions.sort(
       (a, b) => b.timestamp.seconds - a.timestamp.seconds
     );
+
+    // Filter transactions where payeeId matches the given vpa
     const merchantTransactions = sortedTransactions.filter(
       (txn) => txn.payeeId.trim() === vpa.trim()
     );
@@ -691,22 +601,33 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
         message: "No transactions found for the given VPA",
       });
     }
+
     const usersCollection = collection(db, USER_COLLECTION);
     const transactionsGroupedByPayer = {};
+
+    // Group transactions by payer and fetch payer details
     for (const txn of merchantTransactions) {
       const payerId = txn.payerId.trim();
       const payerQuery = query(usersCollection, where("vpa", "==", payerId));
       const payerQuerySnapshot = await getDocs(payerQuery);
+
       if (!payerQuerySnapshot.empty) {
         payerQuerySnapshot.forEach((payerDoc) => {
           const payerDetails = payerDoc.data();
           const payerKey = payerDoc.id;
+
+          // If payer doesn't exist in the object, initialize their details
           if (!transactionsGroupedByPayer[payerKey]) {
             transactionsGroupedByPayer[payerKey] = {
-              payerDetails: payerDetails,
+              userDetails: {
+                ...payerDetails,
+                userId: payerKey, // Add payerId (userId) to the userDetails object
+              },
               transactions: [],
             };
           }
+
+          // Add transaction to payer's transaction list
           transactionsGroupedByPayer[payerKey].transactions.push(txn);
         });
       } else {
@@ -714,19 +635,21 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
       }
     }
 
+    // Check if there are any payers
     if (Object.keys(transactionsGroupedByPayer).length === 0) {
       return res.status(404).send({
         message: "No payer details found for the transactions",
       });
     }
+
+    // Sort payers by the most recent transaction's timestamp and limit to top 12
     const result = Object.values(transactionsGroupedByPayer)
       .sort((a, b) => {
         const latestTxnA = a.transactions[0].timestamp.seconds;
         const latestTxnB = b.transactions[0].timestamp.seconds;
         return latestTxnB - latestTxnA;
       })
-      .slice(0, 12); // Limit to top 12 payers
-
+      .slice(0, 12); 
     res.status(200).send({
       message: "Recent transactions retrieved successfully",
       data: result,

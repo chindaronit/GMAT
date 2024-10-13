@@ -4,13 +4,14 @@ import {
   getAllTransactionsForMonth,
   addTransaction,
   getAllTransactionsForUser,
-  getUserTransactionsByUserIdAndPayeeId,
+  // getUserTransactionsByUserIdAndPayeeId,
   getAllTransactionsForGstinInYear,
   getAllTransactionsForGstinInMonth,
-  getAllTransactionsForPayerIdAndPayeeId,
+  // getAllTransactionsForPayerIdAndPayeeId,
   getAllTransactionsForGstin,
   getRecentTransactionsForUser,
   getRecentTransactionsForMerchant,
+  getTransactionsByPayeeForMonth,
 } from "../controllers/transaction.controller.js";
 
 const transactionRouter = express.Router();
@@ -21,10 +22,8 @@ transactionRouter.route("/recenttransaction").get(getRecentTransactionsForUser);
 transactionRouter.route("/recentmerchanttransaction").get(getRecentTransactionsForMerchant);
 transactionRouter
   .route("/all/payee")
-  .get(getUserTransactionsByUserIdAndPayeeId);
-transactionRouter
-  .route("/all/payerpayee")
-  .get(getAllTransactionsForPayerIdAndPayeeId);
+  .get(getTransactionsByPayeeForMonth);
+transactionRouter.route("/all/merchant").get(getTransactionsByPayeeForMonth);
   transactionRouter.route("/gstin").get(getAllTransactionsForGstin)
 transactionRouter
   .route("/all/gstin/year")

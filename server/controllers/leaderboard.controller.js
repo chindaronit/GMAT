@@ -11,9 +11,68 @@ import {
 const LEADERBOARD_COLLECTION = "rewards";
 const USER_COLLECTION = "users";
 
+// // Function to update rewards for a user based on a transaction
+// export const updateUserTransactionRewards = async (req, res) => {
+//   const { userId, transactionAmount } = req.body;
+//   console.log(req.body);
+
+//   if (!userId || !transactionAmount) {
+//     console.error("Error: Missing required fields in the request body");
+//     return res
+//       .status(400)
+//       .send({ message: "Bad Request: userId, transactionAmount are required" });
+//   }
+
+//   try {
+//     // Convert transactionAmount to a float instead of an integer
+//     let ta = parseFloat(transactionAmount);
+
+//     // Calculate reward points based on the transaction amount (1 point for every 10 units)
+//     const rewardPoints = Math.floor(ta / 10);
+
+//     const currentMonth = new Date().getMonth() + 1;
+//     const currentYear = new Date().getFullYear();
+//     const rewardsCollectionRef = collection(db, LEADERBOARD_COLLECTION);
+//     const userRewardsDocRef = doc(rewardsCollectionRef, userId);
+//     const userRewardsDoc = await getDoc(userRewardsDocRef);
+
+//     let monthlyRewards = {};
+//     if (userRewardsDoc.exists()) {
+//       monthlyRewards = userRewardsDoc.data().monthlyRewards || {};
+//     }
+//     const monthKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+//     // Initialize rewards if none exist for the current month
+//     if (!monthlyRewards[monthKey]) {
+//       monthlyRewards[monthKey] = {
+//         points: "0",
+//         lastUpdated: null,
+//       };
+//     }
+
+//     // Update the points by adding the new reward points
+//     monthlyRewards[monthKey].points = (
+//       parseInt(monthlyRewards[monthKey].points) + rewardPoints
+//     ).toString();
+
+//     monthlyRewards[monthKey].lastUpdated = Timestamp.fromDate(new Date());
+
+//     // Update the document in Firestore
+//     await setDoc(userRewardsDocRef, { monthlyRewards }, { merge: true });
+
+//     res.status(200).send({
+//       message: `Transaction successful. Added ${rewardPoints} points for user ${userId}.`,
+//     });
+//   } catch (error) {
+//     console.error("Error updating user transaction rewards:", error);
+//     res.status(500).send({ message: "Internal server error" });
+//   }
+// };
+
+
 // Function to update rewards for a user based on a transaction
 export const updateUserTransactionRewards = async (req, res) => {
   const { userId, transactionAmount } = req.body;
+  console.log(req.body);
   if (!userId || !transactionAmount) {
     console.error("Error: Missing required fields in the request body");
     return res

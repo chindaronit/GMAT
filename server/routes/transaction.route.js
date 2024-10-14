@@ -11,14 +11,33 @@ import {
   getTransactionsByPayeeForMonth,
 } from "../controllers/transaction.controller.js";
 
+import authenticateToken from "../middleware/authenticateToken.js";
+
 const transactionRouter = express.Router();
-transactionRouter.route("/").get(getTransactionByTxnId).post(addTransaction);
-transactionRouter.route("/all/month").get(getAllTransactionsForMonth);
-transactionRouter.route("/recenttransaction").get(getRecentTransactionsForUser);
-transactionRouter.route("/recentmerchanttransaction").get(getRecentTransactionsForMerchant);
-transactionRouter.route("/all/merchant").get(getTransactionsByPayeeForMonth);
-transactionRouter.route("/all/gstin").get(getAllTransactionsForGstin)
-transactionRouter.route("/all/gstin/year").get(getAllTransactionsForGstinInYear);
-transactionRouter.route("/all/gstin/month").get(getAllTransactionsForGstinInMonth);
+transactionRouter
+  .route("/")
+  .get(authenticateToken, getTransactionByTxnId)
+  .post(authenticateToken, addTransaction);
+transactionRouter
+  .route("/all/month")
+  .get(authenticateToken, getAllTransactionsForMonth);
+transactionRouter
+  .route("/recenttransaction")
+  .get(authenticateToken, getRecentTransactionsForUser);
+transactionRouter
+  .route("/recentmerchanttransaction")
+  .get(authenticateToken, getRecentTransactionsForMerchant);
+transactionRouter
+  .route("/all/merchant")
+  .get(authenticateToken, getTransactionsByPayeeForMonth);
+transactionRouter
+  .route("/all/gstin")
+  .get(authenticateToken, getAllTransactionsForGstin);
+transactionRouter
+  .route("/all/gstin/year")
+  .get(authenticateToken, getAllTransactionsForGstinInYear);
+transactionRouter
+  .route("/all/gstin/month")
+  .get(authenticateToken, getAllTransactionsForGstinInMonth);
   
 export default transactionRouter;

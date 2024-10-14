@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import com.gmat.ui.components.login.Top
 import com.gmat.ui.events.UserEvents
 import com.gmat.ui.state.UserState
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.auth.User
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +56,16 @@ fun Login(
     userState: UserState,
     onUserEvents: (UserEvents) -> Unit
 ) {
+
+    LaunchedEffect(key1 = Unit) {
+        onUserEvents(UserEvents.SyncUser)
+    }
+
+    LaunchedEffect(key1 = userState.user) {
+        if(userState.user!=null){
+            println(userState.user)
+        }
+    }
 
     val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current as Activity

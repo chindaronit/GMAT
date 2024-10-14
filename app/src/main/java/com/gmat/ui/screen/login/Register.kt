@@ -77,6 +77,7 @@ fun Register(
     LaunchedEffect(key1 = userState.user) {
         if(userState.user!=null){
             if(userState.user.phNo.isNotBlank()){
+                onUserEvents(UserEvents.UpdateRoom(user = userState.user, verificationId = userState.verificationId))
                 navController.navigate(NavRoutes.Home.route) {
                     popUpTo(0) { inclusive = true } // This removes everything from the backstack
                     launchSingleTop = true

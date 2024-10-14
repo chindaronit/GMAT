@@ -24,6 +24,7 @@ googleGmsGoogleServices = "4.4.2"
 firebaseFirestore = "25.1.0"
 firebaseAuthKtx = "23.0.0"
 firebaseStorageKtx = "21.0.1"
+roomRuntime = "2.6.1"
 uiToolingPreviewAndroid = "1.7.3"
 
 [libraries]
@@ -41,6 +42,9 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
 #Hilt
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-ui = { module = "androidx.compose.ui:ui", version.ref = "uiToolingPreviewAndroid" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 core = { module = "com.google.zxing:core", version.ref = "core" }

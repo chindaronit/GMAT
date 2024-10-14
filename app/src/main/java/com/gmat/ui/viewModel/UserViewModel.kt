@@ -4,9 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gmat.data.model.UserModel
+import com.gmat.data.model.room.UserRoomDao
+import com.gmat.data.model.room.UserRoomModel
 import com.gmat.data.repository.api.UserAPI
+import com.gmat.di.RoomModule
 import com.gmat.ui.events.UserEvents
 import com.gmat.ui.state.UserState
+import com.google.firebase.firestore.auth.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +22,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UserViewModel @Inject constructor(
-    private val userAPI: UserAPI
+    private val userAPI: UserAPI,
+    private val dao: UserRoomDao
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(UserState())
@@ -43,7 +48,19 @@ class UserViewModel @Inject constructor(
             }
 
             UserEvents.SignOut -> {
-                _state.update { it.copy(phNo = "", user = null, verificationId = "", newQr = "", newProfile = "", newName = "", newVpa = "", isLoading = false, error = null) }
+                _state.update {
+                    it.copy(
+                        phNo = "",
+                        user = null,
+                        verificationId = "",
+                        newQr = "",
+                        newProfile = "",
+                        newName = "",
+                        newVpa = "",
+                        isLoading = false,
+                        error = null
+                    )
+                }
             }
 
             is UserEvents.ChangePhNo -> {
@@ -76,6 +93,14 @@ class UserViewModel @Inject constructor(
 
             UserEvents.ClearNewProfile -> {
                 _state.update { it.copy(newProfile = "") }
+            }
+
+            UserEvents.SyncUser -> {
+                syncUser()
+            }
+
+            is UserEvents.UpdateRoom -> {
+                updateRoom(event.user, event.verificationId)
             }
         }
     }
@@ -178,6 +203,7 @@ class UserViewModel @Inject constructor(
         updatedUser.qr = _state.value.newQr.ifBlank { _state.value.user!!.qr }
         updatedUser.vpa = _state.value.newVpa.ifBlank { _state.value.user!!.vpa }
         val userId = updatedUser.userId
+        println(updatedUser)
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             val response = userAPI.updateUser(updatedUser)
@@ -186,6 +212,45 @@ class UserViewModel @Inject constructor(
             } else {
                 handleErrorResponse(response)
             }
+        }
+    }
+
+    private fun syncUser() {
+        viewModelScope.launch {
+            dao.getUser().collect { userRoomModel ->
+                userRoomModel?.let {
+                    val user = UserModel(
+                        userId = it.userId,
+                        vpa = it.vpa,
+                        phNo = it.phNo,
+                        profile = it.profile,
+                        qr = it.qr,
+                        isMerchant = it.isMerchant,
+                        name = it.name
+                    )
+                    // Update your state with the retrieved user data
+                    _state.update { currentState ->
+                        currentState.copy(user = user, verificationId = it.verificationId)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateRoom(user: UserModel, verificationId: String) {
+        val userRoomModel = UserRoomModel(
+            userId = user.userId,
+            profile = user.profile,
+            vpa = user.vpa,
+            qr = user.qr,
+            phNo = user.phNo,
+            name = user.name,
+            isMerchant = user.isMerchant,
+            verificationId = verificationId
+        )
+
+        viewModelScope.launch {
+            dao.upsertUser(userRoomModel)
         }
     }
 

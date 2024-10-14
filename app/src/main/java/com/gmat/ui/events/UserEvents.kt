@@ -16,5 +16,7 @@ sealed class UserEvents {
     data class OnChangeQR(val qr: String): UserEvents()
     data class OnChangeVPA(val vpa: String): UserEvents()
     data object ClearNewProfile: UserEvents()
+    data object SyncUser: UserEvents()
+    data class UpdateRoom(val user: UserModel, val verificationId: String) : UserEvents()
 }
 

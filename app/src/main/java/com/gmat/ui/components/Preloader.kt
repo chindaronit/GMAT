@@ -121,9 +121,76 @@ fun HomeScreenPreloader(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TransactionPreloader(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.padding(top = 50.dp)) {
-        repeat(8) {
+fun RecentTransactionPreloader(modifier: Modifier = Modifier) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 25.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        repeat(4) {
+            Card(
+                modifier = Modifier
+                    .padding(vertical = 10.dp, horizontal = 10.dp)
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .placeholder(
+                        visible = true, // Set to `true` while loading
+                        color = Color.Gray, // Placeholder background color
+                        shape = RoundedCornerShape(8.dp), // Placeholder shape
+                        highlight = PlaceholderHighlight.shimmer(Color.LightGray) // Shimmer effect
+                    )
+            ) {}
+        }
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        repeat(4) {
+            Card(
+                modifier = Modifier
+                    .padding(vertical = 10.dp, horizontal = 10.dp)
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .placeholder(
+                        visible = true, // Set to `true` while loading
+                        color = Color.Gray, // Placeholder background color
+                        shape = RoundedCornerShape(8.dp), // Placeholder shape
+                        highlight = PlaceholderHighlight.shimmer(Color.LightGray) // Shimmer effect
+                    )
+            ) {}
+        }
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        repeat(4) {
+            Card(
+                modifier = Modifier
+                    .padding(vertical = 10.dp, horizontal = 10.dp)
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .placeholder(
+                        visible = true, // Set to `true` while loading
+                        color = Color.Gray, // Placeholder background color
+                        shape = RoundedCornerShape(8.dp), // Placeholder shape
+                        highlight = PlaceholderHighlight.shimmer(Color.LightGray) // Shimmer effect
+                    )
+            ) {}
+        }
+    }
+}
+
+@Composable
+fun TransactionPreloader() {
+    Column{
+        repeat(6) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -138,7 +205,6 @@ fun TransactionPreloader(modifier: Modifier = Modifier) {
                     )
             ) {}
         }
-
     }
 }
 
@@ -172,5 +238,40 @@ fun ReceiptPreloader(modifier: Modifier = Modifier) {
                     highlight = PlaceholderHighlight.shimmer(Color.LightGray) // Shimmer effect
                 )
         ) {}
+    }
+}
+
+@Composable
+fun ProfilePreloader(modifier: Modifier = Modifier) {
+    Column{
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 20.dp, horizontal = 15.dp)
+                .height(250.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .placeholder(
+                    visible = true, // Set to `true` while loading
+                    color = Color.Gray, // Placeholder background color
+                    shape = RoundedCornerShape(8.dp), // Placeholder shape
+                    highlight = PlaceholderHighlight.shimmer(Color.LightGray) // Shimmer effect
+                )
+        ) {}
+
+        repeat(4) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp, horizontal = 15.dp)
+                    .height(80.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .placeholder(
+                        visible = true, // Set to `true` while loading
+                        color = Color.Gray, // Placeholder background color
+                        shape = RoundedCornerShape(8.dp), // Placeholder shape
+                        highlight = PlaceholderHighlight.shimmer(Color.LightGray) // Shimmer effect
+                    )
+            ) {}
+        }
     }
 }

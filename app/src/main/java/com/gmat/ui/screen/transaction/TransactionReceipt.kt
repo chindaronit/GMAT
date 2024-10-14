@@ -58,6 +58,7 @@ fun TransactionReceipt(
 ) {
 
     LaunchedEffect(key1 = Unit) {
+        println("$userId, $txnId")
         onTransactionEvents(TransactionEvents.GetTransactionById(userId = userId, txnId = txnId))
     }
 

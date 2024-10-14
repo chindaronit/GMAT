@@ -102,7 +102,7 @@ fun Login(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.Call,
-                            contentDescription = "",
+                            contentDescription = null,
                         )
                     },
                     modifier = modifier.fillMaxWidth(),

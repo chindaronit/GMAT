@@ -100,7 +100,9 @@ fun generateQrCode(text: String): Bitmap? {
 fun UpgradedQR(
     modifier: Modifier = Modifier,
     navController: NavController,
-    userState: UserState
+    isLoading: Boolean,
+    vpa: String,
+    qrCode: String
 ) {
     val context = LocalContext.current
 
@@ -113,9 +115,8 @@ fun UpgradedQR(
         }
     }
 
-    if (userState.user != null) {
-        val qrCodeBitmap = remember { generateQrCode(userState.user.qr) }
-
+    if (!isLoading) {
+        val qrCodeBitmap = remember { generateQrCode(qrCode) }
         Scaffold(
             topBar = {
                 CenterBar(
@@ -157,7 +158,7 @@ fun UpgradedQR(
                 }
                 Spacer(modifier = modifier.height(20.dp))
                 Text(
-                    text = userState.user!!.vpa,
+                    text = vpa,
                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
                 )
                 Spacer(modifier = modifier.weight(1f))

@@ -35,6 +35,7 @@ import com.gmat.ui.state.QRScannerState
 import com.gmat.ui.state.TransactionState
 import com.gmat.ui.state.UserState
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +64,7 @@ fun AddTransactionDetails(
     var userConfirmation by remember {
         mutableIntStateOf(0)
     }
+    val calendar = Calendar.getInstance()
 
     if (!isMerchant) {
         LaunchedEffect(key1 = gstin, key2 = amount) {
@@ -94,10 +96,11 @@ fun AddTransactionDetails(
 
     LaunchedEffect(key1 = transactionState.transaction) {
         if (transactionState.transaction != null) {
+            onTransactionEvents(TransactionEvents.GetRecentTransactions(vpa = userState.user!!.vpa, userId = userState.user.userId))
             onLeaderboardEvents(
                 LeaderboardEvents.AddUserTransactionRewards(
                     transactionAmount = amount,
-                    userId = userState.user!!.userId
+                    userId = userState.user.userId
                 )
             )
             navController.navigate(

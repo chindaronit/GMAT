@@ -97,7 +97,9 @@ fun TransactionChat(
                             navController = navController,
                             transaction = transaction,
                             transactionUser = transactionUser,
-                            modifier = Modifier.weight(1f) // Card on the left side
+                            modifier = Modifier.weight(1f), // Card on the left side
+                            isMerchant = true,
+                            payerUserId = ""
                         )
                         Spacer(modifier = Modifier.weight(1f)) // Push content to the right
                     } else {
@@ -106,7 +108,9 @@ fun TransactionChat(
                             navController = navController,
                             transaction = transaction,
                             transactionUser = transactionUser,
-                            modifier = Modifier.weight(1f) // Card on the right side
+                            modifier = Modifier.weight(1f),
+                            isMerchant = false,
+                            payerUserId = userState.user!!.userId // Card on the right side
                         )
                     }
                 }
@@ -118,10 +122,15 @@ fun TransactionChat(
 
 // TransactionCard composable to display transaction details
 @Composable
-fun TransactionCard(transaction: TransactionModel, modifier: Modifier = Modifier, navController: NavController, transactionUser: UserModel?) {
+fun TransactionCard(transaction: TransactionModel, modifier: Modifier = Modifier, navController: NavController, transactionUser: UserModel?, isMerchant: Boolean ,payerUserId: String) {
     Card(
         onClick = {
-            navController.navigate(NavRoutes.TransactionReceipt.withArgs(transaction.txnId, transactionUser!!.userId))
+            if (isMerchant) {
+                navController.navigate(NavRoutes.TransactionReceipt.withArgs(transaction.txnId, transactionUser!!.userId))
+            } else {
+                navController.navigate(NavRoutes.TransactionReceipt.withArgs(transaction.txnId, payerUserId))
+            }
+
         },
         modifier = modifier
             .padding(8.dp), // Card-specific padding

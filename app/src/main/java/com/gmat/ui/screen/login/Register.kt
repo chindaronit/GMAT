@@ -12,6 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.LocalPolice
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.Payment
+import androidx.compose.material.icons.filled.PermIdentity
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,6 +62,7 @@ fun Register(
     var name by remember {
         mutableStateOf("")
     }
+
     var vpa by remember {
         mutableStateOf("")
     }
@@ -180,9 +186,7 @@ fun Register(
                     OutlinedTextField(
                         value = vpa,
                         onValueChange = {
-                            if (it.all { char -> char.isLetter() || char == '@' }) {
                                 vpa = it
-                            }
                         },
                         placeholder = {
                             Text(
@@ -192,7 +196,7 @@ fun Register(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Filled.Call,
+                                imageVector = Icons.Filled.Payment,
                                 contentDescription = null
                             )
                         },
@@ -204,7 +208,13 @@ fun Register(
                     Spacer(modifier = modifier.height(20.dp))
                 }
                 Button(onClick = {
-                    onUserEvents(UserEvents.AddUser(user = UserModel(name=name, vpa = vpa, isMerchant = currentVal == "Merchant")))
+                    if(currentVal=="Merchant"){
+                        onUserEvents(UserEvents.AddUser(user = UserModel(name=name, vpa = "", isMerchant = currentVal == "Merchant")))
+                    }
+                    else{
+                        onUserEvents(UserEvents.AddUser(user = UserModel(name=name, vpa = vpa, isMerchant = currentVal == "Merchant")))
+                    }
+
                 }) {
                     Text(
                         "Get Started",

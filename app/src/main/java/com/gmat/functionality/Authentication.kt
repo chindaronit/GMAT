@@ -1,26 +1,14 @@
 package com.gmat.functionality
 
 import android.app.Activity
-import android.util.Log
 import android.widget.Toast
-import androidx.lifecycle.viewModelScope
-import com.gmat.data.repository.api.UserAPI
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withTimeoutOrNull
-import org.json.JSONObject
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
+
 
 // Function to start phone number verification
 fun startPhoneNumberVerification(
@@ -36,14 +24,17 @@ fun startPhoneNumberVerification(
         .setActivity(activity)
         .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                signInWithPhoneAuthCredential(credential,activity, onSuccess = {}, onFailure = {})
+
             }
 
             override fun onVerificationFailed(e: FirebaseException) {
                 onVerificationFailed(e.message ?: "Verification failed due to an unknown error")
             }
 
-            override fun onCodeSent(verificationIdSent: String, token: PhoneAuthProvider.ForceResendingToken) {
+            override fun onCodeSent(
+                verificationIdSent: String,
+                token: PhoneAuthProvider.ForceResendingToken
+            ) {
                 // Pass the verification ID back to the calling function for further steps
                 onVerificationCompleted(verificationIdSent)
                 Toast.makeText(activity, "OTP sent successfully", Toast.LENGTH_SHORT).show()
@@ -63,11 +54,22 @@ fun signInWithPhoneAuthCredential(
     FirebaseAuth.getInstance().signInWithCredential(credential)
         .addOnCompleteListener(activity) { task ->
             if (task.isSuccessful) {
-                onSuccess()
+                // Get the signed-in user's ID token
+                val user = task.result?.user
+                user?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
+                    if (tokenTask.isSuccessful) {
+                        val idToken = tokenTask.result?.token
+                        println(idToken)
+                        onSuccess()
+                    } else {
+                        onFailure("Failed to get ID token")
+                    }
+                }
             } else {
-                onFailure(task.exception?.message ?: "OTP verification failed")
+                onFailure("Otp doesn't match")
             }
         }
+
 }
 
 

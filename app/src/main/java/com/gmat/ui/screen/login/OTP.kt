@@ -2,6 +2,7 @@ package com.gmat.ui.screen.login
 
 import android.app.Activity
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,9 +11,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -21,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.gmat.data.model.UserModel
 import com.gmat.functionality.signInWithPhoneAuthCredential
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.login.Bottom
@@ -38,39 +46,51 @@ import com.gmat.ui.components.login.Top
 import com.gmat.ui.events.UserEvents
 import com.gmat.ui.state.UserState
 import com.google.firebase.auth.PhoneAuthProvider
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OTP(
     modifier: Modifier = Modifier,
     navController: NavController,
-    userState: UserState,
+    user: UserModel?,
+    verificationId: String,
     onUserEvents: (UserEvents) -> Unit
 ) {
     var otpValue by remember { mutableStateOf("") }
     val context = LocalContext.current as Activity
+    var snackbarVisible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = userState.user) {
-        userState.user?.let { user ->
+    LaunchedEffect(key1 = user) {
+        user?.let { user ->
             if (user.phNo.isNotBlank()) {
+                snackbarVisible=false
                 navController.navigate(NavRoutes.Home.route) {
-                    popUpTo(0) { inclusive = true } // This removes everything from the backstack
+                    popUpTo(NavRoutes.OTP.route) {
+                        inclusive = true
+                    }
                     launchSingleTop = true
                 }
-
             } else {
                 // Navigate to Register and pop the backstack
-                navController.navigate(NavRoutes.Register.route){
-                    popUpTo(0) { inclusive = true } // This removes everything from the backstack
+                navController.navigate(NavRoutes.Register.route) {
+                    popUpTo(NavRoutes.OTP.route) {
+                        inclusive = true
+                    }
                     launchSingleTop = true
                 }
-
             }
         }
     }
 
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Scaffold(
+
+    Scaffold (
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         topBar = {
             TopAppBar(
                 colors = topAppBarColors(
@@ -111,14 +131,38 @@ fun OTP(
                 Button(
                     onClick = {
                         if (otpValue.length == 6) {
-                            if (userState.verificationId.isNotEmpty() && otpValue.isNotEmpty()) {
+                            if (verificationId.isNotEmpty() && otpValue.isNotEmpty()) {
+//                                if (snackbarVisible) {
+//                                    // Dismiss snackbar manually
+//                                    scope.launch {
+//                                        snackbarHostState.currentSnackbarData?.dismiss()
+//                                    }
+//                                    snackbarVisible = false
+//                                } else {
+//                                    // Show snackbar manually
+//                                    scope.launch {
+//                                        snackbarHostState.showSnackbar(
+//                                            message = "Verifying Credentials",
+//                                            actionLabel = "Dismiss",
+//                                            duration = SnackbarDuration.Indefinite // Keeps it on until dismissed manually
+//                                        )
+//                                    }
+//                                    snackbarVisible = true
+//                                }
+
                                 val credential =
-                                    PhoneAuthProvider.getCredential(userState.verificationId, otpValue)
+                                    PhoneAuthProvider.getCredential(
+                                        verificationId,
+                                        otpValue
+                                    )
                                 signInWithPhoneAuthCredential(
                                     credential,
                                     activity = context,
-                                    onFailure = {},
-                                    onSuccess = { onUserEvents(UserEvents.SignIn) })
+                                    onFailure = {Toast.makeText(context, it, Toast.LENGTH_SHORT).show()},
+                                    onSuccess = {
+                                        println("success")
+                                        onUserEvents(UserEvents.SignIn)
+                                    })
                             } else {
                                 Log.w("Login", "Verification ID or OTP is empty.")
                             }

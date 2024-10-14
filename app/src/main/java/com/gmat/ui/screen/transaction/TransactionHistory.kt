@@ -49,7 +49,6 @@ import com.gmat.ui.state.TransactionState
 import com.gmat.ui.state.UserState
 import com.gmat.ui.theme.DarkGreen
 import com.gmat.ui.theme.DarkRed
-import java.time.LocalDate
 import java.util.Calendar
 
 @Composable
@@ -65,7 +64,7 @@ fun TransactionHistory(
         "February",
         "March",
         "April",
-        "Mau",
+        "May",
         "June",
         "July",
         "August",
@@ -110,9 +109,6 @@ fun TransactionHistory(
         }
     }
 
-
-
-
     Scaffold(
         topBar = {
             CenterBar(
@@ -126,53 +122,50 @@ fun TransactionHistory(
                 })
         }
     ) { innerPadding ->
+
         Column(
             modifier = modifier.padding(innerPadding)
         ) {
+
+
+            DateFilter {
+                visible = true
+            }
+
+            MonthYearPicker(
+                visible = visible,
+                currentMonth = selectedMonth - 1,
+                currentYear = selectedYear,
+                onConfirmation = { month, year ->
+                    selectedMonth = month
+                    selectedYear = year
+                    visible = false
+                    onTransactionEvents(TransactionEvents.ClearTransactionHistory)
+                },
+                onDismissRequest = {
+                    visible = false
+                }
+            )
+
+            Card(
+                modifier = modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                Text(
+                    text = months[selectedMonth - 1] + ", $selectedYear",
+                    modifier = modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                )
+            }
             if (transactionState.isLoading) {
                 TransactionPreloader()
             }
-        }
 
-        if (transactionState.transactionHistory != null && !transactionState.isLoading) {
-            Column(
-                modifier = modifier.padding(innerPadding)
-            ) {
-
-
-                DateFilter {
-                    visible = true
-                }
-
-                MonthYearPicker(
-                    visible = visible,
-                    currentMonth = selectedMonth-1,
-                    currentYear = selectedYear,
-                    onConfirmation = { month, year ->
-                        selectedMonth = month
-                        selectedYear = year
-                        visible = false
-                        onTransactionEvents(TransactionEvents.ClearTransactionHistory)
-                    },
-                    onDismissRequest = {
-                        visible = false
-                    }
-                )
-
-                Card(
-                    modifier = modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) {
-                    Text(
-                        text = months[selectedMonth - 1] + ", $selectedYear",
-                        modifier = modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-                    )
-                }
+            if (transactionState.transactionHistory != null && !transactionState.isLoading) {
                 if (transactionState.transactionHistory.isEmpty()) {
                     Text(
                         text = "No transactions found!",
@@ -201,7 +194,6 @@ fun TransactionHistory(
                                             )
                                         )
                                     }
-
                                 },
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.surface,
@@ -269,8 +261,6 @@ fun TransactionHistory(
         }
     }
 }
-
-
 
 
 @Composable

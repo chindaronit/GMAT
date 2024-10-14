@@ -8,4 +8,5 @@ sealed class TransactionEvents {
     data class GetAllTransactionsForMonth(val month: Int, val year: Int, val userId: String?,val vpa: String?) : TransactionEvents()
     data class GetRecentTransactions(val userId: String?,val vpa: String?): TransactionEvents()
     data object ClearTransactionHistory: TransactionEvents()
+    data object SignOut: TransactionEvents()
 }

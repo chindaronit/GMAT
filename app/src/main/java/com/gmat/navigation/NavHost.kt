@@ -35,21 +35,36 @@ fun AppNavHost(
     leaderboardViewModel: LeaderboardViewModel
 ) {
 
+    val userState by userViewModel.state.collectAsState()
+    val leaderboardState by leaderboardViewModel.state.collectAsState()
+    val transactionState by transactionViewModel.state.collectAsState()
+    val scannerState by scannerViewModel.state.collectAsState()
+
     NavHost(navController, startDestination = NavRoutes.Login.route) {
+
         animatedComposable(NavRoutes.Profile.route) {
-            val userState by userViewModel.state.collectAsState()
-            Profile(navController, userState)
+            Profile(
+                navController,
+                userState,
+                onUserEvents = userViewModel::onEvent,
+                onTransactionEvents = transactionViewModel::onEvent,
+                onLeaderboardEvents = leaderboardViewModel::onEvent,
+                onScannerEvents = scannerViewModel::onEvent
+            )
         }
 
         animatedComposable(NavRoutes.Rewards.route) {
-            val leaderboardState by leaderboardViewModel.state.collectAsState()
-            val userState by userViewModel.state.collectAsState()
-            Rewards(navController, leaderboardState = leaderboardState, onLeaderboardEvents = leaderboardViewModel::onEvent,userState=userState)
+            Rewards(
+                navController,
+                onLeaderboardEvents = leaderboardViewModel::onEvent,
+                isLoading = (userState.isLoading || leaderboardState.isLoading),
+                leaderboardEntries = leaderboardState.allEntries.data,
+                user = userState.user!!,
+                userLeaderboardEntry = leaderboardState.userLeaderboardEntry
+            )
         }
 
         animatedComposable(NavRoutes.UpgradeQR.route) {
-            val scannerState by scannerViewModel.state.collectAsState()
-            val userState by userViewModel.state.collectAsState()
             UpgradeQR(
                 navController = navController,
                 scannerState = scannerState,
@@ -60,14 +75,10 @@ fun AppNavHost(
         }
 
         animatedComposable(NavRoutes.UpgradedQR.route) {
-            val userState by userViewModel.state.collectAsState()
-            UpgradedQR(navController = navController, userState = userState)
+            UpgradedQR(navController = navController, isLoading = userState.isLoading, qrCode = userState.user!!.qr, vpa = userState.user!!.vpa)
         }
 
         animatedComposable(NavRoutes.Home.route) {
-            val scannerState by scannerViewModel.state.collectAsState()
-            val userState by userViewModel.state.collectAsState()
-            val transactionState by transactionViewModel.state.collectAsState()
             HomeScreen(
                 navController = navController,
                 scannerState = scannerState,
@@ -85,14 +96,17 @@ fun AppNavHost(
                     defaultValue = ""
                     nullable = false
                 }
-            )) { entry->
+            )) { entry ->
 
-            val userState by userViewModel.state.collectAsState()
-            val transactionState by transactionViewModel.state.collectAsState()
-            TransactionChat(navController = navController, userState = userState, transactionState = transactionState,chatIndex=entry.arguments?.getString("chatIndex") ?: "")
+            TransactionChat(
+                navController = navController,
+                userState = userState,
+                transactionState = transactionState,
+                chatIndex = entry.arguments?.getString("chatIndex") ?: ""
+            )
         }
 
-        animatedComposable(route = NavRoutes.TransactionReceipt.route + "/{txnId}"+"/{userId}",
+        animatedComposable(route = NavRoutes.TransactionReceipt.route + "/{txnId}" + "/{userId}",
             arguments = listOf(
                 navArgument("txnId") {
                     type = NavType.StringType
@@ -104,22 +118,27 @@ fun AppNavHost(
                     defaultValue = ""
                     nullable = false
                 }
-            )) { entry->
-            val transactionState by transactionViewModel.state.collectAsState()
-            val userState by userViewModel.state.collectAsState()
-            TransactionReceipt(navController = navController,transactionState = transactionState, txnId=entry.arguments?.getString("txnId") ?: "", onTransactionEvents = transactionViewModel::onEvent, userId=entry.arguments?.getString("userId") ?: "", userState = userState)
+            )) { entry ->
+            TransactionReceipt(
+                navController = navController,
+                transactionState = transactionState,
+                txnId = entry.arguments?.getString("txnId") ?: "",
+                onTransactionEvents = transactionViewModel::onEvent,
+                userId = entry.arguments?.getString("userId") ?: "",
+                userState = userState
+            )
         }
 
         animatedComposable(NavRoutes.TransactionHistory.route) {
-            val transactionState by transactionViewModel.state.collectAsState()
-            val userState by userViewModel.state.collectAsState()
-            TransactionHistory(navController = navController, transactionState = transactionState, userState = userState, onTransactionEvents = transactionViewModel::onEvent)
+            TransactionHistory(
+                navController = navController,
+                transactionState = transactionState,
+                userState = userState,
+                onTransactionEvents = transactionViewModel::onEvent
+            )
         }
 
         animatedComposable(NavRoutes.AddTransactionDetails.route) {
-            val transactionState by transactionViewModel.state.collectAsState()
-            val userState by userViewModel.state.collectAsState()
-            val scannerState by scannerViewModel.state.collectAsState()
             AddTransactionDetails(
                 navController = navController,
                 scannerState = scannerState,
@@ -132,10 +151,10 @@ fun AppNavHost(
         }
 
         animatedComposable(route = NavRoutes.OTP.route) {
-            val userState by userViewModel.state.collectAsState()
             OTP(
                 navController = navController,
-                userState = userState,
+                user = userState.user,
+                verificationId = userState.verificationId,
                 onUserEvents = userViewModel::onEvent
             )
         }
@@ -143,21 +162,18 @@ fun AppNavHost(
         authScreens.forEach { (route, screen) ->
             if (route == NavRoutes.Login.route) {
                 slideInComposable(route) {
-                    val userState by userViewModel.state.collectAsState()
-                    screen(navController,userViewModel,userState)
+                    screen(navController, userViewModel, userState)
                 }
             } else {
                 animatedComposable(route) {
-                    val userState by userViewModel.state.collectAsState()
-                    screen(navController,userViewModel,userState)
+                    screen(navController, userViewModel, userState)
                 }
             }
         }
 
         settingScreens.forEach { (route, screen) ->
             animatedComposable(route) {
-                val userState by userViewModel.state.collectAsState()
-                screen(navController,userViewModel,userState)
+                screen(navController, userViewModel, userState)
             }
         }
     }

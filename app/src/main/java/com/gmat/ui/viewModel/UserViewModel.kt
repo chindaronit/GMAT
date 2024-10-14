@@ -43,7 +43,7 @@ class UserViewModel @Inject constructor(
             }
 
             UserEvents.SignOut -> {
-                _state.update { it.copy(phNo = "", user = null) }
+                _state.update { it.copy(phNo = "", user = null, verificationId = "", newQr = "", newProfile = "", newName = "", newVpa = "", isLoading = false, error = null) }
             }
 
             is UserEvents.ChangePhNo -> {
@@ -71,7 +71,7 @@ class UserViewModel @Inject constructor(
             }
 
             is UserEvents.OnChangeVPA -> {
-                _state.update { it.copy(newVpa= event.vpa) }
+                _state.update { it.copy(newVpa = event.vpa) }
             }
         }
     }
@@ -115,7 +115,22 @@ class UserViewModel @Inject constructor(
                         )
                     }
                 } else {
-                   handleErrorResponse(response)
+                    when (response.code()) {
+                        404 -> {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    user = UserModel(),
+                                    error = "User not found"
+                                )
+                            }
+                        }
+
+                        else -> {
+                            handleErrorResponse(response)
+                        }
+                    }
+
                 }
             } catch (e: Exception) {
                 _state.update {

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gmat.data.repository.api.LeaderboardAPI
+import com.gmat.env.ListLeaderboardResponse
 import com.gmat.env.TransactionRequest
 import com.gmat.ui.events.LeaderboardEvents
 import com.gmat.ui.state.LeaderboardState
@@ -36,6 +37,10 @@ class LeaderboardViewModel @Inject constructor(
 
             is LeaderboardEvents.AddUserTransactionRewards -> {
                 addUserTransactionRewards(event.userId, event.transactionAmount)
+            }
+
+            LeaderboardEvents.SignOut -> {
+                _state.update { it.copy(userLeaderboardEntry = null, allEntries = ListLeaderboardResponse(), isLoading = false, error = null) }
             }
         }
     }

@@ -9,6 +9,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,7 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gmat.R
+import com.gmat.data.model.LeaderboardModel
+import com.gmat.data.model.UserModel
+import com.gmat.env.ListLeaderboardResponse
 import com.gmat.ui.components.CenterBar
+import com.gmat.ui.components.ProfilePreloader
 import com.gmat.ui.components.RenderPainterIcon
 import com.gmat.ui.events.LeaderboardEvents
 import com.gmat.ui.state.LeaderboardState
@@ -31,10 +40,16 @@ import java.time.LocalDate
 @Composable
 fun Rewards(
     navController: NavController,
-    userState: UserState,
-    leaderboardState: LeaderboardState,
+    isLoading: Boolean,
+    user: UserModel,
+    userLeaderboardEntry: LeaderboardModel?,
+    leaderboardEntries: List<LeaderboardModel>,
     onLeaderboardEvents: (LeaderboardEvents) -> Unit
 ) {
+
+    var rank by remember {
+        mutableStateOf("-")
+    }
 
     LaunchedEffect(key1 = Unit) {
         val currentDate = LocalDate.now()
@@ -43,7 +58,7 @@ fun Rewards(
 
         onLeaderboardEvents(
             LeaderboardEvents.GetUserRewardsPointsForMonth(
-                userId = userState.user!!.userId,
+                userId = user.userId,
                 month = month,
                 year = year
             )
@@ -57,20 +72,29 @@ fun Rewards(
         )
     }
 
-    if (leaderboardState.userLeaderboardEntry != null) {
-        Scaffold(
-            topBar = {
-                CenterBar(
-                    onClick = { navController.navigateUp() },
-                    title = {
-                        Text(
-                            text = "Rewards",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    })
-            },
-        ) { innerPadding ->
+    Scaffold(
+        topBar = {
+            CenterBar(
+                onClick = { navController.navigateUp() },
+                title = {
+                    Text(
+                        text = "Rewards",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                })
+        },
+    ) { innerPadding ->
+        if (isLoading) {
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                ProfilePreloader()
+            }
+        }
+        if (userLeaderboardEntry!=null) {
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -102,12 +126,12 @@ fun Rewards(
                             modifier = Modifier.padding(horizontal = 30.dp)
                         ) {
                             Text(
-                                text = "Your Rank: ${leaderboardState.userLeaderboardEntry.points}",
+                                text = "Your Rank: ${rank}",
                                 fontSize = 20.sp
                             )
                             Spacer(modifier = Modifier.height(5.dp))
                             Text(
-                                text = "Your Points: ${leaderboardState.userLeaderboardEntry.points}",
+                                text = "Your Points: ${userLeaderboardEntry.points}",
                                 fontWeight = FontWeight.ExtraLight,
                                 fontSize = 18.sp
                             )
@@ -133,23 +157,34 @@ fun Rewards(
                             text = "Leaderboard",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 15.dp, top = 20.dp, bottom = 10.dp)
+                            modifier = Modifier.padding(
+                                start = 15.dp,
+                                top = 20.dp,
+                                bottom = 10.dp
+                            )
                         )
                     }
 
-                    if (leaderboardState.allEntries.data.isNotEmpty()) {
-                        val sortedEntries = leaderboardState.allEntries.data
-                            .sortedByDescending { it.points } // Sort by points in descending order
-                            .take(10) // Take top 10 entries
+                    if (leaderboardEntries.isNotEmpty()) {
+                        val sortedEntries = leaderboardEntries.sortedByDescending { it.points }
 
-                        sortedEntries.forEachIndexed { index, entry ->
+                        // Find the index of the userId in the sorted list
+                        rank = (sortedEntries.indexOfFirst { it.userId == user.userId } + 1).toString()
+
+                        // Take the top 10 entries (if needed)
+                        val top100Entries = sortedEntries.take(100)
+
+                        top100Entries.forEachIndexed { index, entry ->
                             LeaderboardEntry(
                                 name = entry.name,
                                 points = entry.points.toString(),
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                modifier = Modifier.padding(
+                                    horizontal = 10.dp,
+                                    vertical = 4.dp
+                                ),
                                 position = index + 1
                             )
-                            if (index < sortedEntries.size - 1) {
+                            if (index < top100Entries.size - 1) {
                                 HorizontalDivider(
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                     modifier = Modifier

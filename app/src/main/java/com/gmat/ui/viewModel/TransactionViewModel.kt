@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gmat.data.model.TransactionModel
 import com.gmat.data.repository.api.TransactionAPI
+import com.gmat.ui.events.LeaderboardEvents
 import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.state.TransactionState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +46,10 @@ class TransactionViewModel @Inject constructor(
             TransactionEvents.ClearTransactionHistory -> {
                 _state.update { it.copy(transactionHistory =null) }
             }
+
+            TransactionEvents.SignOut -> {
+                _state.update { it.copy(isLoading = false, error = null, transaction = null, transactionHistory = null, recentUserTransactions = null) }
+            }
         }
     }
 
@@ -78,10 +83,12 @@ class TransactionViewModel @Inject constructor(
 
     private fun getTransactionById(userId: String, txnId: String) {
         _state.update { it.copy(isLoading = true) }
+        println("$userId, $txnId")
         viewModelScope.launch {
             try {
                 val response = transactionAPI.getTransactionByTxnId(userId = userId, txnId = txnId)
                 if (response.isSuccessful && response.body() != null) {
+                    println(response.body())
                     _state.update {
                         it.copy(
                             isLoading = false,

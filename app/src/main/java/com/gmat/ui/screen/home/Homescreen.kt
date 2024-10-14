@@ -45,6 +45,7 @@ import java.time.LocalTime
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import com.gmat.ui.components.HomeScreenPreloader
+import com.gmat.ui.components.RecentTransactionPreloader
 import com.gmat.ui.events.QRScannerEvents
 import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.state.QRScannerState
@@ -89,7 +90,6 @@ fun HomeScreen(
         )
     }
 
-
     val launcher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
@@ -115,11 +115,11 @@ fun HomeScreen(
         }
     }
 
-    if(userState.isLoading || transactionState.isLoading){
+    if (userState.isLoading || transactionState.isLoading) {
         HomeScreenPreloader()
     }
-    
-    if (user != null && transactionState.recentUserTransactions != null) {
+
+    if (user != null) {
         Scaffold(
             topBar = {
                 Bar(
@@ -204,82 +204,98 @@ fun HomeScreen(
                         })
                     }
                 }
-
-                Spacer(modifier = Modifier.height(30.dp))
-                Text(
-                    text = if (user.isMerchant) stringResource(id = R.string.business) else stringResource(
-                        id = R.string.people
-                    ),
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(start = 20.dp)
-                )
                 Spacer(modifier = Modifier.height(30.dp))
 
-                LazyVerticalGrid(
-                    state = rememberLazyGridState(),
-                    columns = GridCells.Fixed(4),
-                    verticalArrangement = Arrangement.spacedBy(15.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxSize()
-                        .height(300.dp),
-                    content = {
-                        items(transactionState.recentUserTransactions.size) { index ->
-                            val transactionUser =
-                                transactionState.recentUserTransactions[index].userDetails!!
-                            val chatIndex = index.toString()
-                            Card(
-                                onClick = {
-                                    navController.navigate(
-                                        NavRoutes.TransactionChat.withArgs(
-                                            chatIndex
+                if (!user.isMerchant || user.qr.isNotBlank()) {
+                    Text(
+                        text = if (!user.isMerchant) stringResource(id = R.string.business) else stringResource(
+                            id = R.string.people
+                        ),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(start = 20.dp)
+                    )
+                    Spacer(modifier = Modifier.height(30.dp))
+                    if(transactionState.recentUserTransactions==null){
+                        RecentTransactionPreloader()
+                    }
+
+                    if (transactionState.recentUserTransactions != null) {
+                        val transactions = transactionState.recentUserTransactions
+                        val gridSize = minOf(transactions.size, 16) // Maximum 16 items (4x4 grid)
+
+                        // Calculate the number of rows needed
+                        val rows = if (gridSize % 4 == 0) gridSize / 4 else gridSize / 4 + 1
+                        val rowHeight = 75.dp // Set the height for each row (can be adjusted as needed)
+
+                        // Calculate the total height dynamically based on the number of rows
+                        val totalHeight = rowHeight * rows
+
+                        LazyVerticalGrid(
+                            state = rememberLazyGridState(),
+                            columns = GridCells.Fixed(4), // Fixed 4 columns
+                            verticalArrangement = Arrangement.spacedBy(15.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .height(totalHeight) // Dynamically set the height based on rows
+                                .fillMaxWidth(),
+                            content = {
+                                items(gridSize) { index ->
+                                    val transactionUser = transactions[index].userDetails!!
+                                    val chatIndex = index.toString()
+
+                                    Card(
+                                        onClick = {
+                                            navController.navigate(
+                                                NavRoutes.TransactionChat.withArgs(chatIndex)
+                                            )
+                                        },
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surface,
+                                            contentColor = MaterialTheme.colorScheme.onSurface
                                         )
-                                    )
-                                },
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    contentColor = MaterialTheme.colorScheme.onSurface
-                                )
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    if (transactionUser.profile.isNotBlank()) {
-                                        AsyncImage(
-                                            model = transactionUser.profile,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .size(48.dp)
-                                                .clip(CircleShape)
-                                        )
-                                    } else {
-                                        AsyncImage(
-                                            model = R.drawable.user_icon,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(48.dp),
-                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                                        )
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            if (transactionUser.profile.isNotBlank()) {
+                                                AsyncImage(
+                                                    model = transactionUser.profile,
+                                                    contentDescription = null,
+                                                    modifier = Modifier
+                                                        .size(48.dp)
+                                                        .clip(CircleShape)
+                                                )
+                                            } else {
+                                                AsyncImage(
+                                                    model = R.drawable.user_icon,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(48.dp),
+                                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                                                )
+                                            }
+
+                                            Spacer(modifier = Modifier.height(4.dp))
+
+                                            Text(
+                                                text = transactionUser.name,
+                                                fontSize = 14.sp,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                textAlign = TextAlign.Center,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
                                     }
-
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = transactionUser.name,
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        textAlign = TextAlign.Center,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
                                 }
                             }
-                        }
+                        )
                     }
-                )
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -325,8 +341,7 @@ fun MerchantFeatures(
         onClick = {
             if (!userState.user?.qr.isNullOrBlank()) {
                 navController.navigate(NavRoutes.UpgradedQR.route)
-            }
-            else {
+            } else {
                 Toast.makeText(activity, "Upgrade QR first!", Toast.LENGTH_SHORT)
                     .show()
             }
@@ -339,8 +354,7 @@ fun MerchantFeatures(
         onClick = {
             if (!userState.user?.qr.isNullOrBlank()) {
                 navController.navigate(NavRoutes.TransactionHistory.route)
-            }
-            else {
+            } else {
                 Toast.makeText(activity, "Upgrade QR first!", Toast.LENGTH_SHORT)
                     .show()
             }
@@ -380,8 +394,14 @@ fun greet(): String {
     val eveningStart = LocalTime.of(18, 0)
 
     return when {
-        currentTime.isAfter(morningStart) && currentTime.isBefore(noonStart) -> stringResource(id = R.string.morning)
-        currentTime.isAfter(noonStart) && currentTime.isBefore(eveningStart) -> stringResource(id = R.string.noon)
+        currentTime.isAfter(morningStart) && currentTime.isBefore(noonStart) -> stringResource(
+            id = R.string.morning
+        )
+
+        currentTime.isAfter(noonStart) && currentTime.isBefore(eveningStart) -> stringResource(
+            id = R.string.noon
+        )
+
         else -> stringResource(id = R.string.evening)
     }
 }

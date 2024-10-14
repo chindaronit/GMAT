@@ -30,6 +30,7 @@ fun extractPn(upiUrl: String?): String {
         ""
     }
 }
+
 fun extractPa(upiUrl: String?): String {
     if(upiUrl==null) return ""
     val regex = "pa=([^&]+)".toRegex()

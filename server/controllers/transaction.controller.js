@@ -39,7 +39,10 @@ export const addTransaction = async (req, res) => {
   try {
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
-    const monthYearKey = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
+    const monthYearKey = `${currentYear}-${String(currentMonth).padStart(
+      2,
+      "0"
+    )}`;
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
     const transactionDoc = await getDoc(transactionDocRef);
     let monthlyTransactions = {};
@@ -53,7 +56,9 @@ export const addTransaction = async (req, res) => {
     }
     monthlyTransactions[monthYearKey].push(newTransaction);
     await setDoc(transactionDocRef, { monthlyTransactions }, { merge: true });
-    res.status(200).send({ msg: "Transaction added successfully", txnId: txnId });
+    res
+      .status(200)
+      .send({ msg: "Transaction added successfully", txnId: txnId });
   } catch (error) {
     console.error("Error adding transaction:", error);
     res.status(500).send({ message: "Internal server error" });
@@ -75,7 +80,7 @@ export const getAllTransactionsForMonth = async (req, res) => {
     const monthYear = `${year}-${month}`;
     const transactionDoc = await getDoc(transactionDocRef);
     if (!transactionDoc.exists()) {
-      return res.status(404).send({ message: "No transactions found for the user" });
+      return res.status(200).send({ message: "No transactions found for the user",transactions:[] });
     }
     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
     const transactionsForMonth = monthlyTransactions[monthYear];
@@ -108,7 +113,7 @@ export const getTransactionsByPayeeForMonth = async (req, res) => {
     const transactionQuerySnapshot = await getDocs(transactionCollectionRef);
 
     if (transactionQuerySnapshot.empty) {
-      return res.status(404).send({ message: "No transactions found" });
+      return res.status(200).send({ message: "No transactions found",transactions:[] });
     }
 
     const allTransactions = [];
@@ -118,9 +123,13 @@ export const getTransactionsByPayeeForMonth = async (req, res) => {
       allTransactions.push(...transactions);
     });
 
-    const monthYearKey = `${year}-${month}`;;
+    const monthYearKey = `${year}-${month}`;
     const filteredTransactions = allTransactions.filter((txn) => {
-      const txnMonthYear = `${new Date(txn.timestamp.seconds * 1000).getFullYear()}-${String(new Date(txn.timestamp.seconds * 1000).getMonth() + 1).padStart(2, '0')}`;
+      const txnMonthYear = `${new Date(
+        txn.timestamp.seconds * 1000
+      ).getFullYear()}-${String(
+        new Date(txn.timestamp.seconds * 1000).getMonth() + 1
+      ).padStart(2, "0")}`;
       return txn.payeeId.trim() === vpa.trim() && txnMonthYear === monthYearKey;
     });
     const sortedTransactions = filteredTransactions.sort((a, b) => {
@@ -136,7 +145,6 @@ export const getTransactionsByPayeeForMonth = async (req, res) => {
     res.status(500).send({ message: "Internal server error" });
   }
 };
-
 
 // Function to get a specific transaction by transactionId
 export const getTransactionByTxnId = async (req, res) => {
@@ -154,7 +162,7 @@ export const getTransactionByTxnId = async (req, res) => {
     if (!transactionDoc.exists()) {
       return res
         .status(404)
-        .send({ message: "User transaction data not found" });
+        .send({ message: "User transaction data not found"});
     }
     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
     let foundTransaction = null;
@@ -163,9 +171,9 @@ export const getTransactionByTxnId = async (req, res) => {
       foundTransaction = transactions.find((txn) => txn.txnId === txnId);
       if (foundTransaction) break;
     }
-    // if (!foundTransaction) {
-    //   return res.status(404).send({ message: "Transaction not found" });
-    // }
+    if (!foundTransaction) {
+      return res.status(200).send({ message: "Transaction not found",transaction:[] });
+    }
     res.status(200).send({
       message: "Transaction retrieved successfully",
       transaction: foundTransaction,
@@ -191,8 +199,8 @@ export const getRecentTransactionsForUser = async (req, res) => {
 
     if (!transactionDoc.exists()) {
       return res
-        .status(404)
-        .send({ message: "No transactions found for the user" });
+        .status(200)
+        .send({ message: "No transactions found for the user", data: [] });
     }
 
     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
@@ -263,7 +271,9 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
     const transactionQuerySnapshot = await getDocs(transactionCollectionRef);
 
     if (transactionQuerySnapshot.empty) {
-      return res.status(404).send({ message: "No transactions found" });
+      return res
+        .status(200)
+        .send({ message: "No transactions found", data: [] });
     }
     const allTransactions = [];
     transactionQuerySnapshot.forEach((doc) => {
@@ -271,7 +281,7 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
       const transactions = Object.values(monthlyTransactions).flat();
       allTransactions.push(...transactions);
     });
-    
+
     const sortedTransactions = allTransactions.sort(
       (a, b) => b.timestamp.seconds - a.timestamp.seconds
     );
@@ -280,11 +290,12 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
       (txn) => txn.payeeId.trim() === vpa.trim()
     );
 
-    // if (!merchantTransactions.length) {
-    //   return res.status(404).send({
-    //     message: "No transactions found for the given VPA",
-    //   });
-    // }
+    if (!merchantTransactions.length) {
+      return res.status(200).send({
+        message: "No transactions found for the given VPA",
+        data: [],
+      });
+    }
 
     const usersCollection = collection(db, USER_COLLECTION);
     const transactionsGroupedByPayer = {};
@@ -301,7 +312,7 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
             transactionsGroupedByPayer[payerKey] = {
               userDetails: {
                 ...payerDetails,
-                userId: payerKey, 
+                userId: payerKey,
               },
               transactions: [],
             };
@@ -323,7 +334,7 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
         const latestTxnB = b.transactions[0].timestamp.seconds;
         return latestTxnB - latestTxnA;
       })
-      .slice(0, 12); 
+      .slice(0, 12);
     res.status(200).send({
       message: "Recent transactions retrieved successfully",
       data: result,
@@ -369,11 +380,12 @@ export const getAllTransactionsForGstin = async (req, res) => {
       );
     });
 
-    // if (matchingTransactions.length === 0) {
-    //   return res.status(404).send({
-    //     message: `No transactions found for the GSTIN: ${gstin}`,
-    //   });
-    // }
+    if (matchingTransactions.length === 0) {
+      return res.status(200).send({
+        message: `No transactions found for the GSTIN: ${gstin}`,
+        transactions: [],
+      });
+    }
     res.status(200).send({
       message: "Transactions retrieved successfully",
       transactions: matchingTransactions,
@@ -410,11 +422,12 @@ export const getAllTransactionsForGstinInMonth = async (req, res) => {
       );
     });
 
-    // if (matchingTransactions.length === 0) {
-    //   return res.status(404).send({
-    //     message: `No transactions found for the GSTIN: ${gstin} in the month: ${monthYear}`,
-    //   });
-    // }
+    if (matchingTransactions.length === 0) {
+      return res.status(200).send({
+        message: `No transactions found for the GSTIN: ${gstin} in the month: ${monthYear}`,
+        transactions: [],
+      });
+    }
     res.status(200).send({
       message: "Transactions retrieved successfully",
       transactions: matchingTransactions,
@@ -457,11 +470,12 @@ export const getAllTransactionsForGstinInYear = async (req, res) => {
       }
     });
 
-    // if (matchingTransactions.length === 0) {
-    //   return res.status(404).send({
-    //     message: `No transactions found for the GSTIN: ${gstin} in the year: ${year}`,
-    //   });
-    // }
+    if (matchingTransactions.length === 0) {
+      return res.status(200).send({
+        message: `No transactions found for the GSTIN: ${gstin} in the year: ${year}`,
+        transactions: [],
+      });
+    }
     res.status(200).send({
       message: "Transactions retrieved successfully",
       transactions: matchingTransactions,

@@ -22,6 +22,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +39,7 @@ import androidx.navigation.NavController
 import com.gmat.functionality.formatPhoneNumberForVerification
 import com.gmat.functionality.startPhoneNumberVerification
 import com.gmat.navigation.NavRoutes
+import com.gmat.ui.components.CustomToast
 import com.gmat.ui.components.login.Bottom
 import com.gmat.ui.components.login.Top
 import com.gmat.ui.events.UserEvents
@@ -52,6 +57,7 @@ fun Login(
 
     val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current as Activity
+    var isToastVisible by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -111,6 +117,7 @@ fun Login(
 
                 Button(
                     onClick = {
+                        isToastVisible=true
                         startPhoneNumberVerification(
                             phoneNumber = formatPhoneNumberForVerification(
                                 userState.phNo
@@ -119,6 +126,7 @@ fun Login(
                             activity = context,
                             onVerificationFailed = {},
                             onVerificationCompleted = {
+                                isToastVisible=false
                                 onUserEvents(UserEvents.ChangeVerificationId(it))
                                 navController.navigate(NavRoutes.OTP.route)
                             })
@@ -146,7 +154,7 @@ fun Login(
                     }
                 }
             }
-
+            CustomToast(modifier = modifier.align(Alignment.BottomCenter),message = "Please wait...", isVisible = isToastVisible)
             Column(
                 modifier = modifier
                     .align(Alignment.BottomCenter)

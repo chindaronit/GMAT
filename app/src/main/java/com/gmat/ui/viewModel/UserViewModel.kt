@@ -73,6 +73,10 @@ class UserViewModel @Inject constructor(
             is UserEvents.OnChangeVPA -> {
                 _state.update { it.copy(newVpa = event.vpa) }
             }
+
+            UserEvents.ClearNewProfile -> {
+                _state.update { it.copy(newProfile = "") }
+            }
         }
     }
 

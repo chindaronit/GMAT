@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.gmat.R
 import com.gmat.ui.components.CenterBar
+import com.gmat.ui.components.CustomToast
 import com.gmat.ui.events.UserEvents
 import com.gmat.ui.state.UserState
 import com.google.firebase.storage.FirebaseStorage
@@ -44,11 +45,16 @@ fun EditProfileDetails(
     modifier: Modifier = Modifier,
     navController: NavController,
     userState: UserState,
-    onUserEvents: (UserEvents)->Unit
+    onUserEvents: (UserEvents) -> Unit
 ) {
     val storage = FirebaseStorage.getInstance()
     val storageRef = storage.reference
-
+    var canConfirm by remember {
+        mutableStateOf(true)
+    }
+    var isUploaded by remember {
+        mutableStateOf(false)
+    }
     // State to hold the download URL of the uploaded image
     var downloadUrl by remember { mutableStateOf<String?>(null) }
 
@@ -63,7 +69,6 @@ fun EditProfileDetails(
                         uri,
                         storageRef,
                         onSuccess = { url ->
-                            // Store the download URL in the state
                             downloadUrl = url
                             onUserEvents(UserEvents.OnProfileChange(downloadUrl!!))
                         },
@@ -73,13 +78,27 @@ fun EditProfileDetails(
                     )
                 }
             }
+            else {
+                // User canceled or didn't pick an image, so set canConfirm to true
+                canConfirm = true
+            }
         }
     )
+
+    LaunchedEffect(key1 = userState.newProfile) {
+        if (userState.newProfile.isNotBlank()) {
+            canConfirm = true
+            isUploaded = true
+        }
+    }
 
     Scaffold(
         topBar = {
             CenterBar(
-                onClick = { navController.navigateUp() },
+                onClick = {
+                    onUserEvents(UserEvents.ClearNewProfile)
+                    navController.navigateUp()
+                          },
                 title = {
                     Text(
                         text = stringResource(id = R.string.edit_profile),
@@ -88,56 +107,73 @@ fun EditProfileDetails(
                     )
                 },
                 actions = {
-                    IconButton(onClick = {
-                        onUserEvents(UserEvents.UpdateUser)
-                        navController.navigateUp()
-                    }) {
-                        Icon(imageVector = Icons.Rounded.Check, contentDescription = null)
+                    if (canConfirm) {
+                        IconButton(onClick = {
+                            onUserEvents(UserEvents.UpdateUser)
+                            navController.navigateUp()
+                        }) {
+                            Icon(imageVector = Icons.Rounded.Check, contentDescription = null)
+                        }
                     }
                 })
         },
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxWidth()
-                .padding(top = 20.dp, start = 10.dp, end = 10.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp, start = 10.dp, end = 10.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (userState.user!!.profile.isNotBlank()) {
+                    AsyncImage(
+                        model = if (isUploaded) userState.newProfile else userState.user.profile,
+                        contentDescription = null,
+                        modifier = modifier
+                            .padding(top = 10.dp)
+                            .size(150.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Rounded.AccountCircle,
+                        contentDescription = null,
+                        modifier = modifier.size(150.dp)
+                    )
+                }
 
-            if(userState.user!!.profile.isNotBlank()){
-                AsyncImage(
-                    model = userState.user.profile,
-                    contentDescription = null,
-                    modifier = modifier
-                        .padding(top = 10.dp)
-                        .size(150.dp)
-                        .clip(CircleShape)
+                Button(onClick = {
+                    val intent =
+                        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    canConfirm = false
+                    imagePickerLauncher.launch(intent)
+
+                }) {
+                    Text(
+                        text = stringResource(id = R.string.upload_photo),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp
+                    )
+                }
+                Spacer(modifier = modifier.height(20.dp))
+                OutlinedTextField(
+                    value = userState.newName,
+                    onValueChange = {
+                        onUserEvents(UserEvents.OnNameChange(it))
+                    },
+                    modifier = modifier.fillMaxWidth(),
+                    label = { Text("Name") }
                 )
             }
-            else{
-                Icon(
-                    imageVector = Icons.Rounded.AccountCircle,
-                    contentDescription = null,
-                    modifier = modifier.size(150.dp)
-                )
-            }
-
-            Button(onClick = {
-                val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                imagePickerLauncher.launch(intent)
-            }) {
-                Text(text = stringResource(id = R.string.upload_photo), fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
-            }
-            Spacer(modifier = modifier.height(20.dp))
-            OutlinedTextField(
-                value = userState.newName,
-                onValueChange = {
-                    onUserEvents(UserEvents.OnNameChange(it))
-                },
-                modifier = modifier.fillMaxWidth(),
-                label = { Text("Name") }
+            CustomToast(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                message = "Uploading",
+                isVisible = !canConfirm
             )
         }
     }

@@ -83,7 +83,6 @@ class TransactionViewModel @Inject constructor(
 
     private fun getTransactionById(userId: String, txnId: String) {
         _state.update { it.copy(isLoading = true) }
-        println("$userId, $txnId")
         viewModelScope.launch {
             try {
                 val response = transactionAPI.getTransactionByTxnId(userId = userId, txnId = txnId)

@@ -54,7 +54,6 @@ fun signInWithPhoneAuthCredential(
     FirebaseAuth.getInstance().signInWithCredential(credential)
         .addOnCompleteListener(activity) { task ->
             if (task.isSuccessful) {
-                // Get the signed-in user's ID token
                 val user = task.result?.user
                 user?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
                     if (tokenTask.isSuccessful) {
@@ -65,8 +64,9 @@ fun signInWithPhoneAuthCredential(
                         onFailure("Failed to get ID token")
                     }
                 }
+
             } else {
-                onFailure("Otp doesn't match")
+                onFailure("Invalid OTP")
             }
         }
 

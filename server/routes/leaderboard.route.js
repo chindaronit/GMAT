@@ -5,11 +5,13 @@ import {
   getUsersByRewardsForMonth,
 } from "../controllers/leaderboard.controller.js";
 
+import authenticateToken from "../middleware/authenticateToken.js";
+
 const leaderboardRouter = express.Router();
 leaderboardRouter
   .route("/")
-  .post(updateUserTransactionRewards)
-  .get(getUserRewardsPointsForMonth);
-leaderboardRouter.route("/all").get(getUsersByRewardsForMonth);
+  .post(authenticateToken, updateUserTransactionRewards)
+  .get(authenticateToken, getUserRewardsPointsForMonth);
+leaderboardRouter.route("/all").get(authenticateToken, getUsersByRewardsForMonth);
 
 export default leaderboardRouter;

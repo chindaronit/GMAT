@@ -79,11 +79,23 @@ export const getAllTransactionsForMonth = async (req, res) => {
     const transactionDocRef = doc(db, TRANSACTION_COLLECTION, userId);
     const monthYear = `${year}-${month}`;
     const transactionDoc = await getDoc(transactionDocRef);
+
     if (!transactionDoc.exists()) {
-      return res.status(200).send({ message: "No transactions found for the user",transactions:[] });
+      return res.status(200).send({ message: "No transactions found for the user", transactions: [] });
     }
+
     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
     const transactionsForMonth = monthlyTransactions[monthYear];
+
+    // Check if transactionsForMonth is defined before sorting
+    if (!transactionsForMonth) {
+      return res.status(200).send({
+        message: `No transactions found for the month: ${monthYear}`,
+        transactions: [],
+      });
+    }
+
+    // Sort transactions by timestamp in descending order (latest first)
     const sortedTransactions = transactionsForMonth.sort((a, b) => {
       return b.timestamp.seconds - a.timestamp.seconds;
     });
@@ -164,6 +176,7 @@ export const getTransactionByTxnId = async (req, res) => {
         .status(404)
         .send({ message: "User transaction data not found"});
     }
+
     const monthlyTransactions = transactionDoc.data().monthlyTransactions || {};
     let foundTransaction = null;
     for (const month in monthlyTransactions) {
@@ -172,7 +185,7 @@ export const getTransactionByTxnId = async (req, res) => {
       if (foundTransaction) break;
     }
     if (!foundTransaction) {
-      return res.status(200).send({ message: "Transaction not found",transaction:[] });
+      return res.status(200).send({ message: "Transaction not found",transaction:{} });
     }
     res.status(200).send({
       message: "Transaction retrieved successfully",
@@ -345,7 +358,6 @@ export const getRecentTransactionsForMerchant = async (req, res) => {
   }
 };
 
-// For OpenAPI
 // Function to get all transactions for a particular GSTIN across all users
 export const getAllTransactionsForGstin = async (req, res) => {
   const { gstin } = req.query;
@@ -400,10 +412,10 @@ export const getAllTransactionsForGstin = async (req, res) => {
 export const getAllTransactionsForGstinInMonth = async (req, res) => {
   const { gstin, month, year } = req.query;
   const monthYear = `${year}-${month}`;
+  
   if (!gstin || !monthYear) {
     return res.status(400).send({
-      message:
-        "Bad Request: Missing or invalid GSTIN or monthYear in the request",
+      message: "Bad Request: Missing or invalid GSTIN or monthYear in the request",
     });
   }
 
@@ -415,13 +427,11 @@ export const getAllTransactionsForGstinInMonth = async (req, res) => {
       const userTransactions = docSnapshot.data().monthlyTransactions || {};
       const transactionsForMonth = userTransactions[monthYear] || [];
       const gstinFilteredTransactions = transactionsForMonth.filter(
-        (transaction) => transaction.data.gstin === gstin
+        (transaction) => transaction.gstin === gstin
       );
-      matchingTransactions = matchingTransactions.concat(
-        gstinFilteredTransactions
-      );
+      matchingTransactions = matchingTransactions.concat(gstinFilteredTransactions);
     });
-
+    matchingTransactions.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
     if (matchingTransactions.length === 0) {
       return res.status(200).send({
         message: `No transactions found for the GSTIN: ${gstin} in the month: ${monthYear}`,
@@ -433,13 +443,11 @@ export const getAllTransactionsForGstinInMonth = async (req, res) => {
       transactions: matchingTransactions,
     });
   } catch (error) {
-    console.error(
-      "Error retrieving transactions for GSTIN in the specified month:",
-      error
-    );
+    console.error("Error retrieving transactions for GSTIN in the specified month:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 };
+
 
 // Function to get all transactions for a particular GSTIN across all users for a specific year
 export const getAllTransactionsForGstinInYear = async (req, res) => {

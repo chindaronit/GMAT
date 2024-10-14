@@ -13,11 +13,6 @@ const authenticateToken = async (req, res, next) => {
     const decodedToken = await adminAuth.verifyIdToken(idToken);
     const uid = decodedToken.uid;
     req.verificationID = uid;
-    console.log(decodedToken);
-    const currentTime = Math.floor(Date.now() / 1000);
-    if (decodedToken.exp < currentTime) {
-      return res.status(401).send({ message: "Token has expired" });
-    }
     next();
   } catch (error) {
     console.error("Error verifying ID token:", error);

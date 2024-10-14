@@ -1,0 +1,557 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: GMAT
+  description: The API for the GMAT APP
+servers:
+  # - description: SwaggerHub API Auto Mocking
+    # url: https://virtserver.swaggerhub.com/D1902097/gmat/1.0.0
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/D1902097/gmat/1.0.0
+  - description: AWS EC2 Server
+    url: http://ec2-13-235-80-121.ap-south-1.compute.amazonaws.com
+
+paths:
+  /users:
+    get:
+      tags:
+        - Users
+      description: Retrieve UserInfo Using UserId
+      operationId: getUserById
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          description: To Get all UserDetails by UserID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Userdetails
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserModel'
+    post:
+      tags:
+        - Users
+      description: Add a new user
+      operationId: addUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserModel'
+      responses:
+        '201':
+          description: User successfully added
+        '400':
+          description: Invalid input
+  /users/update:
+    post:
+      tags:
+        - Users
+      description: Update user information
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateModel'
+      responses:
+        '200':
+          description: User successfully updated
+        '400':
+          description: Invalid input
+  /users/get/vpa:
+    get:
+      tags:
+        - Users
+      description: Get user by VPA
+      operationId: getUserByVPA
+      parameters:
+        - in: query
+          name: vpa
+          required: true
+          description: The VPA (Virtual Payment Address) of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details for given VPA
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserModel'
+  /users/get/ph:
+    get:
+      tags:
+        - Users
+      description: Get user by phone number
+      operationId: getUserByPhone
+      parameters:
+        - in: query
+          name: phNo
+          required: true
+          description: The phone number of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details for the given phone number
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserModel'
+                
+                
+  /transactions:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve a transaction by its transaction ID
+      operationId: getTransactionByTxnId
+      parameters:
+        - in: query
+          name: txnId
+          required: true
+          description: The transactionID
+          schema:
+            type: string
+        - in: query
+          name: userId
+          required: true
+          description: The UserID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction details for the given transaction ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionModel'
+    post:
+      tags:
+        - Transactions
+      description: Add a new transaction
+      operationId: addTransaction
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          description: The UserID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTransactionModel'
+      responses:
+        '201':
+          description: Transaction successfully added
+        '400':
+          description: Invalid input
+
+  /transactions/all/month:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve all transactions for a specific month
+      operationId: getAllTransactionsForMonth
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          description: The UserID
+          schema:
+            type: string
+        - in: query
+          name: month
+          required: true
+          description: The month for which transactions are requested
+          schema:
+            type: string
+        - in: query
+          name: year
+          required: true
+          description: The year for which transactions are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of transactions for the specified month
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+
+  /transactions/recenttransaction:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve recent transactions for a user
+      operationId: getRecentTransactionsForUser
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          description: The user ID to get recent transactions for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of recent transactions for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+
+  /transactions/recentmerchanttransaction:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve recent transactions for a merchant
+      operationId: getRecentTransactionsForMerchant
+      parameters:
+        - in: query
+          name: vpa
+          required: true
+          description: The VPA of Merchant to get recent transactions for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of recent transactions for the merchant
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+
+  /transactions/all/merchant:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve all transactions for a merchant for a specific month
+      operationId: getTransactionsByPayeeForMonth
+      parameters:
+        - in: query
+          name: vpa
+          required: true
+          description: The VPA of the merchant
+          schema:
+            type: string
+        - in: query
+          name: month
+          required: true
+          description: The month for which transactions are requested
+          schema:
+            type: string
+        - in: query
+          name: year
+          required: true
+          description: The year for which transactions are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of transactions for the specified merchant and month
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+  
+
+  /transactions/all/gstin:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve all transactions for a GSTIN
+      operationId: getAllTransactionsForGstin
+      parameters:
+        - in: query
+          name: gstin
+          required: true
+          description: The GSTIN for which transactions are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transactions for GSTIN
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+
+  /transactions/all/gstin/year:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve all transactions for a GSTIN within a specific year
+      operationId: getAllTransactionsForGstinInYear
+      parameters:
+        - in: query
+          name: gstin
+          required: true
+          description: The GSTIN for which transactions are requested
+          schema:
+            type: string
+        - in: query
+          name: year
+          required: true
+          description: The year for which transactions are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transactions for GSTIN in the specified year
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+
+  /transactions/all/gstin/month:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve all transactions for a GSTIN within a specific month
+      operationId: getAllTransactionsForGstinInMonth
+      parameters:
+        - in: query
+          name: gstin
+          required: true
+          description: The GSTIN for which transactions are requested
+          schema:
+            type: string
+        - in: query
+          name: month
+          required: true
+          description: The month for which transactions are requested
+          schema:
+            type: string
+        - in: query
+          name: year
+          required: true
+          description: The year for which transactions are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transactions for GSTIN in the specified month
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+                  
+  /leaderboard:
+    post:
+      tags:
+        - Leaderboard
+      description: Update user transaction rewards
+      operationId: updateUserTransactionRewards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostLeaderboardModel'
+      responses:
+        '200':
+          description: Rewards successfully updated
+        '400':
+          description: Invalid input
+    get:
+      tags:
+        - Leaderboard
+      description: Retrieve user rewards points for a specific month
+      operationId: getUserRewardsPointsForMonth
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          description: The user ID to retrieve rewards points for
+          schema:
+            type: string
+        - in: query
+          name: month
+          required: true
+          description: The month for which rewards points are requested
+          schema:
+            type: string
+        - in: query
+          name: year
+          required: true
+          description: The year for which rewards points are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rewards points for the specified user and month
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                  points:
+                    type: number
+                    format: int32
+
+  /leaderboard/all:
+    get:
+      tags:
+        - Leaderboard
+      description: Retrieve leaderboard users by rewards for the current month
+      operationId: getUsersByRewardsForMonth
+      parameters:
+        - in: query
+          name: month
+          required: true
+          description: The month for which LeaderBoard are requested
+          schema:
+            type: string
+        - in: query
+          name: year
+          required: true
+          description: The year for which LeaderBoard are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Leaderboard users by rewards for the month
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaderboardModel'
+
+components:
+  schemas:
+    UserModel:
+      type: object
+      properties:
+        name:
+          type: string
+        vpa:
+          type: string
+        isMerchant:
+          type: boolean
+        phNo:
+          type: string
+        profile:
+          type: string
+        qr:
+          type: string
+    
+    UserUpdateModel:
+      type: object
+      properties:
+        name:
+          type: string
+        vpa:
+          type: string
+        isMerchant:
+          type: boolean
+        phNo:
+          type: string
+        profile:
+          type: string
+        qr:
+          type: string
+        userId:
+          type: string
+          
+    PostTransactionModel:
+      type: object
+      properties:
+        payerId:
+          type: string
+        payeeId:
+          type: string
+        gstin:
+          type: string
+        amount:
+          type: string
+        type:
+          type: string
+          enum:
+            - Merchant
+            - Personal
+        name:
+          type: string
+
+    TransactionModel:
+      type: object
+      properties:
+        txnId:
+          type: string
+        payerId:
+          type: string
+        payeeId:
+          type: string
+        gstin:
+          type: string
+        amount:
+          type: number
+          format: double
+        timestamp:
+          type: string
+          format: timestamp
+        status:
+          type: string
+          enum:
+            - Pending
+            - Success
+            - Failure
+        type:
+          type: string
+          enum:
+            - 0 for Merchant
+            - 1 for Personal
+        payerUserId:
+          type: string
+        name:
+          type: string
+
+    LeaderboardModel:
+      type: object
+      properties:
+        userId:
+          type: string
+        name:
+          type: string
+        month:
+          type: string
+        year:
+          type: string
+        points:
+          type: number
+          format: int32
+    PostLeaderboardModel:
+      type: object
+      properties:
+        userId:
+          type: string
+        transactionAmount:
+          type: number

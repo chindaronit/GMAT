@@ -17,7 +17,6 @@ transactionRouter.route("/all/month").get(getAllTransactionsForMonth);
 transactionRouter.route("/recenttransaction").get(getRecentTransactionsForUser);
 transactionRouter.route("/recentmerchanttransaction").get(getRecentTransactionsForMerchant);
 transactionRouter.route("/all/merchant").get(getTransactionsByPayeeForMonth);
-// for openAPI
 transactionRouter.route("/all/gstin").get(getAllTransactionsForGstin)
 transactionRouter.route("/all/gstin/year").get(getAllTransactionsForGstinInYear);
 transactionRouter.route("/all/gstin/month").get(getAllTransactionsForGstinInMonth);

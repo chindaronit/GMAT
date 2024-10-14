@@ -1,0 +1,215 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/D1902097/gmat/1.0.0
+  - description: SwaggerHub API Auto Mocking
+    # url: 'https://virtserver.swaggerhub.com/D1902097/gmat/1.0.0'
+    url: 'http://ec2-13-235-80-121.ap-south-1.compute.amazonaws.com'
+  #   description: ''
+  # - url: ''
+  #   description: ''
+info:
+  version: 1.0.0
+  title: GMAT
+  description: The API for the GMAT APP
+paths:
+  /users/:
+    get:
+      tags:
+        - Users
+      description: Retrieve UserInfo Using UserId
+      operationId: getUserById
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          description: To Get all UserDetails by UserID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Userdetails
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/UserModel'
+  /transactions/all/gstin/:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve all transactions for a GSTIN
+      operationId: getAllTransactionsForGstin
+      parameters:
+        - in: query
+          name: gstin
+          required: true
+          description: The GSTIN for which transactions are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transactions for GSTIN in the specified year
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+  /transactions/all/gstin/year:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve all transactions for a GSTIN within a specific year
+      operationId: getAllTransactionsForGstinInYear
+      parameters:
+        - in: query
+          name: gstin
+          required: true
+          description: The GSTIN for which transactions are requested
+          schema:
+            type: string
+        - in: query
+          name: year
+          required: true
+          description: The year for which transactions are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transactions for GSTIN in the specified year
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+  /transactions/all/gstin/month:
+    get:
+      tags:
+        - Transactions
+      description: Retrieve all transactions for a GSTIN within a specific month
+      operationId: getAllTransactionsForGstinInMonth
+      parameters:
+        - in: query
+          name: gstin
+          required: true
+          description: The GSTIN for which transactions are requested
+          schema:
+            type: string
+        - in: query
+          name: month
+          required: true
+          description: The month for which transactions are requested
+          schema:
+            type: string
+        - in: query
+          name: year
+          required: true
+          description: The year for which transactions are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transactions for GSTIN in the specified month
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionModel'
+  /leaderboard/all:
+    get:
+      tags:
+        - Leaderboard
+      description: Retrieve leaderboard users by rewards for the current month
+      operationId: getUsersByRewardsForMonth
+      parameters:
+        - in: query
+          name: month
+          required: true
+          description: The month for which LeaderBoard are requested
+          schema:
+            type: string
+        - in: query
+          name: year
+          required: true
+          description: The year for which LeaderBoard are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Leaderboard users by rewards for the month
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaderboardModel'
+components:
+  schemas:
+    UserModel:
+      type: object
+      properties:
+        name:
+          type: string
+        vpa:
+          type: string
+        isMerchant:
+          type: boolean
+        phNo:
+          type: string
+        profile:
+          type: string
+        qr:
+          type: string
+          
+    TransactionModel:
+      type: object
+      properties:
+        txnId:
+          type: string
+        payerId:
+          type: string
+        payeeId:
+          type: string
+        gstin:
+          type: string
+        amount:
+          type: number
+          format: double
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+            - Pending
+            - Success
+            - Failure
+        type:
+          type: string
+          enum:
+            - Merchant
+            - Personal
+        payerUserId:
+          type: string
+        name:
+          type: string
+          
+    LeaderboardModel:
+      type: object
+      properties:
+        userId:
+          type: string
+        name:
+          type: string
+        month:
+          type: string
+        year:
+          type: string
+        points:
+          type: number
+          format: int32

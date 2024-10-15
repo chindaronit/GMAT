@@ -16,9 +16,14 @@ def leaderboard_api(client, apiId, rootResourceId, authorizationType, contentTyp
     type = 'HTTP'
     passthroughBehavior = "WHEN_NO_MATCH"
     requestModels = {}
-    requestParameters = {}
-
+    
+    requestParameters = {
+        'method.request.header.authorization': True,
+    }
     putMethod(client, apiId, authorizationType, leaderboardResourceId, httpMethod, requestParameters, requestModels)
+    requestParameters={
+        'integration.request.header.authorization': 'method.request.header.authorization',
+    }
     putIntegration(client, apiId, httpMethod, leaderboardResourceId, type, integrationHttpMethod, leaderboard_put_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, leaderboardResourceId, httpMethod, contentType, Model)
 
@@ -28,6 +33,7 @@ def leaderboard_api(client, apiId, rootResourceId, authorizationType, contentTyp
         other_response(client, apiId, leaderboardResourceId, httpMethod, statusCode, contentType, Model)
         
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.userId': True,
         'method.request.querystring.month': True,
         'method.request.querystring.year': True,
@@ -40,6 +46,7 @@ def leaderboard_api(client, apiId, rootResourceId, authorizationType, contentTyp
     putMethod(client, apiId, authorizationType, leaderboardResourceId, httpMethod, requestParameters, requestModels)
     
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.userId':'method.request.querystring.userId',
         'integration.request.querystring.month':'method.request.querystring.month',
         'integration.request.querystring.year':'method.request.querystring.year'
@@ -58,6 +65,7 @@ def leaderboard_api(client, apiId, rootResourceId, authorizationType, contentTyp
     # ***************************************************************
 
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.month': True,
         'method.request.querystring.year': True,
     }
@@ -68,6 +76,7 @@ def leaderboard_api(client, apiId, rootResourceId, authorizationType, contentTyp
     leaderboard_all_url = url + 'leaderboard/all'
     putMethod(client, apiId, authorizationType, allResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.month':'method.request.querystring.month',
         'integration.request.querystring.year':'method.request.querystring.year'
     }

@@ -7,7 +7,7 @@ const adminAuth = getAdminAuth();
 const authenticateToken = async (req, res, next) => {
   const idToken = req.headers["authorization"]?.split(" ")[1];
   if (!idToken) {
-    return res.status(400).send({ message: "ID token is required" });
+    return res.status(401).send({ message: "ID token is required" });
   }
   try {
     const decodedToken = await adminAuth.verifyIdToken(idToken);

@@ -68,8 +68,7 @@ private fun CharView(
             )
             .padding(16.dp),
         text = char,
-        style = MaterialTheme.typography.bodyLarge,
-        fontSize = 18.sp,
+        style = MaterialTheme.typography.headlineMedium,
         textAlign = TextAlign.Center
     )
 }

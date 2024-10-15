@@ -15,7 +15,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gmat.R
 import com.gmat.ui.components.CenterBar
@@ -25,6 +24,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import androidx.compose.ui.graphics.asImageBitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
@@ -32,12 +32,12 @@ import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.gmat.navigation.NavRoutes
-import com.gmat.ui.events.QRScannerEvents
-import com.gmat.ui.state.QRScannerState
-import com.gmat.ui.state.UserState
+import com.gmat.ui.theme.DarkGreen
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -157,9 +157,25 @@ fun UpgradedQR(
                     )
                 }
                 Spacer(modifier = modifier.height(20.dp))
-                Text(
-                    text = vpa,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                AssistChip(
+                    onClick = { Log.d("Assist chip", "UPI Verified") },
+                    label = {
+                        Text(
+                            text = vpa, style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Filled.CheckCircle,
+                            contentDescription = null,
+                            Modifier.size(AssistChipDefaults.IconSize),
+                            tint = DarkGreen
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    )
                 )
                 Spacer(modifier = modifier.weight(1f))
                 Button(

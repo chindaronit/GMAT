@@ -20,11 +20,10 @@ import androidx.compose.ui.unit.sp
 import com.gmat.R
 import com.gmat.data.model.TransactionModel
 import com.gmat.data.model.UserModel
+import com.gmat.env.ChatDetails
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
-import com.gmat.ui.components.TransactionPreloader
 import com.gmat.ui.state.TransactionState
-import com.gmat.ui.state.UserState
 import com.gmat.ui.theme.DarkGreen
 import com.gmat.ui.theme.DarkRed
 
@@ -32,16 +31,16 @@ import com.gmat.ui.theme.DarkRed
 fun TransactionChat(
     modifier: Modifier = Modifier,
     navController: NavController,
-    userState: UserState,
-    transactionState: TransactionState,
-    chatIndex: String
+    user: UserModel?,
+    chatIndex: String,
+    recentUserTransactions: List<ChatDetails>?=null
 ) {
     val transactionUser by remember {
-        mutableStateOf(transactionState.recentUserTransactions?.get(chatIndex.toInt())?.userDetails)
+        mutableStateOf(recentUserTransactions?.get(chatIndex.toInt())?.userDetails)
     }
 
     val chats by remember {
-        mutableStateOf(transactionState.recentUserTransactions?.get(chatIndex.toInt())?.transactions)
+        mutableStateOf(recentUserTransactions?.get(chatIndex.toInt())?.transactions)
     }
 
     Scaffold(
@@ -60,7 +59,7 @@ fun TransactionChat(
                         )
                         Text(
                             text = "UPI ID: ${transactionUser!!.vpa}",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -70,7 +69,7 @@ fun TransactionChat(
         },
 
         floatingActionButton = {
-            userState.user?.let { user ->
+            user?.let { user ->
                 if (!user.isMerchant) {
                     ExtendedFloatingActionButton(
                         onClick = { navController.navigate(NavRoutes.AddTransactionDetails.route) }
@@ -91,7 +90,7 @@ fun TransactionChat(
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (userState.user?.isMerchant == true) {
+                    if (user?.isMerchant == true) {
                         // Merchant: Show card on the left side
                         TransactionCard(
                             navController = navController,
@@ -110,7 +109,7 @@ fun TransactionChat(
                             transactionUser = transactionUser,
                             modifier = Modifier.weight(1f),
                             isMerchant = false,
-                            payerUserId = userState.user!!.userId // Card on the right side
+                            payerUserId = user!!.userId // Card on the right side
                         )
                     }
                 }

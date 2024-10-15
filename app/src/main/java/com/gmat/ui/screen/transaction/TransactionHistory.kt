@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gmat.R
+import com.gmat.data.model.TransactionModel
+import com.gmat.data.model.UserModel
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
@@ -55,8 +57,9 @@ import java.util.Calendar
 fun TransactionHistory(
     modifier: Modifier = Modifier,
     navController: NavController,
-    transactionState: TransactionState,
-    userState: UserState,
+    isLoading: Boolean,
+    user: UserModel,
+    transactionHistory: List<TransactionModel>? = null,
     onTransactionEvents: (TransactionEvents) -> Unit,
 ) {
     val months = listOf(
@@ -82,24 +85,24 @@ fun TransactionHistory(
     var selectedYear by remember { mutableIntStateOf(currYear) }
 
     LaunchedEffect(
-        key1 = transactionState.transactionHistory,
+        key1 = transactionHistory,
         key2 = selectedMonth,
         key3 = selectedYear
     ) {
-        if (transactionState.transactionHistory == null) {
-            if (userState.user!!.isMerchant) {
+        if (transactionHistory == null) {
+            if (user.isMerchant) {
                 onTransactionEvents(
                     TransactionEvents.GetAllTransactionsForMonth(
                         userId = null,
                         month = selectedMonth,
                         year = selectedYear,
-                        vpa = userState.user.vpa
+                        vpa = user.vpa
                     )
                 )
             } else {
                 onTransactionEvents(
                     TransactionEvents.GetAllTransactionsForMonth(
-                        userId = userState.user.userId,
+                        userId = user.userId,
                         month = selectedMonth,
                         year = selectedYear,
                         vpa = null
@@ -126,7 +129,6 @@ fun TransactionHistory(
         Column(
             modifier = modifier.padding(innerPadding)
         ) {
-
 
             DateFilter {
                 visible = true
@@ -161,12 +163,12 @@ fun TransactionHistory(
                     modifier = modifier.padding(horizontal = 16.dp, vertical = 10.dp)
                 )
             }
-            if (transactionState.isLoading) {
+            if (isLoading) {
                 TransactionPreloader()
             }
 
-            if (transactionState.transactionHistory != null && !transactionState.isLoading) {
-                if (transactionState.transactionHistory.isEmpty()) {
+            if (transactionHistory != null && !isLoading) {
+                if (transactionHistory.isEmpty()) {
                     Text(
                         text = "No transactions found!",
                         modifier = modifier.padding(horizontal = 16.dp, vertical = 10.dp)
@@ -174,12 +176,12 @@ fun TransactionHistory(
                 }
                 LazyColumn {
                     // Use 'items' to iterate over the list of transactions
-                    items(transactionState.transactionHistory) { transaction ->
+                    items(transactionHistory) { transaction ->
                         Card(
                             modifier = Modifier
                                 .padding(5.dp)
                                 .clickable {
-                                    if (userState.user!!.isMerchant) {
+                                    if (user.isMerchant) {
                                         navController.navigate(
                                             NavRoutes.TransactionReceipt.withArgs(
                                                 transaction.txnId,
@@ -190,7 +192,7 @@ fun TransactionHistory(
                                         navController.navigate(
                                             NavRoutes.TransactionReceipt.withArgs(
                                                 transaction.txnId,
-                                                userState.user.userId
+                                                user.userId
                                             )
                                         )
                                     }
@@ -213,11 +215,10 @@ fun TransactionHistory(
                                         .size(45.dp)
                                         .clip(CircleShape)
                                         .border(
-                                            BorderStroke(
+                                            border = BorderStroke(
                                                 1.dp,
                                                 MaterialTheme.colorScheme.onSurface
-                                            ),
-                                            CircleShape
+                                            ), shape = CircleShape
                                         )
                                 )
                                 Column(
@@ -244,14 +245,14 @@ fun TransactionHistory(
 
                                 // Display transaction amount
                                 Text(
-                                    text = if (userState.user!!.isMerchant) "+ ₹${transaction.amount}" else "- ₹${transaction.amount}",
+                                    text = if (user.isMerchant) "+ ₹${transaction.amount}" else "- ₹${transaction.amount}",
                                     modifier = Modifier
                                         .padding(end = 10.dp)
                                         .widthIn(max = 100.dp),
                                     fontSize = 16.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = if (userState.user.isMerchant) DarkGreen else DarkRed
+                                    color = if (user.isMerchant) DarkGreen else DarkRed
                                 )
                             }
                         }

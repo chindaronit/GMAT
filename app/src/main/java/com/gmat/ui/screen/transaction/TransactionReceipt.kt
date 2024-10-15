@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gmat.R
+import com.gmat.data.model.TransactionModel
+import com.gmat.data.model.UserModel
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
@@ -43,22 +45,21 @@ import com.gmat.ui.components.ReceiptPreloader
 import com.gmat.ui.components.transaction.ProfileTransactionCard
 import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.state.TransactionState
-import com.gmat.ui.state.UserState
 import com.gmat.ui.theme.DarkGreen
 
 @Composable
 fun TransactionReceipt(
     modifier: Modifier = Modifier,
     navController: NavController,
-    transactionState: TransactionState,
-    userState: UserState,
-    onTransactionEvents: (TransactionEvents) -> Unit,
     txnId: String,
-    userId: String
+    userId: String,
+    isLoading: Boolean,
+    transaction: TransactionModel?,
+    user: UserModel,
+    onTransactionEvents: (TransactionEvents) -> Unit
 ) {
 
     LaunchedEffect(key1 = Unit) {
-        println("$userId, $txnId")
         onTransactionEvents(TransactionEvents.GetTransactionById(userId = userId, txnId = txnId))
     }
 
@@ -92,7 +93,7 @@ fun TransactionReceipt(
                     )
                 })
         }) { innerPadding ->
-        if (transactionState.isLoading) {
+        if (isLoading) {
             Column(
                 modifier = modifier
                     .padding(innerPadding)
@@ -101,8 +102,7 @@ fun TransactionReceipt(
             }
         }
 
-        if (transactionState.transaction != null && !transactionState.isLoading) {
-            val transaction = transactionState.transaction
+        if (transaction!=null && !isLoading) {
             Column(
                 modifier = modifier
                     .padding(innerPadding)
@@ -111,7 +111,7 @@ fun TransactionReceipt(
                 ProfileTransactionCard(
                     uName = transaction.name,
                     uUpiId = transaction.payeeId,
-                    userState.user!!.isMerchant
+                    isMerchant = user.isMerchant
                 )
                 Spacer(modifier = Modifier.height(50.dp))
                 Row(

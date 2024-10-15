@@ -130,7 +130,7 @@ fun EditProfileDetails(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (userState.user!!.profile.isNotBlank()) {
+                if (userState.user!!.profile.isNotBlank() || userState.newProfile.isNotBlank()) {
                     AsyncImage(
                         model = if (isUploaded) userState.newProfile else userState.user.profile,
                         contentDescription = null,

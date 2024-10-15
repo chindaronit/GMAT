@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.gmat.data.model.UserModel
 import com.gmat.ui.components.HomeScreenPreloader
 import com.gmat.ui.components.ReceiptPreloader
 import com.gmat.ui.components.TransactionPreloader
@@ -21,6 +22,7 @@ import com.gmat.ui.screen.transaction.AddTransactionDetails
 import com.gmat.ui.screen.transaction.TransactionChat
 import com.gmat.ui.screen.transaction.TransactionHistory
 import com.gmat.ui.screen.transaction.TransactionReceipt
+import com.gmat.ui.state.UserState
 import com.gmat.ui.viewModel.LeaderboardViewModel
 import com.gmat.ui.viewModel.ScannerViewModel
 import com.gmat.ui.viewModel.TransactionViewModel
@@ -44,8 +46,8 @@ fun AppNavHost(
 
         animatedComposable(NavRoutes.Profile.route) {
             Profile(
-                navController,
-                userState,
+                navController=navController,
+                user=userState.user,
                 onUserEvents = userViewModel::onEvent,
                 onTransactionEvents = transactionViewModel::onEvent,
                 onLeaderboardEvents = leaderboardViewModel::onEvent,
@@ -55,7 +57,7 @@ fun AppNavHost(
 
         animatedComposable(NavRoutes.Rewards.route) {
             Rewards(
-                navController,
+                navController = navController,
                 onLeaderboardEvents = leaderboardViewModel::onEvent,
                 isLoading = (userState.isLoading || leaderboardState.isLoading),
                 leaderboardEntries = leaderboardState.allEntries.data,
@@ -67,8 +69,7 @@ fun AppNavHost(
         animatedComposable(NavRoutes.UpgradeQR.route) {
             UpgradeQR(
                 navController = navController,
-                scannerState = scannerState,
-                userState = userState,
+                scannedQR = scannerState.details,
                 onScannerEvent = scannerViewModel::onEvent,
                 onUserEvents = userViewModel::onEvent
             )
@@ -81,10 +82,11 @@ fun AppNavHost(
         animatedComposable(NavRoutes.Home.route) {
             HomeScreen(
                 navController = navController,
-                scannerState = scannerState,
+                scannedQR = scannerState.details,
                 onScannerEvent = scannerViewModel::onEvent,
-                userState = userState,
-                transactionState = transactionState,
+                user = userState.user,
+                isLoading = userState.isLoading || transactionState.isLoading,
+                recentUserTransactions = transactionState.recentUserTransactions,
                 onTransactionEvents = transactionViewModel::onEvent
             )
         }
@@ -100,8 +102,8 @@ fun AppNavHost(
 
             TransactionChat(
                 navController = navController,
-                userState = userState,
-                transactionState = transactionState,
+                user = userState.user,
+                recentUserTransactions = transactionState.recentUserTransactions,
                 chatIndex = entry.arguments?.getString("chatIndex") ?: ""
             )
         }
@@ -119,21 +121,24 @@ fun AppNavHost(
                     nullable = false
                 }
             )) { entry ->
+
             TransactionReceipt(
                 navController = navController,
-                transactionState = transactionState,
+                isLoading = transactionState.isLoading || userState.isLoading,
+                user = userState.user!!,
+                transaction = transactionState.transaction,
                 txnId = entry.arguments?.getString("txnId") ?: "",
                 onTransactionEvents = transactionViewModel::onEvent,
                 userId = entry.arguments?.getString("userId") ?: "",
-                userState = userState
             )
         }
 
         animatedComposable(NavRoutes.TransactionHistory.route) {
             TransactionHistory(
                 navController = navController,
-                transactionState = transactionState,
-                userState = userState,
+                isLoading = transactionState.isLoading || userState.isLoading,
+                transactionHistory = transactionState.transactionHistory,
+                user = userState.user!!,
                 onTransactionEvents = transactionViewModel::onEvent
             )
         }
@@ -141,9 +146,9 @@ fun AppNavHost(
         animatedComposable(NavRoutes.AddTransactionDetails.route) {
             AddTransactionDetails(
                 navController = navController,
-                scannerState = scannerState,
-                transactionState = transactionState,
-                userState = userState,
+                scannedQR = scannerState.details,
+                transaction = transactionState.transaction,
+                user = userState.user!!,
                 onTransactionEvents = transactionViewModel::onEvent,
                 onScannerEvent = scannerViewModel::onEvent,
                 onLeaderboardEvents = leaderboardViewModel::onEvent

@@ -25,13 +25,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gmat.data.model.UserModel
-import com.gmat.functionality.signInWithPhoneAuthCredential
+import com.gmat.env.signInWithPhoneAuthCredential
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CustomToast
 import com.gmat.ui.components.login.Bottom
@@ -57,6 +54,7 @@ fun OTP(
         user?.let { user ->
             isToastVisible = false
             if (user.phNo.isNotBlank()) {
+                onUserEvents(UserEvents.UpdateRoom(user=user, verificationId=verificationId))
                 navController.navigate(NavRoutes.Home.route) {
                     popUpTo(NavRoutes.OTP.route) {
                         inclusive = true
@@ -86,7 +84,7 @@ fun OTP(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
-                title = { Text("GMAT") }
+                title = { Text("GMAT", style = MaterialTheme.typography.headlineLarge) }
             )
         },
     ) { innerPadding ->
@@ -107,9 +105,7 @@ fun OTP(
             ) {
                 Text(
                     text = "Enter OTP",
-                    fontSize = 25.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontFamily = FontFamily.Monospace
+                    style = MaterialTheme.typography.headlineLarge
                 )
                 Spacer(modifier = modifier.height(20.dp))
                 OtpTextField(
@@ -139,7 +135,7 @@ fun OTP(
                                     onSuccess = { onUserEvents(UserEvents.SignIn) }
                                 )
                             } else {
-                                Toast.makeText(context, "Invalid OTP", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Invalid OTP!", Toast.LENGTH_SHORT).show()
                             }
                         }
                     },
@@ -148,9 +144,7 @@ fun OTP(
                 ) {
                     Text(
                         "Verify",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 }
             }

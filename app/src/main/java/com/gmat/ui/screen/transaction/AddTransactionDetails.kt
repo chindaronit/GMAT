@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gmat.data.model.TransactionModel
+import com.gmat.data.model.UserModel
+import com.gmat.env.GST_REGEX
 import com.gmat.env.extractPa
 import com.gmat.env.extractPn
 import com.gmat.env.isMerchantUpi
@@ -31,24 +33,21 @@ import com.gmat.ui.components.transaction.ProfileTransactionCard
 import com.gmat.ui.events.LeaderboardEvents
 import com.gmat.ui.events.QRScannerEvents
 import com.gmat.ui.events.TransactionEvents
-import com.gmat.ui.state.QRScannerState
-import com.gmat.ui.state.TransactionState
-import com.gmat.ui.state.UserState
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionDetails(
     modifier: Modifier = Modifier,
     navController: NavController,
-    scannerState: QRScannerState,
-    userState: UserState,
-    transactionState: TransactionState,
+    scannedQR: String,
+    user: UserModel,
+    transaction: TransactionModel?,
     onLeaderboardEvents: (LeaderboardEvents) -> Unit,
     onScannerEvent: (QRScannerEvents) -> Unit,
     onTransactionEvents: (TransactionEvents) -> Unit
 ) {
+
     var amount by remember { mutableStateOf("") }
     var selectedUpiId by remember { mutableStateOf("") }
     var selectedOption by remember { mutableStateOf("Merchant") }
@@ -60,11 +59,10 @@ fun AddTransactionDetails(
     var canContinuePayment by remember {
         mutableStateOf(false)
     }
-    val isMerchant = isMerchantUpi(scannerState.details)
+    val isMerchant = isMerchantUpi(scannedQR)
     var userConfirmation by remember {
         mutableIntStateOf(0)
     }
-    val calendar = Calendar.getInstance()
 
     if (!isMerchant) {
         LaunchedEffect(key1 = gstin, key2 = amount) {
@@ -94,19 +92,19 @@ fun AddTransactionDetails(
         }
     }
 
-    LaunchedEffect(key1 = transactionState.transaction) {
-        if (transactionState.transaction != null) {
-            onTransactionEvents(TransactionEvents.GetRecentTransactions(vpa = userState.user!!.vpa, userId = userState.user.userId))
+    LaunchedEffect(key1 = transaction) {
+        if (transaction != null) {
+            onTransactionEvents(TransactionEvents.GetRecentTransactions(vpa = user.vpa, userId = user.userId))
             onLeaderboardEvents(
                 LeaderboardEvents.AddUserTransactionRewards(
                     transactionAmount = amount,
-                    userId = userState.user.userId
+                    userId = user.userId
                 )
             )
             navController.navigate(
                 NavRoutes.TransactionReceipt.withArgs(
-                    transactionState.transaction.txnId,
-                    userState.user.userId
+                    transaction.txnId,
+                    user.userId
                 )
             ) {
                 popUpTo(NavRoutes.AddTransactionDetails.route) { inclusive = true }
@@ -115,7 +113,7 @@ fun AddTransactionDetails(
             onScannerEvent(QRScannerEvents.ClearState)
         }
     }
-    if (scannerState.details.isNotBlank()) {
+    if (scannedQR.isNotBlank()) {
         Scaffold(
             topBar = {
                 CenterBar(
@@ -163,8 +161,8 @@ fun AddTransactionDetails(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ProfileTransactionCard(
-                    uName = extractPn(scannerState.details),
-                    uUpiId = extractPa(scannerState.details),
+                    uName = extractPn(scannedQR),
+                    uUpiId = extractPa(scannedQR),
                     isMerchant = false
                 )
 
@@ -230,7 +228,7 @@ fun AddTransactionDetails(
                 sheetState = sheetState
             ) {
                 BottomSheetContent(
-                    upiId = userState.user!!.vpa,
+                    upiId = user.vpa,
                     selectedUpiId = selectedUpiId,
                     onUpiIdSelected = { id ->
                         selectedUpiId = id
@@ -240,15 +238,15 @@ fun AddTransactionDetails(
                             sheetState.hide()
                             showBottomSheet = false
                         }
-                        if (userState.user.isMerchant) {
+                        if (user.isMerchant) {
                             onTransactionEvents(
                                 TransactionEvents.AddTransaction(
-                                    userId = userState.user.userId,
+                                    userId = user.userId,
                                     transaction = TransactionModel(
-                                        name = extractPn(scannerState.details),
+                                        name = extractPn(scannedQR),
                                         gstin = gstin,
-                                        payerId = userState.user.vpa,
-                                        payeeId = extractPa(scannerState.details),
+                                        payerId = user.vpa,
+                                        payeeId = extractPa(scannedQR),
                                         amount = amount,
                                         type = 0
                                     )
@@ -258,12 +256,12 @@ fun AddTransactionDetails(
                             if (userConfirmation == 0) {
                                 onTransactionEvents(
                                     TransactionEvents.AddTransaction(
-                                        userId = userState.user.userId,
+                                        userId = user.userId,
                                         transaction = TransactionModel(
-                                            name = extractPn(scannerState.details),
+                                            name = extractPn(scannedQR),
                                             gstin = gstin,
-                                            payerId = userState.user.vpa,
-                                            payeeId = extractPa(scannerState.details),
+                                            payerId = user.vpa,
+                                            payeeId = extractPa(scannedQR),
                                             amount = amount,
                                             type = 0
                                         )
@@ -272,11 +270,11 @@ fun AddTransactionDetails(
                             } else {
                                 onTransactionEvents(
                                     TransactionEvents.AddTransaction(
-                                        userId = userState.user.userId,
+                                        userId = user.userId,
                                         transaction = TransactionModel(
-                                            name = extractPn(scannerState.details),
-                                            payerId = userState.user.vpa,
-                                            payeeId = extractPa(scannerState.details),
+                                            name = extractPn(scannedQR),
+                                            payerId = user.vpa,
+                                            payeeId = extractPa(scannedQR),
                                             amount = amount,
                                             type = 1
                                         )
@@ -347,7 +345,7 @@ fun MerchantPaymentDetails(
                 gstin = input
                 onGSTChange("")
                 if (input.length == 15) {
-                    if (input.matches(Regex("^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"))) {
+                    if (input.matches(Regex(GST_REGEX))) {
                         gstin = input
                         onGSTChange(input)
                     } else {
@@ -378,7 +376,7 @@ fun GSTVerifiedButton() {
         leadingIcon = {
             Icon(
                 Icons.Filled.CheckCircle,
-                contentDescription = "Localized description",
+                contentDescription = null,
                 Modifier.size(AssistChipDefaults.IconSize)
             )
         },

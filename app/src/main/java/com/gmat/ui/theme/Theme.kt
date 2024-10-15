@@ -3,12 +3,19 @@ package com.gmat.ui.theme
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.gmat.R
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -32,6 +39,59 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+val gmatFontFamily = FontFamily(
+    Font(R.font.robotoregular, FontWeight.Normal) // Adjust to your font's name and weight
+)
+
+// Define the typography
+val typography = Typography(
+    headlineLarge = TextStyle(
+        fontFamily = gmatFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 24.sp
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = gmatFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp
+    ),
+    headlineSmall = TextStyle(
+        fontFamily = gmatFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 18.sp
+    ),
+    bodyLarge = TextStyle(
+        fontFamily = gmatFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = gmatFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = gmatFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp
+    ),
+    labelLarge = TextStyle(
+        fontFamily = gmatFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = gmatFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp
+    ),
+    labelSmall = TextStyle(
+        fontFamily = gmatFontFamily,
+        fontWeight = FontWeight.Light,
+        fontSize = 12.sp
+    )
+)
+
 @Composable
 fun GMATTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -51,7 +111,7 @@ fun GMATTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = typography,
         content = content
     )
 }

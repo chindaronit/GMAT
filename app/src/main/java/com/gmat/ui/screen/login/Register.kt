@@ -93,9 +93,7 @@ fun Register(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
-                title = {
-                    Text("GMAT")
-                }
+                title = { Text("GMAT", style = MaterialTheme.typography.headlineLarge) }
             )
         },
     )
@@ -119,8 +117,7 @@ fun Register(
             ) {
                 Text(
                     text = "Complete your profile",
-                    fontSize = 25.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    style = MaterialTheme.typography.headlineLarge
                 )
                 Spacer(modifier = modifier.height(20.dp))
                 OutlinedTextField(
@@ -133,7 +130,7 @@ fun Register(
                     placeholder = {
                         Text(
                             text = "Enter your Name",
-                            fontFamily = FontFamily.Monospace
+                            style = MaterialTheme.typography.headlineMedium
                         )
                     },
                     leadingIcon = {
@@ -171,7 +168,7 @@ fun Register(
                         values.forEach { label ->
                             DropdownMenuItem(
                                 text = {
-                                    Text(label)
+                                    Text(label, style = MaterialTheme.typography.bodyLarge)
                                 },
                                 onClick = {
                                     currentVal = label
@@ -192,7 +189,7 @@ fun Register(
                         placeholder = {
                             Text(
                                 text = "Enter your VPA",
-                                fontFamily = FontFamily.Monospace
+                                style = MaterialTheme.typography.headlineMedium
                             )
                         },
                         leadingIcon = {
@@ -219,9 +216,7 @@ fun Register(
                 }) {
                     Text(
                         "Get Started",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 }
             }

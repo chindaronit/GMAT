@@ -14,6 +14,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -27,15 +29,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.gmat.R
+import com.gmat.data.model.UserModel
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.components.ProfilePreloader
@@ -43,18 +43,17 @@ import com.gmat.ui.events.LeaderboardEvents
 import com.gmat.ui.events.QRScannerEvents
 import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.events.UserEvents
-import com.gmat.ui.state.UserState
+import com.gmat.ui.theme.DarkGreen
 
 @Composable
 fun Profile(
     navController: NavController,
-    userState: UserState,
+    user: UserModel?,
     onUserEvents: (UserEvents) -> Unit,
     onTransactionEvents: (TransactionEvents) -> Unit,
     onLeaderboardEvents: (LeaderboardEvents) -> Unit,
     onScannerEvents: (QRScannerEvents) -> Unit
 ) {
-
 
     Scaffold(
         topBar = {
@@ -64,7 +63,8 @@ fun Profile(
                     Text(
                         text = stringResource(id = R.string.profile),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 })
         }
@@ -75,15 +75,15 @@ fun Profile(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState()),
         ) {
-            if (userState.user == null) {
+            if (user == null) {
                 ProfilePreloader()
             }
-            if (userState.user != null) {
+            if (user != null) {
                 ProfileCard(
-                    uName = userState.user.name,
-                    uMobile = userState.user.phNo,
-                    uUpiId = userState.user.vpa,
-                    uProfile = userState.user.profile
+                    uName = user.name,
+                    uMobile = user.phNo,
+                    uUpiId = user.vpa,
+                    uProfile = user.profile
                 )
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -93,7 +93,7 @@ fun Profile(
                         iconResId = R.drawable.edit_icon,
                         onClick = { navController.navigate(NavRoutes.EditDetails.route) })
 
-                    if (!userState.user.isMerchant) {
+                    if (!user.isMerchant) {
                         SettingsBox(
                             title = stringResource(id = R.string.rewards),
                             iconResId = R.drawable.reward_icon,
@@ -187,17 +187,27 @@ fun ProfileCard(
 
             Spacer(modifier = Modifier.width(20.dp))
             Column(
-                modifier = Modifier.padding(horizontal = 10.dp)
+                modifier = Modifier.padding(horizontal = 10.dp),
             ) {
                 Text(
                     text = uName,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 22.sp
+                    style = MaterialTheme.typography.bodyMedium
                 )
-                Text(text = "UPI ID: $uUpiId")
+                Row(modifier = Modifier.padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "UPI ID: $uUpiId",
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(end = 2.dp)
+                    )
+                    Icon(imageVector = Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                }
+
                 Text(
                     text = "Mobile: $uMobile",
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }
@@ -230,10 +240,8 @@ fun SettingsBox(
         ) {
             Text(
                 text = title,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.ExtraBold,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface,
-                fontFamily = FontFamily.Serif
             )
             RenderPainter(
                 iconResId = iconResId,

@@ -29,6 +29,10 @@ class UserViewModel @Inject constructor(
     private val _state = MutableStateFlow(UserState())
     val state = _state.asStateFlow()
 
+    init {
+        syncUser()
+    }
+
     fun onEvent(event: UserEvents) {
         when (event) {
             is UserEvents.AddUser -> {
@@ -48,6 +52,7 @@ class UserViewModel @Inject constructor(
             }
 
             UserEvents.SignOut -> {
+                deleteRoom()
                 _state.update {
                     it.copy(
                         phNo = "",
@@ -203,7 +208,6 @@ class UserViewModel @Inject constructor(
         updatedUser.qr = _state.value.newQr.ifBlank { _state.value.user!!.qr }
         updatedUser.vpa = _state.value.newVpa.ifBlank { _state.value.user!!.vpa }
         val userId = updatedUser.userId
-        println(updatedUser)
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             val response = userAPI.updateUser(updatedUser)
@@ -251,6 +255,24 @@ class UserViewModel @Inject constructor(
 
         viewModelScope.launch {
             dao.upsertUser(userRoomModel)
+        }
+    }
+
+    private fun deleteRoom(){
+        val user=_state.value.user!!
+        val userRoomModel = UserRoomModel(
+            userId = user.userId,
+            profile = user.profile,
+            vpa = user.vpa,
+            qr = user.qr,
+            phNo = user.phNo,
+            name = user.name,
+            isMerchant = user.isMerchant,
+            verificationId = _state.value.verificationId
+        )
+
+        viewModelScope.launch {
+            dao.deleteUser(userRoomModel)
         }
     }
 

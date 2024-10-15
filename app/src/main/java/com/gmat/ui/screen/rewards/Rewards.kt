@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,13 +24,10 @@ import androidx.navigation.NavController
 import com.gmat.R
 import com.gmat.data.model.LeaderboardModel
 import com.gmat.data.model.UserModel
-import com.gmat.env.ListLeaderboardResponse
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.components.ProfilePreloader
 import com.gmat.ui.components.RenderPainterIcon
 import com.gmat.ui.events.LeaderboardEvents
-import com.gmat.ui.state.LeaderboardState
-import com.gmat.ui.state.UserState
 import com.gmat.ui.theme.bronze
 import com.gmat.ui.theme.gold
 import com.gmat.ui.theme.silver
@@ -94,7 +90,7 @@ fun Rewards(
                 ProfilePreloader()
             }
         }
-        if (userLeaderboardEntry!=null) {
+        if (!isLoading && userLeaderboardEntry!=null) {
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -126,7 +122,7 @@ fun Rewards(
                             modifier = Modifier.padding(horizontal = 30.dp)
                         ) {
                             Text(
-                                text = "Your Rank: ${rank}",
+                                text = "Your Rank: $rank",
                                 fontSize = 20.sp
                             )
                             Spacer(modifier = Modifier.height(5.dp))

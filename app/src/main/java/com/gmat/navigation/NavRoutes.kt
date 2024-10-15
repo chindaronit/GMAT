@@ -33,7 +33,6 @@ sealed class NavRoutes(val route: String) {
     data object UpgradedQR : NavRoutes("upgradedQr")
     data object TransactionChat : NavRoutes("transactionChat")
     data object Home : NavRoutes("home")
-    data object Preloader : NavRoutes("preloader")
 
     fun withArgs(vararg args: String):String {
         return buildString {
@@ -43,7 +42,6 @@ sealed class NavRoutes(val route: String) {
             }
         }
     }
-
 }
 
 val authScreens = mapOf<String, @Composable (navController: NavController, userViewModel: UserViewModel,userState: UserState) -> Unit>(

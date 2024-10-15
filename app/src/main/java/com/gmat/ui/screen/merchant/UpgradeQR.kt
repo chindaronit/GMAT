@@ -38,8 +38,7 @@ import com.gmat.ui.state.UserState
 fun UpgradeQR(
     modifier: Modifier = Modifier,
     navController: NavController,
-    scannerState: QRScannerState,
-    userState: UserState,
+    scannedQR: String,
     onScannerEvent: (QRScannerEvents) -> Unit,
     onUserEvents: (UserEvents) -> Unit
 ) {
@@ -107,12 +106,12 @@ fun UpgradeQR(
                             onUserEvents(
                                 UserEvents.OnChangeQR(
                                     qr = addGstinToUpiUrl(
-                                        upiUrl = scannerState.details,
+                                        upiUrl = scannedQR,
                                         gstin = gstin
                                     )
                                 )
                             )
-                            onUserEvents(UserEvents.OnChangeVPA(vpa = extractPa(scannerState.details)))
+                            onUserEvents(UserEvents.OnChangeVPA(vpa = extractPa(scannedQR)))
                             canContinue = true
                         } else {
                             Toast.makeText(context, "Invalid GSTIN format", Toast.LENGTH_SHORT)

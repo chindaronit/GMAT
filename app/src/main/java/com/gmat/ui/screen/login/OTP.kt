@@ -44,7 +44,8 @@ fun OTP(
     navController: NavController,
     user: UserModel?,
     verificationId: String,
-    onUserEvents: (UserEvents) -> Unit
+    onUserEvents: (UserEvents) -> Unit,
+    authToken: String
 ) {
     var otpValue by remember { mutableStateOf("") }
     val context = LocalContext.current as Activity
@@ -54,7 +55,7 @@ fun OTP(
         user?.let { user ->
             isToastVisible = false
             if (user.phNo.isNotBlank()) {
-                onUserEvents(UserEvents.UpdateRoom(user=user, verificationId=verificationId))
+                onUserEvents(UserEvents.UpdateRoom(user=user, verificationId=verificationId, authToken = authToken))
                 navController.navigate(NavRoutes.Home.route) {
                     popUpTo(NavRoutes.OTP.route) {
                         inclusive = true
@@ -63,6 +64,7 @@ fun OTP(
                 }
             } else {
                 // Navigate to Register and pop the backstack
+                onUserEvents(UserEvents.UpdateRoom(user=user, verificationId=verificationId, authToken = authToken))
                 navController.navigate(NavRoutes.Register.route) {
                     popUpTo(NavRoutes.OTP.route) {
                         inclusive = true
@@ -132,7 +134,10 @@ fun OTP(
                                         isToastVisible = false
                                         Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                                     },
-                                    onSuccess = { onUserEvents(UserEvents.SignIn) }
+                                    onSuccess = {
+                                        onUserEvents(UserEvents.OnUpdateAuthToken(it))
+                                        onUserEvents(UserEvents.SignIn)
+                                    }
                                 )
                             } else {
                                 Toast.makeText(context, "Invalid OTP!", Toast.LENGTH_SHORT).show()

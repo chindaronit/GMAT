@@ -3,7 +3,7 @@ package com.gmat.ui.state
 import com.gmat.data.model.UserModel
 
 data class UserState (
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val error: String? = null,
     val user: UserModel? =null,
     val phNo: String = "",
@@ -11,5 +11,6 @@ data class UserState (
     val newName: String="",
     val newProfile: String="",
     val newQr: String="",
-    val newVpa: String=""
+    val newVpa: String="",
+    val authToken: String?=""
 )

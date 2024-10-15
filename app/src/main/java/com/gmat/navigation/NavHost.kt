@@ -8,10 +8,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.gmat.data.model.UserModel
-import com.gmat.ui.components.HomeScreenPreloader
-import com.gmat.ui.components.ReceiptPreloader
-import com.gmat.ui.components.TransactionPreloader
 import com.gmat.ui.screen.home.HomeScreen
 import com.gmat.ui.screen.login.OTP
 import com.gmat.ui.screen.merchant.UpgradeQR
@@ -22,7 +18,6 @@ import com.gmat.ui.screen.transaction.AddTransactionDetails
 import com.gmat.ui.screen.transaction.TransactionChat
 import com.gmat.ui.screen.transaction.TransactionHistory
 import com.gmat.ui.screen.transaction.TransactionReceipt
-import com.gmat.ui.state.UserState
 import com.gmat.ui.viewModel.LeaderboardViewModel
 import com.gmat.ui.viewModel.ScannerViewModel
 import com.gmat.ui.viewModel.TransactionViewModel
@@ -46,12 +41,13 @@ fun AppNavHost(
 
         animatedComposable(NavRoutes.Profile.route) {
             Profile(
-                navController=navController,
-                user=userState.user,
+                navController = navController,
+                user = userState.user,
                 onUserEvents = userViewModel::onEvent,
                 onTransactionEvents = transactionViewModel::onEvent,
                 onLeaderboardEvents = leaderboardViewModel::onEvent,
-                onScannerEvents = scannerViewModel::onEvent
+                onScannerEvents = scannerViewModel::onEvent,
+                authToken = userState.authToken,
             )
         }
 
@@ -62,7 +58,8 @@ fun AppNavHost(
                 isLoading = (userState.isLoading || leaderboardState.isLoading),
                 leaderboardEntries = leaderboardState.allEntries.data,
                 user = userState.user!!,
-                userLeaderboardEntry = leaderboardState.userLeaderboardEntry
+                userLeaderboardEntry = leaderboardState.userLeaderboardEntry,
+                authToken = userState.authToken,
             )
         }
 
@@ -71,12 +68,19 @@ fun AppNavHost(
                 navController = navController,
                 scannedQR = scannerState.details,
                 onScannerEvent = scannerViewModel::onEvent,
-                onUserEvents = userViewModel::onEvent
+                onUserEvents = userViewModel::onEvent,
+                authToken = userState.authToken,
             )
         }
 
         animatedComposable(NavRoutes.UpgradedQR.route) {
-            UpgradedQR(navController = navController, isLoading = userState.isLoading, qrCode = userState.user!!.qr, vpa = userState.user!!.vpa)
+            UpgradedQR(
+                navController = navController,
+                isLoading = userState.isLoading,
+                qrCode = userState.user!!.qr,
+                vpa = userState.user!!.vpa,
+                authToken = userState.authToken,
+            )
         }
 
         animatedComposable(NavRoutes.Home.route) {
@@ -85,6 +89,7 @@ fun AppNavHost(
                 scannedQR = scannerState.details,
                 onScannerEvent = scannerViewModel::onEvent,
                 user = userState.user,
+                authToken = userState.authToken,
                 isLoading = userState.isLoading || transactionState.isLoading,
                 recentUserTransactions = transactionState.recentUserTransactions,
                 onTransactionEvents = transactionViewModel::onEvent
@@ -130,6 +135,7 @@ fun AppNavHost(
                 txnId = entry.arguments?.getString("txnId") ?: "",
                 onTransactionEvents = transactionViewModel::onEvent,
                 userId = entry.arguments?.getString("userId") ?: "",
+                authToken = userState.authToken
             )
         }
 
@@ -139,7 +145,8 @@ fun AppNavHost(
                 isLoading = transactionState.isLoading || userState.isLoading,
                 transactionHistory = transactionState.transactionHistory,
                 user = userState.user!!,
-                onTransactionEvents = transactionViewModel::onEvent
+                onTransactionEvents = transactionViewModel::onEvent,
+                authToken = userState.authToken
             )
         }
 
@@ -151,7 +158,8 @@ fun AppNavHost(
                 user = userState.user!!,
                 onTransactionEvents = transactionViewModel::onEvent,
                 onScannerEvent = scannerViewModel::onEvent,
-                onLeaderboardEvents = leaderboardViewModel::onEvent
+                onLeaderboardEvents = leaderboardViewModel::onEvent,
+                authToken = userState.authToken
             )
         }
 
@@ -160,25 +168,26 @@ fun AppNavHost(
                 navController = navController,
                 user = userState.user,
                 verificationId = userState.verificationId,
-                onUserEvents = userViewModel::onEvent
+                onUserEvents = userViewModel::onEvent,
+                authToken = userState.authToken!!
             )
         }
 
         authScreens.forEach { (route, screen) ->
             if (route == NavRoutes.Login.route) {
                 slideInComposable(route) {
-                    screen(navController, userViewModel, userState)
+                    screen(navController, userViewModel, userState, userState.authToken!!)
                 }
             } else {
                 animatedComposable(route) {
-                    screen(navController, userViewModel, userState)
+                    screen(navController, userViewModel, userState, userState.authToken!!)
                 }
             }
         }
 
         settingScreens.forEach { (route, screen) ->
             animatedComposable(route) {
-                screen(navController, userViewModel, userState)
+                screen(navController, userViewModel, userState, userState.authToken!!)
             }
         }
     }

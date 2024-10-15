@@ -31,14 +31,28 @@ fun extractPn(upiUrl: String?): String {
     }
 }
 
+fun extractGst(upiUrl: String?): String {
+    if (upiUrl == null) return ""
+
+    val regex = "gstin=([^&]+)".toRegex()
+    val matchResult = regex.find(upiUrl)
+
+    return if (matchResult != null) {
+        val encodedPn = matchResult.groupValues[1]
+        URLDecoder.decode(encodedPn, StandardCharsets.UTF_8.name()) // Decode URL-encoded value
+    } else {
+        ""
+    }
+}
+
+fun isGstValid(gstin: String): Boolean {
+    return gstin.matches(Regex(GST_REGEX))
+}
+
 fun extractPa(upiUrl: String?): String {
     if(upiUrl==null) return ""
     val regex = "pa=([^&]+)".toRegex()
     return regex.find(upiUrl)?.groupValues!![1]
-}
-
-fun isMerchantUpi(upiUrl: String): Boolean {
-    return upiUrl.contains("mc=")
 }
 
 fun addGstinToUpiUrl(upiUrl: String, gstin: String): String {

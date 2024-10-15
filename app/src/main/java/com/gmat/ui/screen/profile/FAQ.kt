@@ -35,7 +35,8 @@ fun FAQ(
                     Text(
                         text = stringResource(id = R.string.faq),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 })
         },
@@ -49,17 +50,9 @@ fun FAQ(
 fun FAQContent(modifier: Modifier = Modifier) {
     val faqList = listOf(
         FAQItem(
-            "How do I reset my password?",
-            "To reset your password, go to the settings page and click on 'Reset Password'. You will receive an email with instructions."
-        ),
-        FAQItem(
             "How can I contact support?",
-            "You can contact support by emailing support@example.com or using the chat feature on our website."
-        ),
-        FAQItem(
-            "Where can I find my purchase history?",
-            "Your purchase history can be found under the 'Orders' section in your profile."
-        ),
+            "You can contact support by emailing project.gst@iiitg.ac.in."
+        )
         // Add more FAQ items here
     )
 
@@ -96,8 +89,7 @@ fun FAQItemCard(faqItem: FAQItem, modifier: Modifier = Modifier) {
             ) {
                 Text(
                     text = faqItem.question,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.bodyLarge,
                     modifier = modifier.weight(1f)
                 )
                 Icon(
@@ -115,7 +107,7 @@ fun FAQItemCard(faqItem: FAQItem, modifier: Modifier = Modifier) {
                     Spacer(modifier = modifier.height(8.dp))
                     Text(
                         text = faqItem.answer,
-                        fontSize = 16.sp
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }

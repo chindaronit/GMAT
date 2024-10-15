@@ -5,23 +5,29 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface UserAPI {
+
     @POST("users")
-    suspend fun addUser(@Body user: UserModel): Response<Unit>
+    suspend fun addUser(
+        @Body user: UserModel,
+        @Header("Authorization") token: String
+    ): Response<Unit>
 
-    // Pass phone number as a query parameter
     @GET("users/get/ph")
-    suspend fun getUserByPhone(@Query("phNo") phoneNumber: String): Response<UserModel>
+    suspend fun getUserByPhone(
+        @Query("phNo") phoneNumber: String,
+        @Header("Authorization") token: String
+    ): Response<UserModel>
 
-    // Pass VPA as a query parameter
-    @GET("users/get/vpa")
-    suspend fun getUserByVPA(@Query("vpa") vpa: String): Response<UserModel>
 
-    // Pass userId as a query parameter
     @GET("users")
-    suspend fun getUserByUserId(@Query("userId") userId: String): Response<UserModel>
+    suspend fun getUserByUserId(
+        @Query("userId") userId: String,
+        @Header("Authorization") token: String
+    ): Response<UserModel>
 
     @POST("users/update")
     suspend fun updateUser(
-        @Body user: UserModel
+        @Body user: UserModel,
+        @Header("Authorization") token: String
     ): Response<Unit>
 }

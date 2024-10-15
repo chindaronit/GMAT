@@ -40,7 +40,8 @@ fun Rewards(
     user: UserModel,
     userLeaderboardEntry: LeaderboardModel?,
     leaderboardEntries: List<LeaderboardModel>,
-    onLeaderboardEvents: (LeaderboardEvents) -> Unit
+    onLeaderboardEvents: (LeaderboardEvents) -> Unit,
+    authToken: String?
 ) {
 
     var rank by remember {
@@ -56,14 +57,16 @@ fun Rewards(
             LeaderboardEvents.GetUserRewardsPointsForMonth(
                 userId = user.userId,
                 month = month,
-                year = year
+                year = year,
+                authToken=authToken!!
             )
         )
 
         onLeaderboardEvents(
             LeaderboardEvents.GetAllUsersByRewardsForMonth(
                 month = month,
-                year = year
+                year = year,
+                authToken=authToken
             )
         )
     }
@@ -76,7 +79,8 @@ fun Rewards(
                     Text(
                         text = "Rewards",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 })
         },
@@ -123,13 +127,12 @@ fun Rewards(
                         ) {
                             Text(
                                 text = "Your Rank: $rank",
-                                fontSize = 20.sp
+                                style = MaterialTheme.typography.headlineSmall
                             )
                             Spacer(modifier = Modifier.height(5.dp))
                             Text(
                                 text = "Your Points: ${userLeaderboardEntry.points}",
-                                fontWeight = FontWeight.ExtraLight,
-                                fontSize = 18.sp
+                                style = MaterialTheme.typography.headlineSmall
                             )
                         }
                     }
@@ -151,8 +154,7 @@ fun Rewards(
                     ) {
                         Text(
                             text = "Leaderboard",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineLarge,
                             modifier = Modifier.padding(
                                 start = 15.dp,
                                 top = 20.dp,
@@ -194,8 +196,7 @@ fun Rewards(
                         Text(
                             text = "No records",
                             modifier = Modifier.align(Alignment.CenterHorizontally),
-                            fontWeight = FontWeight.Light,
-                            fontSize = 16.sp
+                            style = MaterialTheme.typography.headlineMedium
                         )
                     }
                 }
@@ -253,8 +254,7 @@ fun LeaderboardEntry(name: String, points: String, modifier: Modifier = Modifier
             ) {
                 Text(
                     text = name,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.headlineMedium,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
                     modifier = Modifier.widthIn(max = 150.dp)

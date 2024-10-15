@@ -102,7 +102,8 @@ fun UpgradedQR(
     navController: NavController,
     isLoading: Boolean,
     vpa: String,
-    qrCode: String
+    qrCode: String,
+    authToken: String?
 ) {
     val context = LocalContext.current
 
@@ -132,7 +133,8 @@ fun UpgradedQR(
                         Text(
                             text = stringResource(id = R.string.upgraded_qr),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.headlineMedium
                         )
                     })
             }

@@ -48,7 +48,7 @@ fun startPhoneNumberVerification(
 fun signInWithPhoneAuthCredential(
     credential: PhoneAuthCredential,
     activity: Activity,
-    onSuccess: () -> Unit,
+    onSuccess: (String?) -> Unit,
     onFailure: (String) -> Unit
 ) {
     FirebaseAuth.getInstance().signInWithCredential(credential)
@@ -58,8 +58,7 @@ fun signInWithPhoneAuthCredential(
                 user?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
                     if (tokenTask.isSuccessful) {
                         val idToken = tokenTask.result?.token
-                        println(idToken)
-                        onSuccess()
+                        onSuccess(idToken)
                     } else {
                         onFailure("Failed to get ID token")
                     }
@@ -69,9 +68,26 @@ fun signInWithPhoneAuthCredential(
                 onFailure("Invalid OTP")
             }
         }
-
 }
 
+fun refreshAuthToken(onTokenRefreshed: (String) -> Unit, onFailure: (String?) -> Unit) {
+    FirebaseAuth.getInstance().currentUser?.getIdToken(true)
+        ?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                // Token refreshed successfully
+                val newToken = task.result?.token
+                // You can store the new token locally if needed
+                // Call the callback to retry the original request
+                if (newToken != null) {
+                    onTokenRefreshed(newToken)
+                } else {
+                    onFailure(CHECK_CONNECTION)
+                }
+            } else {
+                onFailure(CHECK_CONNECTION)
+            }
+        }
+}
 
 fun formatPhoneNumberForVerification(phoneNumber: String, countryCode: String = "+91"): String {
     // Check if the number starts with "+" and already in E.164 format

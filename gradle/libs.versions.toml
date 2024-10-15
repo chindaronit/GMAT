@@ -3,6 +3,7 @@ accompanistPlaceholderMaterial = "0.33.0-alpha"
 agp = "8.5.2"
 converterGson = "2.9.0"
 core = "3.5.0"
+firebaseAppcheckPlayintegrity = "18.0.0"
 hilt = "2.52"
 ksp = "2.0.0-1.0.24"
 hiltCompiler = "1.2.0"
@@ -48,6 +49,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-ui = { module = "androidx.compose.ui:ui", version.ref = "uiToolingPreviewAndroid" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 core = { module = "com.google.zxing:core", version.ref = "core" }
+firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity", version.ref = "firebaseAppcheckPlayintegrity" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroidCompiler" }
 hilt-compile = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompiler"}
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }

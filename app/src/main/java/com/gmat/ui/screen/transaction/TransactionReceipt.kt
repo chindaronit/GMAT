@@ -56,40 +56,48 @@ fun TransactionReceipt(
     isLoading: Boolean,
     transaction: TransactionModel?,
     user: UserModel,
-    onTransactionEvents: (TransactionEvents) -> Unit
+    onTransactionEvents: (TransactionEvents) -> Unit,
+    authToken: String?
 ) {
 
     LaunchedEffect(key1 = Unit) {
-        onTransactionEvents(TransactionEvents.GetTransactionById(userId = userId, txnId = txnId))
+        onTransactionEvents(TransactionEvents.GetTransactionById(userId = userId, txnId = txnId, token = authToken))
     }
 
     BackHandler {
+        onTransactionEvents(TransactionEvents.ClearTransaction)
         navController.navigate(NavRoutes.Home.route) {
-            popUpTo(NavRoutes.TransactionReceipt.route) {
+            popUpTo(0) {
                 inclusive = true  // This clears the entire back stack
             }
             launchSingleTop = true  // Avoid creating multiple instances of the Home screen
         }
     }
 
+    LaunchedEffect(key1 = Unit) {
+        if(transaction==null){
+            navController.navigate(NavRoutes.Home.route) {
+                popUpTo(0) {
+                    inclusive = true  // This clears the entire back stack
+                }
+                launchSingleTop =
+                    true  // Avoid creating multiple instances of the Home screen
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             CenterBar(
                 onClick = {
-                    navController.navigate(NavRoutes.Home.route) {
-                        popUpTo(NavRoutes.TransactionReceipt.route) {
-                            inclusive = true  // This clears the entire back stack
-                        }
-                        launchSingleTop =
-                            true  // Avoid creating multiple instances of the Home screen
-                    }
+                    onTransactionEvents(TransactionEvents.ClearTransaction)
                 },
                 title = {
                     Text(
                         text = stringResource(id = R.string.receipt),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 })
         }) { innerPadding ->

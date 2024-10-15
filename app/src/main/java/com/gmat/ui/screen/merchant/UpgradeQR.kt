@@ -40,7 +40,8 @@ fun UpgradeQR(
     navController: NavController,
     scannedQR: String,
     onScannerEvent: (QRScannerEvents) -> Unit,
-    onUserEvents: (UserEvents) -> Unit
+    onUserEvents: (UserEvents) -> Unit,
+    authToken: String?
 ) {
     val context = LocalContext.current
     var gstin by remember {
@@ -75,7 +76,8 @@ fun UpgradeQR(
                     Text(
                         text = stringResource(id = R.string.upgrade_qr),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 })
         }
@@ -120,7 +122,12 @@ fun UpgradeQR(
                         }
                     } else canContinue = false
                 },
-                label = { Text("GSTIN") },
+                label = {
+                    Text(
+                        "GSTIN",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
                 textStyle = TextStyle(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Normal,
@@ -147,7 +154,10 @@ fun UpgradeQR(
                 enabled = canContinue
 
             ) {
-                Text(stringResource(id = R.string.upgrade_qr))
+                Text(
+                    stringResource(id = R.string.upgrade_qr),
+                    style = MaterialTheme.typography.headlineMedium
+                )
             }
         }
     }

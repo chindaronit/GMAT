@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -55,6 +56,7 @@ fun HomeScreen(
     scannedQR: String,
     user: UserModel?,
     isLoading: Boolean,
+    authToken: String?,
     recentUserTransactions: List<ChatDetails>?=null,
     onTransactionEvents: (TransactionEvents) -> Unit,
     onScannerEvent: (QRScannerEvents) -> Unit
@@ -71,9 +73,9 @@ fun HomeScreen(
     LaunchedEffect(key1 = recentUserTransactions) {
         if (recentUserTransactions == null && user != null) {
             if (user.isMerchant) {
-                onTransactionEvents(TransactionEvents.GetRecentTransactions(null, user.vpa))
+                onTransactionEvents(TransactionEvents.GetRecentTransactions(null, user.vpa, token = authToken))
             } else {
-                onTransactionEvents(TransactionEvents.GetRecentTransactions(user.userId, null))
+                onTransactionEvents(TransactionEvents.GetRecentTransactions(user.userId, null, token = authToken))
             }
         }
     }
@@ -86,6 +88,7 @@ fun HomeScreen(
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
+
 
     val launcher =
         rememberLauncherForActivityResult(
@@ -219,12 +222,6 @@ fun HomeScreen(
                     if (recentUserTransactions != null) {
                         val gridSize = minOf(recentUserTransactions.size, 16) // Maximum 16 items (4x4 grid)
 
-                        // Calculate the number of rows needed
-                        val rows = if (gridSize % 4 == 0) gridSize / 4 else gridSize / 4 + 1
-                        val rowHeight = 75.dp // Set the height for each row (can be adjusted as needed)
-
-                        // Calculate the total height dynamically based on the number of rows
-                        val totalHeight = rowHeight * rows
 
                         LazyVerticalGrid(
                             state = rememberLazyGridState(),
@@ -233,7 +230,7 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
-                                .height(totalHeight) // Dynamically set the height based on rows
+                                .height(300.dp) // Dynamically set the height based on rows
                                 .fillMaxWidth(),
                             content = {
                                 items(gridSize) { index ->

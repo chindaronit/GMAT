@@ -27,12 +27,13 @@ fun AboutUs(
     Scaffold(
         topBar = {
             CenterBar(
-                onClick = {navController.navigateUp()},
+                onClick = { navController.navigateUp() },
                 title = {
                     Text(
                         text = stringResource(id = R.string.about_us),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 })
         },
@@ -53,7 +54,8 @@ fun AboutUs(
                         .alpha(0.8f),
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.W500,
-                    text = stringResource(id = R.string.about_us_data)
+                    text = stringResource(id = R.string.about_us_data),
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }

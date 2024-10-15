@@ -2,10 +2,11 @@ package com.gmat.ui.viewModel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import com.gmat.data.model.TransactionModel
 import com.gmat.data.repository.api.TransactionAPI
-import com.gmat.ui.events.LeaderboardEvents
 import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.state.TransactionState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,46 +20,76 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
-    private val transactionAPI: TransactionAPI
+    private val transactionAPI: TransactionAPI,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TransactionState())
     val state = _state.asStateFlow()
 
+
+    private lateinit var userViewModel: UserViewModel
+
+    // Initialize UserViewModel when needed
+    fun initUserViewModel(owner: ViewModelStoreOwner) {
+        userViewModel = ViewModelProvider(owner)[UserViewModel::class.java]
+    }
+
+    // Example of calling refreshToken() from UserViewModel
+    private suspend fun refreshTokenUsingUserViewModel(): String? {
+        if (!::userViewModel.isInitialized) {
+            return null // Or handle the case when it's not initialized
+        }
+        return userViewModel.refreshToken()
+    }
+
+
     fun onEvent(event: TransactionEvents) {
         when (event) {
             is TransactionEvents.AddTransaction -> {
-                addTransaction(event.userId, event.transaction)
+                addTransaction(event.userId, event.transaction, token = event.token)
             }
 
             is TransactionEvents.GetTransactionById -> {
-                getTransactionById(event.userId, event.txnId)
+                getTransactionById(event.userId, event.txnId, token = event.token)
             }
 
             is TransactionEvents.GetAllTransactionsForMonth -> {
-                getAllTransactionsForMonth(event.month, event.year, event.userId, event.vpa)
+                getAllTransactionsForMonth(event.month, event.year, event.userId, event.vpa, token = event.token)
             }
 
             is TransactionEvents.GetRecentTransactions -> {
-                getRecentTransactions(event.userId, event.vpa)
+                getRecentTransactions(event.userId, event.vpa, token = event.token)
             }
 
-            TransactionEvents.ClearTransactionHistory -> {
-                _state.update { it.copy(transactionHistory =null) }
+            is TransactionEvents.ClearTransactionHistory -> {
+                _state.update { it.copy(transactionHistory = null) }
             }
 
-            TransactionEvents.SignOut -> {
-                _state.update { it.copy(isLoading = false, error = null, transaction = null, transactionHistory = null, recentUserTransactions = null) }
+            is TransactionEvents.SignOut -> {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = null,
+                        transaction = null,
+                        transactionHistory = null,
+                        recentUserTransactions = null
+                    )
+                }
+            }
+
+            is TransactionEvents.ClearTransaction -> {
+                _state.update { it.copy(transaction = null) }
             }
         }
     }
 
-    private fun addTransaction(userId: String, transaction: TransactionModel) {
+    private fun addTransaction(userId: String, transaction: TransactionModel, token: String?) {
         viewModelScope.launch {
             try {
                 val response =
-                    transactionAPI.addTransaction(userId = userId, transaction = transaction)
-
+                    transactionAPI.addTransaction(
+                        userId = userId, transaction = transaction, token = "Bearer $token"
+                    )
                 if (response.isSuccessful && response.body() != null) {
                     transaction.txnId = response.body()!!.txnId
                     _state.update {
@@ -67,6 +98,12 @@ class TransactionViewModel @Inject constructor(
                         )
                     }
                 } else {
+                    if (response.code() == 401) {
+                        val token: String? = refreshTokenUsingUserViewModel()
+                        if (token != null) {
+                            addTransaction(userId, transaction, token)
+                        }
+                    }
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
@@ -81,11 +118,12 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    private fun getTransactionById(userId: String, txnId: String) {
+    private fun getTransactionById(userId: String, txnId: String, token: String?) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val response = transactionAPI.getTransactionByTxnId(userId = userId, txnId = txnId)
+                val response =
+                    transactionAPI.getTransactionByTxnId(userId = userId, txnId = txnId, token = "Bearer $token")
                 if (response.isSuccessful && response.body() != null) {
                     println(response.body())
                     _state.update {
@@ -95,6 +133,12 @@ class TransactionViewModel @Inject constructor(
                         )
                     }
                 } else {
+                    if (response.code() == 401) {
+                        val token = refreshTokenUsingUserViewModel()
+                        if (token != null) {
+                            getTransactionById(userId, txnId, token)
+                        }
+                    }
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
@@ -110,13 +154,18 @@ class TransactionViewModel @Inject constructor(
     }
 
 
-    private fun getAllTransactionsForMonth(month: Int, year: Int, userId: String?, vpa: String?) {
+    private fun getAllTransactionsForMonth(month: Int, year: Int, userId: String?, vpa: String?, token: String?) {
         _state.update { it.copy(isLoading = true) }
         println("$month,$year")
-        if(userId==null && vpa!=null){
+        if (userId == null && vpa != null) {
             viewModelScope.launch {
                 try {
-                    val response = transactionAPI.getTransactionHistoryForMerchant(vpa=vpa, month = month, year=year)
+                    val response = transactionAPI.getTransactionHistoryForMerchant(
+                        vpa = vpa,
+                        month = month,
+                        year = year,
+                        "Bearer $token"
+                    )
 
                     if (response.isSuccessful && response.body() != null) {
                         _state.update {
@@ -126,6 +175,12 @@ class TransactionViewModel @Inject constructor(
                             )
                         }
                     } else {
+                        if (response.code() == 401) {
+                            val token = refreshTokenUsingUserViewModel()
+                            if (token != null) {
+                                getAllTransactionsForMonth(month=month, year=year, userId = userId, vpa=vpa, token=token)
+                            }
+                        }
                         handleErrorResponse(response)
                     }
                 } catch (e: Exception) {
@@ -138,11 +193,11 @@ class TransactionViewModel @Inject constructor(
                     Log.e("TransactionViewModel", "Error: ${e.message}")
                 }
             }
-        }
-        else if(userId!=null){
+        } else if (userId != null) {
             viewModelScope.launch {
                 try {
-                    val response = transactionAPI.getAllTransactionsForMonth(month, year, userId)
+                    val response =
+                        transactionAPI.getAllTransactionsForMonth(month, year, userId, "Bearer $token")
 
                     if (response.isSuccessful && response.body() != null) {
                         _state.update {
@@ -152,6 +207,12 @@ class TransactionViewModel @Inject constructor(
                             )
                         }
                     } else {
+                        if (response.code() == 401) {
+                            val token = refreshTokenUsingUserViewModel()
+                            if (token != null) {
+                                getAllTransactionsForMonth(month=month, year=year, userId = userId, vpa=vpa, token=token)
+                            }
+                        }
                         handleErrorResponse(response)
                     }
                 } catch (e: Exception) {
@@ -164,24 +225,25 @@ class TransactionViewModel @Inject constructor(
                     Log.e("TransactionViewModel", "Error: ${e.message}")
                 }
             }
-        }
-        else return
+        } else return
     }
 
 
-    private fun getRecentTransactions(userId: String?, vpa: String?) {
+    private fun getRecentTransactions(userId: String?, vpa: String?, token: String?) {
         _state.update { it.copy(isLoading = true) }
 
         if (vpa == null && userId != null) {
             viewModelScope.launch {
                 try {
-                    val response = transactionAPI.getRecentTransactionsForUser(userId)
+                    val response = transactionAPI.getRecentTransactionsForUser(userId,
+                        "Bearer $token")
 
                     if (response.isSuccessful && response.body() != null) {
                         Log.d(
                             "GetRecentTransactionForUser",
                             "Transactions retrieved: ${response.body()}"
                         )
+                        println("Here $userId, $vpa, $token")
                         _state.update {
                             it.copy(
                                 isLoading = false,
@@ -189,6 +251,12 @@ class TransactionViewModel @Inject constructor(
                             )
                         }
                     } else {
+                        if (response.code() == 401) {
+                            val token = refreshTokenUsingUserViewModel()
+                            if (token != null) {
+                                getRecentTransactions(userId=userId, vpa=vpa, token=token)
+                            }
+                        }
                         handleErrorResponse(response)
                     }
                 } catch (e: Exception) {
@@ -204,7 +272,7 @@ class TransactionViewModel @Inject constructor(
         } else if (vpa != null) {
             viewModelScope.launch {
                 try {
-                    val response = transactionAPI.getRecentTransactionsForMerchant(vpa)
+                    val response = transactionAPI.getRecentTransactionsForMerchant(vpa, token = "Bearer $token")
 
                     if (response.isSuccessful && response.body() != null) {
                         Log.d(
@@ -218,6 +286,12 @@ class TransactionViewModel @Inject constructor(
                             )
                         }
                     } else {
+                        if (response.code() == 401) {
+                            val token = refreshTokenUsingUserViewModel()
+                            if (token != null) {
+                                getRecentTransactions(userId=userId, vpa=vpa, token=token)
+                            }
+                        }
                         handleErrorResponse(response)
                     }
                 } catch (e: Exception) {
@@ -237,7 +311,6 @@ class TransactionViewModel @Inject constructor(
     private fun handleErrorResponse(response: Response<*>) {
         val errorMessage = when (response.code()) {
             400 -> "Bad Request: Please check the input data"
-            401 -> "Unauthorized: Access denied"
             404 -> "Not Found: Resource not found"
             500 -> "Internal Server Error: Please try again later"
             else -> {
@@ -245,7 +318,7 @@ class TransactionViewModel @Inject constructor(
                 errorObj.getString("message")
             }
         }
-        Log.e("TransactionViewModel", "Error: $errorMessage")
+        Log.e("UserViewModel", "Error: $errorMessage")
         _state.update { it.copy(isLoading = false, error = errorMessage) }
     }
 }

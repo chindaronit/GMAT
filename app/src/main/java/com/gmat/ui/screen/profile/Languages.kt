@@ -48,7 +48,8 @@ fun Languages(
                     Text(
                         text = stringResource(id = R.string.language),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 })
         },
@@ -112,7 +113,8 @@ fun LanguageItem(
         ) {
             Text(
                 text = languageName,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium
             )
             RadioButton(
                 selected = isSelected,

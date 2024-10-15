@@ -5,8 +5,10 @@ import com.gmat.ui.components.CenterBar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,9 +25,9 @@ import com.gmat.data.model.UserModel
 import com.gmat.env.ChatDetails
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
-import com.gmat.ui.state.TransactionState
 import com.gmat.ui.theme.DarkGreen
 import com.gmat.ui.theme.DarkRed
+import kotlinx.coroutines.launch
 
 @Composable
 fun TransactionChat(
@@ -33,14 +35,30 @@ fun TransactionChat(
     navController: NavController,
     user: UserModel?,
     chatIndex: String,
-    recentUserTransactions: List<ChatDetails>?=null
+    recentUserTransactions: List<ChatDetails>? = null
 ) {
     val transactionUser by remember {
         mutableStateOf(recentUserTransactions?.get(chatIndex.toInt())?.userDetails)
     }
 
     val chats by remember {
-        mutableStateOf(recentUserTransactions?.get(chatIndex.toInt())?.transactions)
+        mutableStateOf(
+            recentUserTransactions?.get(chatIndex.toInt())?.transactions?.sortedBy { it.timestamp }
+        )
+    }
+
+    val listState = rememberLazyListState()
+
+// Automatically scroll to the last item (most recent chat) with smooth animation
+    LaunchedEffect(chats) {
+        chats?.let {
+            launch {
+                listState.animateScrollToItem(
+                    index = it.size - 1, // Scroll to the last item
+                    scrollOffset = 0 // Adjust this if needed
+                )
+            }
+        }
     }
 
     Scaffold(
@@ -49,17 +67,18 @@ fun TransactionChat(
                 onClick = { navController.navigateUp() },
                 title = {
                     Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
                     ) {
                         Text(
                             text = transactionUser!!.name,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.headlineMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = "UPI ID: ${transactionUser!!.vpa}",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.labelMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -67,26 +86,29 @@ fun TransactionChat(
                 }
             )
         },
-
         floatingActionButton = {
             user?.let { user ->
                 if (!user.isMerchant) {
                     ExtendedFloatingActionButton(
                         onClick = { navController.navigate(NavRoutes.AddTransactionDetails.route) }
                     ) {
-                        Text("Pay")
+                        Text(
+                            "Pay",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
             }
         }
     ) { innerPadding ->
         LazyColumn(
+            state = listState, // Attach the list state for controlling the scroll position
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(bottom = 80.dp)
         ) {
-            itemsIndexed(chats!!, key = { index, _ -> index }) { _, transaction ->
+            itemsIndexed(chats!!, key = { _, transaction -> transaction.txnId }) { _, transaction ->
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -96,7 +118,7 @@ fun TransactionChat(
                             navController = navController,
                             transaction = transaction,
                             transactionUser = transactionUser,
-                            modifier = Modifier.weight(1f), // Card on the left side
+                            modifier = Modifier.weight(1f),
                             isMerchant = true,
                             payerUserId = ""
                         )
@@ -115,19 +137,35 @@ fun TransactionChat(
                 }
             }
         }
-
     }
 }
 
 // TransactionCard composable to display transaction details
 @Composable
-fun TransactionCard(transaction: TransactionModel, modifier: Modifier = Modifier, navController: NavController, transactionUser: UserModel?, isMerchant: Boolean ,payerUserId: String) {
+fun TransactionCard(
+    transaction: TransactionModel,
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    transactionUser: UserModel?,
+    isMerchant: Boolean,
+    payerUserId: String
+) {
     Card(
         onClick = {
             if (isMerchant) {
-                navController.navigate(NavRoutes.TransactionReceipt.withArgs(transaction.txnId, transactionUser!!.userId))
+                navController.navigate(
+                    NavRoutes.TransactionReceipt.withArgs(
+                        transaction.txnId,
+                        transactionUser!!.userId
+                    )
+                )
             } else {
-                navController.navigate(NavRoutes.TransactionReceipt.withArgs(transaction.txnId, payerUserId))
+                navController.navigate(
+                    NavRoutes.TransactionReceipt.withArgs(
+                        transaction.txnId,
+                        payerUserId
+                    )
+                )
             }
 
         },
@@ -158,7 +196,7 @@ fun TransactionCard(transaction: TransactionModel, modifier: Modifier = Modifier
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "₹ "+transaction.amount,
+                    text = "₹ " + transaction.amount,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold

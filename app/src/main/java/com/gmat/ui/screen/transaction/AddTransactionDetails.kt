@@ -24,16 +24,19 @@ import androidx.navigation.NavController
 import com.gmat.data.model.TransactionModel
 import com.gmat.data.model.UserModel
 import com.gmat.env.GST_REGEX
+import com.gmat.env.extractGst
 import com.gmat.env.extractPa
 import com.gmat.env.extractPn
-import com.gmat.env.isMerchantUpi
+import com.gmat.env.isGstValid
 import com.gmat.navigation.NavRoutes
 import com.gmat.ui.components.CenterBar
 import com.gmat.ui.components.transaction.ProfileTransactionCard
 import com.gmat.ui.events.LeaderboardEvents
 import com.gmat.ui.events.QRScannerEvents
 import com.gmat.ui.events.TransactionEvents
+import com.gmat.ui.theme.DarkGreen
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,23 +48,30 @@ fun AddTransactionDetails(
     transaction: TransactionModel?,
     onLeaderboardEvents: (LeaderboardEvents) -> Unit,
     onScannerEvent: (QRScannerEvents) -> Unit,
-    onTransactionEvents: (TransactionEvents) -> Unit
+    onTransactionEvents: (TransactionEvents) -> Unit,
+    authToken: String?
 ) {
 
     var amount by remember { mutableStateOf("") }
     var selectedUpiId by remember { mutableStateOf("") }
     var selectedOption by remember { mutableStateOf("Merchant") }
     val context = LocalContext.current
-    var gstin by remember { mutableStateOf("") }
+    var gstin by remember { mutableStateOf(extractGst(scannedQR)) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     var canContinuePayment by remember {
         mutableStateOf(false)
     }
-    val isMerchant = isMerchantUpi(scannedQR)
+    val isMerchant = isGstValid(extractGst(scannedQR))
     var userConfirmation by remember {
         mutableIntStateOf(0)
+    }
+    val calendar = Calendar.getInstance()
+    val currMonth = calendar.get(Calendar.MONTH) + 1
+    val currYear = calendar.get(Calendar.YEAR)
+    var isSelected by remember {
+        mutableStateOf(false)
     }
 
     if (!isMerchant) {
@@ -94,11 +104,34 @@ fun AddTransactionDetails(
 
     LaunchedEffect(key1 = transaction) {
         if (transaction != null) {
-            onTransactionEvents(TransactionEvents.GetRecentTransactions(vpa = user.vpa, userId = user.userId))
+            if (user.isMerchant) {
+                onTransactionEvents(
+                    TransactionEvents.GetAllTransactionsForMonth(
+                        userId = null,
+                        month = currMonth,
+                        year = currYear,
+                        vpa = user.vpa,
+                        token = authToken
+                    )
+                )
+                onTransactionEvents(TransactionEvents.GetRecentTransactions(null, user.vpa, token = authToken))
+            } else {
+                onTransactionEvents(TransactionEvents.GetRecentTransactions(user.userId, null, token = authToken))
+                onTransactionEvents(
+                    TransactionEvents.GetAllTransactionsForMonth(
+                        userId = user.userId,
+                        month = currMonth,
+                        year = currYear,
+                        vpa = null,
+                        token = authToken
+                    )
+                )
+            }
             onLeaderboardEvents(
                 LeaderboardEvents.AddUserTransactionRewards(
                     transactionAmount = amount,
-                    userId = user.userId
+                    userId = user.userId,
+                    authToken = authToken!!
                 )
             )
             navController.navigate(
@@ -128,7 +161,10 @@ fun AddTransactionDetails(
                     },
                     actions = {},
                     title = {
-                        Text("Enter Details")
+                        Text(
+                            "Enter Details",
+                            style = MaterialTheme.typography.headlineMedium
+                        )
                     }
                 )
             },
@@ -165,9 +201,10 @@ fun AddTransactionDetails(
                     uUpiId = extractPa(scannedQR),
                     isMerchant = false
                 )
-
-                if (!isMerchant) {
+                if (isMerchant) {
                     GSTVerifiedButton()
+                } else Spacer(modifier = Modifier.height(20.dp))
+                if (!isMerchant) {
                     MerchantPaymentDetails(
                         userConfirmation = userConfirmation,
                         onGSTChange = {
@@ -181,7 +218,12 @@ fun AddTransactionDetails(
                 }
                 if (!isMerchant) Spacer(modifier = modifier.height(50.dp))
                 OutlinedTextField(
-                    placeholder = { Text("Enter Amount") },
+                    placeholder = {
+                        Text(
+                            "Enter Amount",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
                     value = amount,
                     onValueChange = { input ->
                         if (input.matches(Regex("^\\d*\\.?\\d{0,2}\$"))) {
@@ -196,10 +238,7 @@ fun AddTransactionDetails(
                             }
                         }
                     },
-                    textStyle = TextStyle(
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.SemiBold,
-                    ),
+                    textStyle = MaterialTheme.typography.bodyMedium,
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.CurrencyRupee,
@@ -224,6 +263,7 @@ fun AddTransactionDetails(
                         sheetState.hide()
                         showBottomSheet = false
                     }
+                    isSelected=false
                 },
                 sheetState = sheetState
             ) {
@@ -232,7 +272,9 @@ fun AddTransactionDetails(
                     selectedUpiId = selectedUpiId,
                     onUpiIdSelected = { id ->
                         selectedUpiId = id
+                        isSelected=true
                     },
+                    isSelected = isSelected,
                     onPayClick = {
                         scope.launch {
                             sheetState.hide()
@@ -248,8 +290,9 @@ fun AddTransactionDetails(
                                         payerId = user.vpa,
                                         payeeId = extractPa(scannedQR),
                                         amount = amount,
-                                        type = 0
-                                    )
+                                        type = 0,
+                                    ),
+                                    token = authToken
                                 )
                             )
                         } else {
@@ -264,7 +307,8 @@ fun AddTransactionDetails(
                                             payeeId = extractPa(scannedQR),
                                             amount = amount,
                                             type = 0
-                                        )
+                                        ),
+                                        token = authToken
                                     )
                                 )
                             } else {
@@ -277,7 +321,8 @@ fun AddTransactionDetails(
                                             payeeId = extractPa(scannedQR),
                                             amount = amount,
                                             type = 1
-                                        )
+                                        ),
+                                        token = authToken
                                     )
                                 )
                             }
@@ -308,7 +353,12 @@ fun MerchantPaymentDetails(
         OutlinedTextField(
             value = selectedOption,
             onValueChange = {},
-            label = { Text("Type of Transaction") },
+            label = {
+                Text(
+                    "Type of Transaction",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
             readOnly = true,
             trailingIcon = {
                 Icon(
@@ -353,7 +403,12 @@ fun MerchantPaymentDetails(
                     }
                 }
             },
-            label = { Text("GSTIN") },
+            label = {
+                Text(
+                    "GSTIN",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
             textStyle = TextStyle(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Normal,
@@ -372,12 +427,18 @@ fun MerchantPaymentDetails(
 fun GSTVerifiedButton() {
     AssistChip(
         onClick = { },
-        label = { Text("GST Verified") },
+        label = {
+            Text(
+                "GST Verified",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
         leadingIcon = {
             Icon(
                 Icons.Filled.CheckCircle,
                 contentDescription = null,
-                Modifier.size(AssistChipDefaults.IconSize)
+                Modifier.size(AssistChipDefaults.IconSize),
+                tint = DarkGreen
             )
         },
         modifier = Modifier.padding(vertical = 15.dp)
@@ -388,6 +449,7 @@ fun GSTVerifiedButton() {
 fun BottomSheetContent(
     upiId: String,
     selectedUpiId: String,
+    isSelected: Boolean,
     onUpiIdSelected: (String) -> Unit,
     onPayClick: () -> Unit
 ) {
@@ -398,10 +460,7 @@ fun BottomSheetContent(
     ) {
         Text(
             text = "Select UPI ID",
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            ),
+            style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Spacer(modifier = Modifier.height(10.dp))
@@ -433,9 +492,13 @@ fun BottomSheetContent(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
-            shape = MaterialTheme.shapes.small
+            shape = MaterialTheme.shapes.small,
+            enabled = isSelected
         ) {
-            Text(text = "Pay", fontSize = 18.sp, modifier = Modifier.padding(4.dp))
+            Text(
+                text = "Pay", fontSize = 18.sp, modifier = Modifier.padding(4.dp),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }

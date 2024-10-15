@@ -7,15 +7,18 @@ import com.gmat.data.model.UserModel
 import com.gmat.data.model.room.UserRoomDao
 import com.gmat.data.model.room.UserRoomModel
 import com.gmat.data.repository.api.UserAPI
-import com.gmat.di.RoomModule
+import com.gmat.env.CHECK_CONNECTION
+import com.gmat.env.refreshAuthToken
 import com.gmat.ui.events.UserEvents
 import com.gmat.ui.state.UserState
-import com.google.firebase.firestore.auth.User
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import retrofit2.Response
 import javax.inject.Inject
@@ -32,6 +35,8 @@ class UserViewModel @Inject constructor(
     init {
         syncUser()
     }
+
+    private var isRefreshingToken=false
 
     fun onEvent(event: UserEvents) {
         when (event) {
@@ -51,7 +56,7 @@ class UserViewModel @Inject constructor(
                 updateUser()
             }
 
-            UserEvents.SignOut -> {
+            is UserEvents.SignOut -> {
                 deleteRoom()
                 _state.update {
                     it.copy(
@@ -72,7 +77,7 @@ class UserViewModel @Inject constructor(
                 _state.update { it.copy(phNo = event.phNo) }
             }
 
-            UserEvents.SignIn -> {
+            is UserEvents.SignIn -> {
                 getUserByPhone(_state.value.phNo)
             }
 
@@ -96,25 +101,43 @@ class UserViewModel @Inject constructor(
                 _state.update { it.copy(newVpa = event.vpa) }
             }
 
-            UserEvents.ClearNewProfile -> {
+            is UserEvents.ClearNewProfile -> {
                 _state.update { it.copy(newProfile = "") }
             }
 
-            UserEvents.SyncUser -> {
+            is UserEvents.SyncUser -> {
                 syncUser()
             }
 
             is UserEvents.UpdateRoom -> {
-                updateRoom(event.user, event.verificationId)
+                updateRoom(event.user, event.verificationId, event.authToken)
+            }
+
+            is UserEvents.RefreshToken -> {
+                if (!isRefreshingToken) {
+                    isRefreshingToken = true
+                    viewModelScope.launch {
+                        val newToken = refreshToken()
+                        println("New token: $newToken")
+                        // Handle the new token (e.g., update state, notify UI, etc.)
+                        isRefreshingToken = false // Reset the flag after completion
+                    }
+                }
+            }
+
+            is UserEvents.OnUpdateAuthToken -> {
+                _state.update { it.copy(authToken = event.token) }
             }
         }
     }
 
     private fun getUserByUserId(userId: String) {
         _state.update { it.copy(isLoading = true) }
+
         viewModelScope.launch {
             try {
-                val response = userAPI.getUserByUserId(userId)
+                val response =
+                    userAPI.getUserByUserId(userId, token = "Bearer ${_state.value.authToken}")
                 if (response.isSuccessful && response.body() != null) {
                     _state.update {
                         it.copy(
@@ -123,7 +146,13 @@ class UserViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    handleErrorResponse(response)
+                    if (response.code() == 401) {
+                        if (refreshToken() != null) {
+                            getUserByUserId(userId) // Retry after successful token refresh
+                        }
+                    } else {
+                        handleErrorResponse(response) // Handle other non-successful responses
+                    }
                 }
             } catch (e: Exception) {
                 _state.update {
@@ -132,16 +161,21 @@ class UserViewModel @Inject constructor(
                         error = "Check Your Internet Connection"
                     )
                 }
+            } finally {
+                _state.update { it.copy(isLoading = false) } // Ensure loading state is reset after completion
             }
         }
     }
+
 
     private fun getUserByPhone(phNo: String) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val response = userAPI.getUserByPhone(phNo)
+                val response =
+                    userAPI.getUserByPhone(phNo, token = "Bearer ${_state.value.authToken}")
                 if (response.isSuccessful && response.body() != null) {
+                    println(response.body())
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -160,11 +194,16 @@ class UserViewModel @Inject constructor(
                             }
                         }
 
+                        401 -> {
+                            if (refreshToken() != null) {
+                                getUserByPhone(phNo) // Retry after refreshing token
+                            }
+                        }
+
                         else -> {
-                            handleErrorResponse(response)
+                            handleErrorResponse(response) // Handle other errors
                         }
                     }
-
                 }
             } catch (e: Exception) {
                 _state.update {
@@ -173,51 +212,85 @@ class UserViewModel @Inject constructor(
                         error = "Check Your Internet Connection"
                     )
                 }
+            } finally {
+                _state.update { it.copy(isLoading = false) } // Ensure loading state is reset
             }
         }
     }
 
     private fun addUser(user: UserModel) {
-        val phNo = state.value.phNo
+        val phNo = state.value.phNo ?: return // Early return if phNo is null
         user.phNo = phNo
+
+        _state.update { it.copy(isLoading = true) } // Set loading state before making the network request
+
         viewModelScope.launch {
             try {
-                val response = userAPI.addUser(user)
+                val response = userAPI.addUser(user, token = "Bearer ${_state.value.authToken}")
                 if (response.isSuccessful) {
-                    getUserByPhone(phNo) // Fetch user details after adding
+                    getUserByPhone(phNo) // Fetch user details after successful addition
                 } else {
-                    handleErrorResponse(response)
+                    if (response.code() == 401) { // Check if the error is due to an expired token
+                        if (refreshToken() != null) {
+                            addUser(user) // Retry adding the user after refreshing the token
+                        }
+                    } else {
+                        handleErrorResponse(response) // Handle other non-successful responses
+                    }
                 }
             } catch (e: Exception) {
-                Log.e("AddUser", "Exception: ${e.message}")
+                Log.e("AddUser", "Exception: ${e.message}") // Log the exception for debugging
                 _state.update {
                     it.copy(
-                        isLoading = false,
-                        error = "Check Your Internet Connection"
+                        isLoading = false, // Reset loading state
+                        error = CHECK_CONNECTION
                     )
                 }
+            } finally {
+                _state.update { it.copy(isLoading = false) } // Ensure loading state is reset after the operation
             }
         }
     }
 
 
     private fun updateUser() {
-        val updatedUser = _state.value.user!!
-        updatedUser.profile = _state.value.newProfile.ifBlank { _state.value.user!!.profile }
-        updatedUser.name = _state.value.newName.ifBlank { _state.value.user!!.name }
-        updatedUser.qr = _state.value.newQr.ifBlank { _state.value.user!!.qr }
-        updatedUser.vpa = _state.value.newVpa.ifBlank { _state.value.user!!.vpa }
+        val currentUser = _state.value.user ?: return // Early return if user is null
+        val updatedUser = currentUser.copy(
+            profile = _state.value.newProfile.ifBlank { currentUser.profile },
+            name = _state.value.newName.ifBlank { currentUser.name },
+            qr = _state.value.newQr.ifBlank { currentUser.qr },
+            vpa = _state.value.newVpa.ifBlank { currentUser.vpa }
+        )
+
         val userId = updatedUser.userId
         _state.update { it.copy(isLoading = true) }
+
         viewModelScope.launch {
-            val response = userAPI.updateUser(updatedUser)
+            val response = userAPI.updateUser(updatedUser, token = "Bearer ${_state.value.authToken}")
+
             if (response.isSuccessful) {
                 getUserByUserId(userId)
             } else {
-                handleErrorResponse(response)
+                when (response.code()) {
+                    401 -> {
+                        // Handle token refresh and retry logic
+                        val newToken = refreshToken()
+                        if (newToken != null) {
+                            updateUser()
+                        } else {
+                            // Handle token refresh failure
+                            handleErrorResponse(response)
+                        }
+                    }
+                    else -> {
+                        handleErrorResponse(response)
+                    }
+                }
             }
+            _state.update { it.copy(isLoading = false) } // Ensure loading is set to false after completion
         }
     }
+
 
     private fun syncUser() {
         viewModelScope.launch {
@@ -234,14 +307,21 @@ class UserViewModel @Inject constructor(
                     )
                     // Update your state with the retrieved user data
                     _state.update { currentState ->
-                        currentState.copy(user = user, verificationId = it.verificationId)
+                        currentState.copy(
+                            isLoading = false,
+                            user = user,
+                            verificationId = it.verificationId
+                        )
                     }
+                }
+                if (userRoomModel == null) {
+                    _state.update { it.copy(isLoading = false) }
                 }
             }
         }
     }
 
-    private fun updateRoom(user: UserModel, verificationId: String) {
+    private fun updateRoom(user: UserModel, verificationId: String, authToken: String) {
         val userRoomModel = UserRoomModel(
             userId = user.userId,
             profile = user.profile,
@@ -250,7 +330,8 @@ class UserViewModel @Inject constructor(
             phNo = user.phNo,
             name = user.name,
             isMerchant = user.isMerchant,
-            verificationId = verificationId
+            verificationId = verificationId,
+            authToken = authToken
         )
 
         viewModelScope.launch {
@@ -258,8 +339,8 @@ class UserViewModel @Inject constructor(
         }
     }
 
-    private fun deleteRoom(){
-        val user=_state.value.user!!
+    private fun deleteRoom() {
+        val user = _state.value.user!!
         val userRoomModel = UserRoomModel(
             userId = user.userId,
             profile = user.profile,
@@ -276,10 +357,32 @@ class UserViewModel @Inject constructor(
         }
     }
 
+    suspend fun refreshToken(): String? {
+        return withContext(Dispatchers.IO) {
+            var token: String?
+            val tokenRefreshComplete = CompletableDeferred<String?>()
+
+            refreshAuthToken(
+                onTokenRefreshed = { tokenReturned ->
+                    token = tokenReturned
+                    _state.update { it.copy(authToken = token) }
+                    tokenRefreshComplete.complete(token) // Complete with the new token
+                    updateRoom(user = _state.value.user!!, verificationId = _state.value.verificationId, authToken = token!!)
+                },
+                onFailure = {
+                    tokenRefreshComplete.complete(null) // Complete with null on failure
+                }
+            )
+
+            // Wait for the token refresh operation to complete
+            tokenRefreshComplete.await()
+        }
+    }
+
+
     private fun handleErrorResponse(response: Response<*>) {
         val errorMessage = when (response.code()) {
             400 -> "Bad Request: Please check the input data"
-            401 -> "Unauthorized: Access denied"
             404 -> "Not Found: Resource not found"
             500 -> "Internal Server Error: Please try again later"
             else -> {

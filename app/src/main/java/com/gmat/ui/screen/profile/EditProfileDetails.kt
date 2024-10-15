@@ -18,6 +18,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,10 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.gmat.R
@@ -45,7 +44,8 @@ fun EditProfileDetails(
     modifier: Modifier = Modifier,
     navController: NavController,
     userState: UserState,
-    onUserEvents: (UserEvents) -> Unit
+    onUserEvents: (UserEvents) -> Unit,
+    authToken: String
 ) {
     val storage = FirebaseStorage.getInstance()
     val storageRef = storage.reference
@@ -103,13 +103,15 @@ fun EditProfileDetails(
                     Text(
                         text = stringResource(id = R.string.edit_profile),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 },
                 actions = {
                     if (canConfirm) {
                         IconButton(onClick = {
                             onUserEvents(UserEvents.UpdateUser)
+                            onUserEvents(UserEvents.UpdateRoom(user=userState.user!!, verificationId = userState.verificationId, authToken))
                             navController.navigateUp()
                         }) {
                             Icon(imageVector = Icons.Rounded.Check, contentDescription = null)
@@ -156,8 +158,7 @@ fun EditProfileDetails(
                 }) {
                     Text(
                         text = stringResource(id = R.string.upload_photo),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 18.sp
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
                 Spacer(modifier = modifier.height(20.dp))
@@ -167,7 +168,10 @@ fun EditProfileDetails(
                         onUserEvents(UserEvents.OnNameChange(it))
                     },
                     modifier = modifier.fillMaxWidth(),
-                    label = { Text("Name") }
+                    label = {
+                        Text("Name",
+                        style = MaterialTheme.typography.bodyMedium
+                    ) }
                 )
             }
             CustomToast(

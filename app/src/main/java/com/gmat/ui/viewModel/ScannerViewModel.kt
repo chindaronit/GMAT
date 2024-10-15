@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ScannerViewModel @Inject constructor(
-    private val repo: QRCodeRepository
+    private val repo: QRCodeRepository,
 ):ViewModel() {
 
     private val _state = MutableStateFlow(QRScannerState())

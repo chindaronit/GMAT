@@ -2,6 +2,8 @@ package com.gmat.ui.viewModel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import com.gmat.data.repository.api.LeaderboardAPI
 import com.gmat.env.ListLeaderboardResponse
@@ -25,31 +27,62 @@ class LeaderboardViewModel @Inject constructor(
     private val _state = MutableStateFlow(LeaderboardState())
     val state = _state.asStateFlow()
 
+    private lateinit var userViewModel: UserViewModel
+
+    // Initialize UserViewModel when needed
+    fun initUserViewModel(owner: ViewModelStoreOwner) {
+        userViewModel = ViewModelProvider(owner)[UserViewModel::class.java]
+    }
+
+    // Example of calling refreshToken() from UserViewModel
+    private suspend fun refreshTokenUsingUserViewModel(): String? {
+        if (!::userViewModel.isInitialized) {
+            return null // Or handle the case when it's not initialized
+        }
+        return userViewModel.refreshToken()
+    }
+
     fun onEvent(event: LeaderboardEvents) {
         when (event) {
             is LeaderboardEvents.GetUserRewardsPointsForMonth -> {
-                getUserRewardsPointsForMonth(event.userId, event.month, event.year)
+                getUserRewardsPointsForMonth(event.userId, event.month, event.year, event.authToken)
             }
 
             is LeaderboardEvents.GetAllUsersByRewardsForMonth -> {
-                getAllUsersByRewardsForMonth(event.month, event.year)
+                getAllUsersByRewardsForMonth(event.month, event.year, token = event.authToken)
             }
 
             is LeaderboardEvents.AddUserTransactionRewards -> {
-                addUserTransactionRewards(event.userId, event.transactionAmount)
+                addUserTransactionRewards(
+                    event.userId,
+                    event.transactionAmount,
+                    token = event.authToken
+                )
             }
 
             LeaderboardEvents.SignOut -> {
-                _state.update { it.copy(userLeaderboardEntry = null, allEntries = ListLeaderboardResponse(), isLoading = false, error = null) }
+                _state.update {
+                    it.copy(
+                        userLeaderboardEntry = null,
+                        allEntries = ListLeaderboardResponse(),
+                        isLoading = false,
+                        error = null
+                    )
+                }
             }
         }
     }
 
-    private fun getUserRewardsPointsForMonth(userId: String, month: Int, year: Int) {
+    private fun getUserRewardsPointsForMonth(userId: String, month: Int, year: Int, token: String) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val response = leaderboardAPI.getUserRewardsPointsForMonth(userId, month, year)
+                val response = leaderboardAPI.getUserRewardsPointsForMonth(
+                    userId,
+                    month,
+                    year,
+                    token = "Bearer $token"
+                )
                 if (response.isSuccessful && response.body() != null) {
                     _state.update {
                         it.copy(
@@ -71,11 +104,12 @@ class LeaderboardViewModel @Inject constructor(
         }
     }
 
-    private fun getAllUsersByRewardsForMonth(month: Int, year: Int) {
+    private fun getAllUsersByRewardsForMonth(month: Int, year: Int, token: String) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val response = leaderboardAPI.getUsersByRewardsForMonth(month, year)
+                val response =
+                    leaderboardAPI.getUsersByRewardsForMonth(month, year, token = "Bearer $token")
                 if (response.isSuccessful && response.body() != null) {
                     _state.update {
                         it.copy(
@@ -84,6 +118,12 @@ class LeaderboardViewModel @Inject constructor(
                         )
                     }
                 } else {
+                    if (response.code() == 401) {
+                        val token = refreshTokenUsingUserViewModel()
+                        if (token != null) {
+                            getAllUsersByRewardsForMonth(month, year, token=token)
+                        }
+                    }
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
@@ -97,16 +137,29 @@ class LeaderboardViewModel @Inject constructor(
         }
     }
 
-    private fun addUserTransactionRewards(userId: String, transactionAmount: String) {
+    private fun addUserTransactionRewards(
+        userId: String,
+        transactionAmount: String,
+        token: String
+    ) {
         viewModelScope.launch {
             try {
                 val response = leaderboardAPI.updateUserTransactionRewards(
                     TransactionRequest(
                         userId = userId,
-                        transactionAmount = transactionAmount.toInt()
-                    )
+                        transactionAmount = transactionAmount.toInt(),
+                    ), token = "Bearer $token"
                 )
                 if (!response.isSuccessful) {
+                    handleErrorResponse(response)
+                }
+                else{
+                    if (response.code() == 401) {
+                        val token = refreshTokenUsingUserViewModel()
+                        if (token != null) {
+                            addUserTransactionRewards(userId, transactionAmount, token)
+                        }
+                    }
                     handleErrorResponse(response)
                 }
             } catch (e: Exception) {
@@ -123,16 +176,14 @@ class LeaderboardViewModel @Inject constructor(
     private fun handleErrorResponse(response: Response<*>) {
         val errorMessage = when (response.code()) {
             400 -> "Bad Request: Please check the input data"
-            401 -> "Unauthorized: Access denied"
             404 -> "Not Found: Resource not found"
             500 -> "Internal Server Error: Please try again later"
             else -> {
-                // Attempt to parse the error message from the response body
                 val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
                 errorObj.getString("message")
             }
         }
-        Log.e("LeaderboardViewModel", "Error: $errorMessage")
+        Log.e("UserViewModel", "Error: $errorMessage")
         _state.update { it.copy(isLoading = false, error = errorMessage) }
     }
 }

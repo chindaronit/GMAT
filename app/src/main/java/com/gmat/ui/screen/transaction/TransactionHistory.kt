@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,8 +48,6 @@ import com.gmat.ui.components.CenterBar
 import com.gmat.ui.components.MonthYearPicker
 import com.gmat.ui.components.TransactionPreloader
 import com.gmat.ui.events.TransactionEvents
-import com.gmat.ui.state.TransactionState
-import com.gmat.ui.state.UserState
 import com.gmat.ui.theme.DarkGreen
 import com.gmat.ui.theme.DarkRed
 import java.util.Calendar
@@ -61,6 +60,7 @@ fun TransactionHistory(
     user: UserModel,
     transactionHistory: List<TransactionModel>? = null,
     onTransactionEvents: (TransactionEvents) -> Unit,
+    authToken: String?
 ) {
     val months = listOf(
         "January",
@@ -96,7 +96,8 @@ fun TransactionHistory(
                         userId = null,
                         month = selectedMonth,
                         year = selectedYear,
-                        vpa = user.vpa
+                        vpa = user.vpa,
+                        token = authToken
                     )
                 )
             } else {
@@ -105,7 +106,8 @@ fun TransactionHistory(
                         userId = user.userId,
                         month = selectedMonth,
                         year = selectedYear,
-                        vpa = null
+                        vpa = null,
+                        token = authToken
                     )
                 )
             }
@@ -120,7 +122,8 @@ fun TransactionHistory(
                     Text(
                         text = stringResource(id = R.string.history),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 })
         }
@@ -171,6 +174,7 @@ fun TransactionHistory(
                 if (transactionHistory.isEmpty()) {
                     Text(
                         text = "No transactions found!",
+                        style = MaterialTheme.typography.bodyMedium,
                         modifier = modifier.padding(horizontal = 16.dp, vertical = 10.dp)
                     )
                 }
@@ -229,8 +233,7 @@ fun TransactionHistory(
                                     // Display transaction name
                                     Text(
                                         text = transaction.name,
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.SemiBold,
+                                        style = MaterialTheme.typography.bodyMedium,
                                         overflow = TextOverflow.Ellipsis,
                                         maxLines = 1,
                                         modifier = Modifier.widthIn(max = 150.dp)
@@ -249,10 +252,10 @@ fun TransactionHistory(
                                     modifier = Modifier
                                         .padding(end = 10.dp)
                                         .widthIn(max = 100.dp),
-                                    fontSize = 16.sp,
+                                    style = MaterialTheme.typography.labelMedium,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = if (user.isMerchant) DarkGreen else DarkRed
+                                    color = if (user.isMerchant) DarkGreen else Color.Red
                                 )
                             }
                         }

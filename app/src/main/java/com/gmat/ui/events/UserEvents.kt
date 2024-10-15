@@ -17,6 +17,8 @@ sealed class UserEvents {
     data class OnChangeVPA(val vpa: String): UserEvents()
     data object ClearNewProfile: UserEvents()
     data object SyncUser: UserEvents()
-    data class UpdateRoom(val user: UserModel, val verificationId: String) : UserEvents()
+    data class UpdateRoom(val user: UserModel, val verificationId: String,val authToken: String) : UserEvents()
+    data object RefreshToken: UserEvents()
+    data class OnUpdateAuthToken(val token: String?): UserEvents()
 }
 

@@ -17,6 +17,9 @@ import com.gmat.ui.viewModel.TransactionViewModel
 import com.gmat.ui.viewModel.UserViewModel
 import com.google.android.gms.common.moduleinstall.ModuleInstall
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
+import com.google.firebase.FirebaseApp
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -25,6 +28,13 @@ class MainActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+
+        // Initialize Firebase App Check with the Play Integrity provider
+        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+            PlayIntegrityAppCheckProviderFactory.getInstance()
+        )
+
         enableEdgeToEdge()
         installGoogleScanner()
         setContent {
@@ -33,6 +43,7 @@ class MainActivity : AppCompatActivity(){
                 val userViewModel: UserViewModel = hiltViewModel()
                 val leaderboardViewModel: LeaderboardViewModel = hiltViewModel()
                 val transactionViewModel: TransactionViewModel = hiltViewModel()
+                transactionViewModel.initUserViewModel(this@MainActivity)
                 AppNavHost(scannerViewModel=scannerViewModel, userViewModel = userViewModel, transactionViewModel = transactionViewModel, leaderboardViewModel = leaderboardViewModel)
             }
         }

@@ -53,13 +53,12 @@ fun Login(
 
     LaunchedEffect(key1 = userState) {
         if(userState.user!=null){
-            navController.navigate(NavRoutes.Home.route)
-        }
-    }
-
-    LaunchedEffect(key1 = userState.user) {
-        if (userState.user != null) {
-            println(userState.user)
+            navController.navigate(NavRoutes.Home.route){
+                popUpTo(NavRoutes.Login.route){
+                    inclusive=true
+                }
+                launchSingleTop=true
+            }
         }
     }
 
@@ -67,97 +66,99 @@ fun Login(
     val context = LocalContext.current as Activity
     var isToastVisible by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("GMAT", style = MaterialTheme.typography.headlineLarge) })
-        }
-    )
-
-    { innerPadding ->
-        Box(
-            modifier = modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-        ) {
-            Column(
-                modifier = modifier
-                    .align(Alignment.TopCenter)
-            ) {
-                Top()
+    if(!userState.isLoading && userState.user==null) {
+        Scaffold(
+            topBar = {
+                TopAppBar(title = { Text("GMAT", style = MaterialTheme.typography.headlineLarge) })
             }
+        )
 
-            Column(
+        { innerPadding ->
+            Box(
                 modifier = modifier
-                    .fillMaxWidth()
-                    .padding(40.dp)
-                    .align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(innerPadding)
+                    .fillMaxSize()
             ) {
-                Text(
-                    text = "Continue with mobile",
-                    style = MaterialTheme.typography.headlineLarge
-                )
-                Spacer(modifier = modifier.height(20.dp))
-                OutlinedTextField(
-                    value = userState.phNo,
-                    onValueChange = {
-                        if (it.length <= 10 && it.isDigitsOnly()) {
-                            onUserEvents(UserEvents.ChangePhNo(it))
-                        }
-                    },
-                    placeholder = {
-                        Text(
-                            text = "Enter your number here",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.Call,
-                            contentDescription = null,
-                        )
-                    },
-                    modifier = modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
-                )
+                Column(
+                    modifier = modifier
+                        .align(Alignment.TopCenter)
+                ) {
+                    Top()
+                }
 
-                Button(
-                    onClick = {
-                        isToastVisible = true
-                        startPhoneNumberVerification(
-                            phoneNumber = formatPhoneNumberForVerification(
-                                userState.phNo
-                            ),
-                            auth = auth,
-                            activity = context,
-                            onVerificationFailed = {},
-                            onVerificationCompleted = {
-                                isToastVisible = false
-                                onUserEvents(UserEvents.ChangeVerificationId(it))
-                                navController.navigate(NavRoutes.OTP.route)
-                            })
-                    },
+                Column(
                     modifier = modifier
                         .fillMaxWidth()
-                        .padding(vertical = 25.dp),
+                        .padding(40.dp)
+                        .align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Continue",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(8.dp)
+                        text = "Continue with mobile",
+                        style = MaterialTheme.typography.headlineLarge
                     )
+                    Spacer(modifier = modifier.height(20.dp))
+                    OutlinedTextField(
+                        value = userState.phNo,
+                        onValueChange = {
+                            if (it.length <= 10 && it.isDigitsOnly()) {
+                                onUserEvents(UserEvents.ChangePhNo(it))
+                            }
+                        },
+                        placeholder = {
+                            Text(
+                                text = "Enter your number here",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.Call,
+                                contentDescription = null,
+                            )
+                        },
+                        modifier = modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
+                    )
+
+                    Button(
+                        onClick = {
+                            isToastVisible = true
+                            startPhoneNumberVerification(
+                                phoneNumber = formatPhoneNumberForVerification(
+                                    userState.phNo
+                                ),
+                                auth = auth,
+                                activity = context,
+                                onVerificationFailed = {},
+                                onVerificationCompleted = {
+                                    isToastVisible = false
+                                    onUserEvents(UserEvents.ChangeVerificationId(it))
+                                    navController.navigate(NavRoutes.OTP.route)
+                                })
+                        },
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 25.dp),
+                    ) {
+                        Text(
+                            text = "Continue",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
                 }
-            }
-            CustomToast(
-                modifier = modifier.align(Alignment.BottomCenter),
-                message = "Please wait...",
-                isVisible = isToastVisible
-            )
-            Column(
-                modifier = modifier
-                    .align(Alignment.BottomCenter)
-            ) {
-                Bottom()
+                CustomToast(
+                    modifier = modifier.align(Alignment.BottomCenter),
+                    message = "Please wait...",
+                    isVisible = isToastVisible
+                )
+                Column(
+                    modifier = modifier
+                        .align(Alignment.BottomCenter)
+                ) {
+                    Bottom()
+                }
             }
         }
     }

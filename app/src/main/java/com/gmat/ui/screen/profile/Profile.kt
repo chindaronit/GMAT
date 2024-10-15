@@ -52,7 +52,8 @@ fun Profile(
     onUserEvents: (UserEvents) -> Unit,
     onTransactionEvents: (TransactionEvents) -> Unit,
     onLeaderboardEvents: (LeaderboardEvents) -> Unit,
-    onScannerEvents: (QRScannerEvents) -> Unit
+    onScannerEvents: (QRScannerEvents) -> Unit,
+    authToken: String?
 ) {
 
     Scaffold(
@@ -193,22 +194,28 @@ fun ProfileCard(
                     text = uName,
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Row(modifier = Modifier.padding(vertical = 2.dp),
+                Row(
+                    modifier = Modifier.padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "UPI ID: $uUpiId",
+                        text = uUpiId,
                         style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier.padding(end = 2.dp)
                     )
-                    Icon(imageVector = Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
 
                 Text(
-                    text = "Mobile: $uMobile",
+                    text = uMobile,
                     style = MaterialTheme.typography.bodySmall,
                 )
+
             }
         }
     }

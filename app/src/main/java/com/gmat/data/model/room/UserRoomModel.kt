@@ -13,5 +13,6 @@ class UserRoomModel(
     var profile: String="",
     var phNo: String="",
     var qr: String="",
-    val isMerchant: Boolean=false
+    val isMerchant: Boolean=false,
+    val authToken: String=""
 )

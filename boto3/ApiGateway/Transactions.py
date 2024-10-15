@@ -18,11 +18,13 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     requestModels = {}
 
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.userId': True,
         'method.request.querystring.txnId': True,
     }
     putMethod(client, apiId, authorizationType, transactionResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.userId':'method.request.querystring.userId',
         'integration.request.querystring.txnId':'method.request.querystring.txnId'
     }
@@ -40,10 +42,12 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     integrationHttpMethod = 'POST'
     transaction_post_url = url + 'transactions/'
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.userId': True,
     }
     putMethod(client, apiId, authorizationType, transactionResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.userId':'method.request.querystring.userId',
     }
     putIntegration(client, apiId, httpMethod, transactionResourceId, type, integrationHttpMethod, transaction_post_url, passthroughBehavior, requestParameters)
@@ -66,12 +70,14 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     integrationHttpMethod = 'GET'
     all_month_url = url + 'transactions/all/month/'
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.userId': True,
         'method.request.querystring.month': True,
         'method.request.querystring.year': True,
     }
     putMethod(client, apiId, authorizationType, monthResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.userId': 'method.request.querystring.userId',
         'integration.request.querystring.month': 'method.request.querystring.month',
         'integration.request.querystring.year': 'method.request.querystring.year'
@@ -94,10 +100,12 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     integrationHttpMethod = 'GET'
     recent_transaction_url = url + 'transactions/recenttransaction/'
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.userId': True,
     }
     putMethod(client, apiId, authorizationType, recentTransactionResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.userId': 'method.request.querystring.userId',
     }
     putIntegration(client, apiId, httpMethod, recentTransactionResourceId, type, integrationHttpMethod, recent_transaction_url, passthroughBehavior, requestParameters)
@@ -118,10 +126,12 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     integrationHttpMethod = 'GET'
     recent_merchant_transaction_url = url + 'transactions/recentmerchanttransaction/'
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.vpa': True,
     }
     putMethod(client, apiId, authorizationType, recentMerchantTransactionResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.vpa': 'method.request.querystring.vpa',
     }
     putIntegration(client, apiId, httpMethod, recentMerchantTransactionResourceId, type, integrationHttpMethod, recent_merchant_transaction_url, passthroughBehavior, requestParameters)
@@ -143,12 +153,14 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     integrationHttpMethod = 'GET'
     all_payee_url = url + 'transactions/all/merchant/'
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.vpa': True,
         'method.request.querystring.month': True,
         'method.request.querystring.year': True,
     }
     putMethod(client, apiId, authorizationType, payeeResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.vpa': 'method.request.querystring.vpa',
         'integration.request.querystring.month': 'method.request.querystring.month',
         'integration.request.querystring.year': 'method.request.querystring.year'
@@ -172,10 +184,12 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     integrationHttpMethod = 'GET'
     all_gstin_url = url + 'transactions/all/gstin/'
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.gstin': True,
     }
     putMethod(client, apiId, authorizationType, gstinResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.gstin': 'method.request.querystring.gstin',
     }
     putIntegration(client, apiId, httpMethod, gstinResourceId, type, integrationHttpMethod, all_gstin_url, passthroughBehavior, requestParameters)
@@ -196,11 +210,13 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     integrationHttpMethod = 'GET'
     all_gstin_year_url = url + 'transactions/all/gstin/year/'
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.gstin': True,
         'method.request.querystring.year': True,
     }
     putMethod(client, apiId, authorizationType, yearResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.gstin': 'method.request.querystring.gstin',
         'integration.request.querystring.year': 'method.request.querystring.year',
     }
@@ -221,12 +237,14 @@ def transaction_api(client, apiId, rootResourceId, authorizationType, contentTyp
     integrationHttpMethod = 'GET'
     all_gstin_month_url = url + 'transactions/all/gstin/month/'
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.gstin': True,
         'method.request.querystring.month': True,    
         'method.request.querystring.year': True,    
     }
     putMethod(client, apiId, authorizationType, monthResourceId, httpMethod, requestParameters, requestModels)
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.gstin':'method.request.querystring.gstin',
         'integration.request.querystring.month':'method.request.querystring.month',
         'integration.request.querystring.year':'method.request.querystring.year'

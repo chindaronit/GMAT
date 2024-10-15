@@ -16,6 +16,7 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     type = 'HTTP'
     passthroughBehavior = "WHEN_NO_MATCH"
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.userId': True,
     }
     requestModels = {
@@ -26,6 +27,7 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
 
     requestParameters = {
         'integration.request.querystring.userId':'method.request.querystring.userId',
+        'integration.request.header.authorization': 'method.request.header.authorization',
     }
 
     putIntegration(client, apiId, httpMethod, userResourceId, type, integrationHttpMethod, user_get_vpa_url, passthroughBehavior, requestParameters)
@@ -49,9 +51,13 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     requestModels = {
         "application/json": Model,
     }
-    requestParameters = {}
-
+    requestParameters = {
+        'method.request.header.authorization': True,
+    }
     putMethod(client, apiId, authorizationType, userResourceId, httpMethod, requestParameters, requestModels)
+    requestParameters={
+        'integration.request.header.authorization': 'method.request.header.authorization',
+    }
     putIntegration(client, apiId, httpMethod, userResourceId, type, integrationHttpMethod, user_post_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, userResourceId, httpMethod, contentType, Model)
 
@@ -65,7 +71,13 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     httpMethod = 'POST'
     integrationHttpMethod = 'POST'
     user_put_url = url + 'users/update'
+    requestParameters = {
+        'method.request.header.authorization': True,
+    }
     putMethod(client, apiId, authorizationType, updateUserId, httpMethod, requestParameters, requestModels)
+    requestParameters={
+        'integration.request.header.authorization': 'method.request.header.authorization',
+    }
     putIntegration(client, apiId, httpMethod, updateUserId, type, integrationHttpMethod, user_put_url, passthroughBehavior, requestParameters)
     succ_response(client, apiId, updateUserId, httpMethod, contentType, Model)
 
@@ -88,12 +100,14 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     integrationHttpMethod = 'GET'
     user_get_vpa_url = url + 'users/get/vpa/'
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.vpa': True,
     }
     
     putMethod(client, apiId, authorizationType, vpaResourceId, httpMethod, requestParameters, requestModels)
 
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.vpa':'method.request.querystring.vpa',
     }
 
@@ -110,6 +124,7 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     # ***************************************************************
 
     requestParameters = {
+        'method.request.header.authorization': True,
         'method.request.querystring.phNo': True,
     }
 
@@ -121,6 +136,7 @@ def user_api(client, apiId, rootResourceId, authorizationType, contentType, Mode
     putMethod(client, apiId, authorizationType, phoneResourceId, httpMethod, requestParameters, requestModels)
     
     requestParameters = {
+        'integration.request.header.authorization': 'method.request.header.authorization',
         'integration.request.querystring.phNo':'method.request.querystring.phNo'
     }
     

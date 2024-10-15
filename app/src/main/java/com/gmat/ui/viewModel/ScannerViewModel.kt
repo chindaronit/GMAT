@@ -28,6 +28,10 @@ class ScannerViewModel @Inject constructor(
             QRScannerEvents.StartScanning -> {
                 startScanning()
             }
+
+            is QRScannerEvents.AddQR -> {
+                _state.update { it.copy(details = event.qr) }
+            }
         }
     }
 

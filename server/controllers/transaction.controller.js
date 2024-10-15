@@ -220,7 +220,7 @@ export const getRecentTransactionsForUser = async (req, res) => {
     const allTransactions = Object.values(monthlyTransactions)
       .flat()
       .sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
-    const payerTransactions = allTransactions.filter((txn) => txn.type === "0");
+    const payerTransactions = allTransactions.filter((txn) => txn.type == "0");
     const usersCollection = collection(db, USER_COLLECTION);
     const transactionsByPayee = {};
 

@@ -23,7 +23,7 @@ import com.gmat.data.model.UserModel
 import com.gmat.env.ChatDetails
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
-import com.gmat.ui.state.TransactionState
+import com.gmat.ui.events.QRScannerEvents
 import com.gmat.ui.theme.DarkGreen
 import com.gmat.ui.theme.DarkRed
 
@@ -33,6 +33,7 @@ fun TransactionChat(
     navController: NavController,
     user: UserModel?,
     chatIndex: String,
+    onQRScannerEvents: (QRScannerEvents)->Unit,
     recentUserTransactions: List<ChatDetails>?=null
 ) {
     val transactionUser by remember {
@@ -72,7 +73,8 @@ fun TransactionChat(
             user?.let { user ->
                 if (!user.isMerchant) {
                     ExtendedFloatingActionButton(
-                        onClick = { navController.navigate(NavRoutes.AddTransactionDetails.route) }
+                        onClick = { onQRScannerEvents(QRScannerEvents.AddQR(transactionUser!!.qr))
+                            navController.navigate(NavRoutes.AddTransactionDetails.route) }
                     ) {
                         Text("Pay")
                     }

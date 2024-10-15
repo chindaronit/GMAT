@@ -67,7 +67,7 @@ export const getUserByVPA = async (req, res) => {
 export const addUser = async (req, res) => {
   const { name, vpa, profile, qr, isMerchant, phNo } = req.body;
 
-  if (!phNo || isMerchant === undefined|| !name) {
+  if (!phNo || isMerchant === undefined || !name) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid fields in the request",
     });
@@ -84,7 +84,8 @@ export const addUser = async (req, res) => {
 
   try {
     const userRef = await addDoc(collection(db, USER_COLLECTION), data);
-    res.status(200).send({ msg: "User added successfully" });
+    const userId = userRef.id;
+    res.status(200).send({ msg: "User added successfully", userId: userId });
   } catch (error) {
     console.error(error);
     res.status(500).send({ message: "Internal server error" });
@@ -97,7 +98,7 @@ export const updateUser = async (req, res) => {
   delete req.body.userId;
   const { name, vpa, profile, qr, isMerchant, phNo } = req.body;
 
-  if (!phNo || isMerchant === undefined || !qr || !name || !userId) {
+  if (!phNo || !name || !userId) {
     return res.status(400).send({
       message: "Bad Request: Missing or invalid fields in the request",
     });

@@ -102,6 +102,9 @@ fun AddTransactionDetails(
         }
     }
 
+    println(transaction)
+    println(scannedQR)
+
     LaunchedEffect(key1 = transaction) {
         if (transaction != null) {
             if (user.isMerchant) {
@@ -114,9 +117,21 @@ fun AddTransactionDetails(
                         token = authToken
                     )
                 )
-                onTransactionEvents(TransactionEvents.GetRecentTransactions(null, user.vpa, token = authToken))
+                onTransactionEvents(
+                    TransactionEvents.GetRecentTransactions(
+                        null,
+                        user.vpa,
+                        token = authToken
+                    )
+                )
             } else {
-                onTransactionEvents(TransactionEvents.GetRecentTransactions(user.userId, null, token = authToken))
+                onTransactionEvents(
+                    TransactionEvents.GetRecentTransactions(
+                        user.userId,
+                        null,
+                        token = authToken
+                    )
+                )
                 onTransactionEvents(
                     TransactionEvents.GetAllTransactionsForMonth(
                         userId = user.userId,
@@ -146,50 +161,51 @@ fun AddTransactionDetails(
             onScannerEvent(QRScannerEvents.ClearState)
         }
     }
-    if (scannedQR.isNotBlank()) {
-        Scaffold(
-            topBar = {
-                CenterBar(
-                    onClick = {
-                        onScannerEvent(QRScannerEvents.ClearState)
-                        navController.navigate(NavRoutes.Home.route) {
-                            popUpTo(NavRoutes.AddTransactionDetails.route) {
-                                inclusive = true
-                            } // Clears the back stack
-                            launchSingleTop = true  // Avoids multiple instances of the screen
-                        }
-                    },
-                    actions = {},
-                    title = {
-                        Text(
-                            "Enter Details",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                    }
-                )
-            },
 
-            floatingActionButton = {
-                if (canContinuePayment) {
-                    FloatingActionButton(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        onClick = {
-                            scope.launch {
-                                showBottomSheet = true
-                                sheetState.show()
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null
-                        )
+
+    Scaffold(
+        topBar = {
+            CenterBar(
+                onClick = {
+                    onScannerEvent(QRScannerEvents.ClearState)
+                    navController.navigate(NavRoutes.Home.route) {
+                        popUpTo(NavRoutes.AddTransactionDetails.route) {
+                            inclusive = true
+                        } // Clears the back stack
+                        launchSingleTop = true  // Avoids multiple instances of the screen
                     }
+                },
+                actions = {},
+                title = {
+                    Text(
+                        "Enter Details",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                }
+            )
+        },
+
+        floatingActionButton = {
+            if (canContinuePayment) {
+                FloatingActionButton(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    onClick = {
+                        scope.launch {
+                            showBottomSheet = true
+                            sheetState.show()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null
+                    )
                 }
             }
-
-        ) { innerPadding ->
+        }
+    ) { innerPadding ->
+        if (transaction == null && scannedQR.isNotBlank()) {
             Column(
                 modifier = modifier
                     .padding(innerPadding)
@@ -263,7 +279,7 @@ fun AddTransactionDetails(
                         sheetState.hide()
                         showBottomSheet = false
                     }
-                    isSelected=false
+                    isSelected = false
                 },
                 sheetState = sheetState
             ) {
@@ -272,7 +288,7 @@ fun AddTransactionDetails(
                     selectedUpiId = selectedUpiId,
                     onUpiIdSelected = { id ->
                         selectedUpiId = id
-                        isSelected=true
+                        isSelected = true
                     },
                     isSelected = isSelected,
                     onPayClick = {

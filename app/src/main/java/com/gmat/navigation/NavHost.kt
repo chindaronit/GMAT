@@ -109,7 +109,8 @@ fun AppNavHost(
                 navController = navController,
                 user = userState.user,
                 recentUserTransactions = transactionState.recentUserTransactions,
-                chatIndex = entry.arguments?.getString("chatIndex") ?: ""
+                chatIndex = entry.arguments?.getString("chatIndex") ?: "",
+                onQRScannerEvents = scannerViewModel::onEvent
             )
         }
 

@@ -24,6 +24,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -64,6 +68,10 @@ fun TransactionReceipt(
         onTransactionEvents(TransactionEvents.GetTransactionById(userId = userId, txnId = txnId, token = authToken))
     }
 
+    var isBackClicked by remember {
+        mutableStateOf(false)
+    }
+
     BackHandler {
         onTransactionEvents(TransactionEvents.ClearTransaction)
         navController.navigate(NavRoutes.Home.route) {
@@ -74,14 +82,13 @@ fun TransactionReceipt(
         }
     }
 
-    LaunchedEffect(key1 = Unit) {
-        if(transaction==null){
+    LaunchedEffect(key1 = isBackClicked) {
+        if(transaction==null && isBackClicked){
             navController.navigate(NavRoutes.Home.route) {
                 popUpTo(0) {
                     inclusive = true  // This clears the entire back stack
                 }
-                launchSingleTop =
-                    true  // Avoid creating multiple instances of the Home screen
+                launchSingleTop = true  // Avoid creating multiple instances of the Home screen
             }
         }
     }
@@ -91,6 +98,7 @@ fun TransactionReceipt(
             CenterBar(
                 onClick = {
                     onTransactionEvents(TransactionEvents.ClearTransaction)
+                    isBackClicked=true
                 },
                 title = {
                     Text(

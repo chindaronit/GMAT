@@ -154,7 +154,7 @@ fun OTP(
                 }
             }
 
-            CustomToast(modifier = modifier.align(Alignment.BottomCenter),message = "Verifying Credentials...", isVisible = isToastVisible)
+            CustomToast(modifier = modifier.align(Alignment.BottomCenter),message = "Verifying Credentials...", isVisible = isToastVisible, bottomPadding = 250.dp)
 
             Column(
                 modifier = modifier.align(Alignment.BottomCenter)

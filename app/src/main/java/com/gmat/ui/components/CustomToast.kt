@@ -13,17 +13,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomToast(
     modifier: Modifier,
     message: String,
+    bottomPadding: Dp=0.dp,
     isVisible: Boolean,
 ) {
     if (isVisible) {
         Row(
             modifier = modifier
+                .padding(bottom = bottomPadding)
                 .clip(RoundedCornerShape(10.dp)) // Rounded corners
                 .background(MaterialTheme.colorScheme.surface),
             verticalAlignment = Alignment.CenterVertically, // Align elements vertically to the center

@@ -151,7 +151,8 @@ fun Login(
                 CustomToast(
                     modifier = modifier.align(Alignment.BottomCenter),
                     message = "Please wait...",
-                    isVisible = isToastVisible
+                    isVisible = isToastVisible,
+                    bottomPadding = 250.dp
                 )
                 Column(
                     modifier = modifier

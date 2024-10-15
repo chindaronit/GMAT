@@ -25,6 +25,8 @@ import com.gmat.data.model.UserModel
 import com.gmat.env.ChatDetails
 import com.gmat.env.formatDate
 import com.gmat.navigation.NavRoutes
+import com.gmat.ui.events.QRScannerEvents
+import com.gmat.ui.events.TransactionEvents
 import com.gmat.ui.theme.DarkGreen
 import com.gmat.ui.theme.DarkRed
 import kotlinx.coroutines.launch
@@ -35,7 +37,8 @@ fun TransactionChat(
     navController: NavController,
     user: UserModel?,
     chatIndex: String,
-    recentUserTransactions: List<ChatDetails>? = null
+    recentUserTransactions: List<ChatDetails>? = null,
+    onQRScannerEvents: (QRScannerEvents) -> Unit
 ) {
     val transactionUser by remember {
         mutableStateOf(recentUserTransactions?.get(chatIndex.toInt())?.userDetails)
@@ -90,7 +93,10 @@ fun TransactionChat(
             user?.let { user ->
                 if (!user.isMerchant) {
                     ExtendedFloatingActionButton(
-                        onClick = { navController.navigate(NavRoutes.AddTransactionDetails.route) }
+                        onClick = {
+                            onQRScannerEvents(QRScannerEvents.AddQR(transactionUser!!.qr))
+                            navController.navigate(NavRoutes.AddTransactionDetails.route)
+                        }
                     ) {
                         Text(
                             "Pay",
